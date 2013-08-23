@@ -1,0 +1,432 @@
+
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <title>The Stanton Space Barn</title>
+    {% load static %}
+    <script type='text/javascript' src='{% static "js/jquery-1.9.1.js" %}'></script>
+    <script type='text/javascript' src='{% static "js/jquery.tablesorter.js" %}'></script>
+    <script type="text/javascript" src='{% static "js/jquery-ui-1.10.3.custom.min.js" %}'></script>
+    <script type='text/javascript' src='{% static "js/app.js" %}'></script>
+    
+    <link rel="stylesheet" type="text/css" href='{% static "css/ssb/jquery-ui-1.10.3.custom.css" %}'>
+
+    
+    <script type='text/javascript' defer='defer'>
+    $(window).load(function(){
+
+        // inject CSRF token into our ajax requests
+        // $.ajaxSetup({
+        //   data: {csrfmiddlewaretoken: '{{ csrf_token }}' },
+        // });
+
+
+        {% for image in image_list %}
+            // var hardpointY = 10;
+            // var hardpointX = -175;
+            {% for hardpoint in image.hardpoint_set.all|dictsort:'tag_location_y' %}
+            var hardpointX = {{hardpoint.overlay_location_x}};
+            var hardpointY = {{hardpoint.overlay_location_y}};
+            var hardpointSpacing = 0;
+            var overlay = $('#hardpoint_{{hardpoint.id}}')
+            var speed = 600;
+            var parentImage = overlay.closest('.image_container')
+            moveToAbsoluteXY(overlay, hardpointX, hardpointY, speed);
+            overlay.attr('data-xpos', hardpointX);
+            overlay.attr('data-ypos', hardpointY);
+            
+            // adjust x1,y1 to center in the overlay div
+            console.log(overlay.width());
+            x1 = hardpointX + (overlay.width() / 2);// + 20;
+            y1 = hardpointY + ((overlay.height() + 20)/ 2);
+            x2 = {{hardpoint.tag_location_x}};
+            y2 = {{hardpoint.tag_location_y}};
+            // create the line from overlay to point on ship image
+            setTimeout(createLine, speed, parentImage, x1, y1, x2, y2, {{hardpoint.id}});
+            // create the dot at the end of the line on the ship image
+            setTimeout(createDot, speed + 400, parentImage, x2, y2, 15, {{hardpoint.id}});
+
+            // sort tables
+            $('#table_hardpoint_guns_{{hardpoint.id}}').tablesorter();
+            $('#table_hardpoint_missilelaunchers_{{hardpoint.id}}').tablesorter();
+            $('table_hardpoint_items_{{hardpoint.id}}').tablesorter();
+        
+            // tabs
+            $( "#tabs_hardpoint_{{hardpoint.id}}" ).tabs({
+                  event: "click",
+                  active : 0,
+                });
+            // Browser Dialog
+            $('#browser_data_hardpoint_{{hardpoint.id}}').dialog({
+                modal : true,
+                height : 500,
+                width: 550,
+                autoOpen : false,
+                title : 'Class {{hardpoint.hardpoint_class}} Hardpoint',
+                create: function() {
+                    console.log("Dialog:", $(this).closest('div.ui-dialog'));
+                    console.log("Close Button:", $(this).closest('div.ui-dialog').find('button.ui-dialog-titlebar-close'));
+                        $(this).closest('div.ui-dialog').find('button.ui-dialog-titlebar-close').click(function(e) {
+                            console.log('close button clicked');
+                            closeHardpoint({{hardpoint.id}});
+                            e.preventDefault();
+                            });}
+            });
+        
+              hardpointY = hardpointY + hardpointSpacing;
+              {% endfor %}
+        {% endfor %}
+
+        $('.overlay').on('click', overlayClicked);
+        $('.overlay').on('mouseenter', overlayEnter);
+        $('.overlay').on('mouseleave', overlayLeave);
+        $('tr').on('click', itemClickedInBrowser);
+
+        $('.global-actions').button({
+            label : 'Create New Variant',
+            icons  : { primary : 'ui-icon-disk' }
+        }).on('click', function(){
+            $('.save-build-details').dialog('open');
+            });
+        $('.global-actions').button({
+            label : 'Get Shareable URL',
+            icons  : { primary : 'ui-icon-disk' }
+        }).on('click', function(){
+            $('.save-build-details').dialog('open');
+            });
+
+        $('.result').dialog( {
+            modal: true,
+            height: 300,
+            width: 600,
+            autoOpen: false,
+            title : 'Saving Build'
+        });
+        $('.save-build-details').dialog( {
+            modal: true,
+            height: 200,
+            width: 500,
+            autoOpen: false,
+            title : 'Save New Build',
+            buttons : [ { text: 'Save', click: function() {submitBuild({{ship.id}});} }, { text : 'Cancel', click: function() { $(this).dialog("close");}  } ]
+        });
+    });
+    </script>
+    
+    <style type='text/css'>
+	body{
+		font: 62.5% "Trebuchet MS", sans-serif;
+		margin: 12px;
+        background-color: black;
+        color: #eee;
+	}
+    .image_container {
+        position: relative;
+        width: 700px;
+        margin-left: 250px;
+        margin-right: auto;
+        margin-top: 100px;
+        margin-bottom: 25px;
+        border-style: solid;
+        border-color: black;
+    }
+    .ship {
+        max-width: 700px;
+    }
+    .browser_data {
+        display: none;
+    }
+    div.container {
+        width: 1000px;;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    .ship-statistics {
+        position: relative;
+        width: 700px;
+        margin-left: 250px;
+        margin-right: auto;
+        margin-top: 0;
+        margin-bottom: 25px;
+        padding: 5px;
+    }
+    div.global-actions {
+        float: right;
+    }
+    div.ship-details {
+        float: left;
+        position: relative;
+        width: 175px;
+        margin-left: 0px;
+        margin-right: 0;
+        margin-top: 100px;
+        margin-bottom: 25px;
+        padding: 5px;
+    }
+    ul.ship-details {
+      list-style-type: none;
+      margin: 0;
+      padding: 0;
+    }
+    div.footer {
+        margin-top: 200px;
+        margin-bottom: 20px;
+        width: 700px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    div.overlay {
+        z-index:1;
+        display: block;
+        position: absolute;
+        padding: 5px;
+        width: 125px;
+        height: 55px;
+    }
+    .current_selection.item {
+        width: 120px;
+        height: 50px;
+        padding-left: 5px;
+        padding-top: 5px;
+    }
+    .current_selection.mass {
+        display: none;
+    }
+    div.overlay.highlight {
+        background: rgba(250, 250, 250, 1);
+        color: rgba(40, 40, 40, 1);
+    }
+    div.row.highlight {
+        background: rgba(255, 200, 64, 1);
+    }
+    div.line {
+        position: absolute;
+        -webkit-transform-origin: 0 50%;
+        -moz-transform-origin: 0 50%;
+        transform-origin: 0 50%;
+        /* Line width*/
+        height: 2px;
+        background: white;
+        opacity:1.0;
+    }
+    .circle {
+        border-radius: 50%;
+        display: block;
+        position: absolute;
+        margin-right: 20px;
+        border-style: solid;
+        border-width: 2px;
+        background: white;
+        width: 15px;
+        height: 15px;
+        opacity: 0.5;
+        top: 0px;
+        left: 0px;
+    }
+    .clear_both {
+        clear : both;
+    }
+    td.id {
+        display: none;
+    }
+    /* tables */
+    table.tablesorter {
+    	/*font-family:arial;*/
+    	background-color: #CDCDCD;
+    	margin:10px 0pt 15px;
+    	/*font-size: 8pt;*/
+    	width: 500px;
+    	text-align: left;
+    }
+    table.tablesorter thead tr th, table.tablesorter tfoot tr th {
+    	background-color: rgba(40,40,40,1);
+    	border: 1px solid #FFF;
+    	/*font-size: 8pt;*/
+    	font-size: 0.8em;
+    	padding: 4px;
+    	color: rgba(250,250,250,1);
+    }
+    table.tablesorter thead tr .header {
+    	background-image: url(bg.gif);
+    	background-repeat: no-repeat;
+    	background-position: center right;
+    	cursor: pointer;
+    }
+    table.tablesorter tbody td {
+    	color: #3D3D3D;
+    	padding: 4px;
+    	background-color: #FFF;
+    	vertical-align: top;
+    	width:500px;
+    }
+    table.tablesorter tbody tr.odd td {
+    	background-color:#F0F0F6;
+    }
+    table.tablesorter thead tr .headerSortUp {
+    	background-image: url(asc.gif);
+    }
+    table.tablesorter thead tr .headerSortDown {
+    	background-image: url(desc.gif);
+    }
+    table.tablesorter thead tr .headerSortDown, table.tablesorter thead tr .headerSortUp {
+        background-color: rgba(250,250,250,1);
+        color: rgba(40,40,40,1);
+    }
+    div.result {
+        display: none;
+    }
+    div.save-build-details {
+        display: none;
+    }
+    </style>
+
+
+</head>
+<body>
+    <div class='result'></div>
+    <div class='save-build-details'>
+        <h2>Specify a Name and Role for this Variant</h2>
+        <form name='save-build' id='save-build' action='/save-variant/' method='POST'>
+        {%csrf_token%}
+        {{ form.as_p }}
+        </form>
+    </div>
+    <div class='container'>
+    <!-- ui-dialog -->
+    <div class='ship-statistics ui-widget ui-widget-content ui-corner-all'>
+        <div class='global-actions'>
+        </div>
+        <h1>{{ ship.name }}</h1>
+        <h2>{{ ship.manufacturer }}</h2>
+    </div>
+    <div class='ship-details ui-widget ui-widget-content ui-corner-all' data-empty-mass='{{ship.empty_mass}}'>
+        <ul class='ship-details'>
+            <li>Maximum Crew    : {{ship.maximum_crew}}</li>
+            <li>Empty Mass (kg) : {{ship.empty_mass}}</li>
+            <li class='mass'>Configured Mass (kg) : {{ship.empty_mass}}</li>
+            <li>Length          : {{ship.length}}</li>
+            <li>Width           : {{ship.width}}</li>
+            <li>Height          : {{ship.height}}</li>
+        </ul>
+    </div>
+    {% for image in image_list %}
+    <div class="image_container" id='ship_image_{{image.id}}'>
+        <img class='ship' src='{{image.url}}' />
+        {% for hardpoint in image.hardpoint_set.all %}
+        <div class='overlay ui-widget ui-widget-content ui-corner-all' id='hardpoint_{{hardpoint.id}}'>Class {{hardpoint.hardpoint_class}} Hardpoint
+            <span class='current_selection' data-hardpoint-id='{{hardpoint.id}}' data-item-id='-1' data-item-mass='0'>
+                <div class='current_selection item'>Nothing Loaded</div>
+            </span>
+            <div class='browser_data' id='browser_data_hardpoint_{{hardpoint.id}}'>
+                <p>Use the browser below to select an item to place into this hardpoint.</p>
+                <p>You can click on a column header to sort by that column.  Shift click for multiple column sorting.</p>
+                <p>Use the tabs to select different categories of items.</p>
+                <div id='tabs_hardpoint_{{hardpoint.id}}'>
+                    <ul>
+                        <li><a href='#tabs_hardpoint_{{hardpoint.id}}-1'>Guns</a></li>
+                        <li><a href='#tabs_hardpoint_{{hardpoint.id}}-2'>Missile Launchers</a></li>
+                        <li><a href='#tabs_hardpoint_{{hardpoint.id}}-3'>Utility Items</a></li>
+                    </ul>
+                    <div id='tabs_hardpoint_{{hardpoint.id}}-1'>
+                        <table class='tablesorter' id='table_hardpoint_guns_{{hardpoint.id}}'>
+                            <thead>
+                                <tr>
+                                    <th>Manufacturer</th>
+                                    <th>Name</th>
+                                    <th>Rate of Fire</th>
+                                    <th>Damage</th>
+                                    <th>Mass</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in item_list %}
+                                    {% if item.hardpoint_class <= hardpoint.hardpoint_class %}
+                                        {% if item.item_type.name == "Weapons" %}
+                                            {% if item.item_category.description == "Gun" %}
+                                            <tr data-item-id='{{item.id}}' data-item-mass='{{item.mass}}'>
+                                                <td class='manufacturer'>{{item.manufacturer}}</td>
+                                                <td class='model'>{{item.name}}</td>
+                                                <td>{{item.weapon_data.rate_of_fire}}</td>
+                                                <td>{{item.weapon_data.damage}}</td>
+                                                <td class='mass'>{{item.mass}}</td>
+                                            </tr>
+                                            {% endif %}
+                                        {% endif %}
+                                    {% endif %}
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div id='tabs_hardpoint_{{hardpoint.id}}-2'>
+                        <table class='tablesorter' id='table_hardpoint_missilelaunchers_{{hardpoint.id}}'>
+                            <thead>
+                                <tr>
+                                    <th>Manufacturer</th>
+                                    <th>Name</th>
+                                    <th>Rate of Fire</th>
+                                    <th>Damage</th>
+                                    <th>Explosive Radius</th>
+                                    <th>Mass</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in item_list %}
+                                    {% if item.hardpoint_class <= hardpoint.hardpoint_class %}
+                                        {% if item.item_type.name == "Weapons" %}
+                                            {% if item.item_category.description == "Missile Launcher" %}
+                                            <tr data-item-id='{{item.id}}' data-item-mass='{{item.mass}}'>
+                                                <td class='manufacturer'>{{item.manufacturer}}</td>
+                                                <td class='model'>{{item.name}}</td>
+                                                <td>{{item.weapon_data.rate_of_fire}}</td>
+                                                <td>{{item.weapon_data.damage}}</td>
+                                                <td>{{item.weapon_data.explosive_radius}}</td>
+                                                <td class='mass'>{{item.mass}}</td>
+                                            </tr>
+                                            {% endif %}
+                                        {% endif %}
+                                    {% endif %}
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div id='tabs_hardpoint_{{hardpoint.id}}-3'>
+                        <table class='tablesorter' id='table_hardpoint_items_{{hardpoint.id}}'>
+                            <thead>
+                                <tr>
+                                    <th>Manufacturer</th>
+                                    <th>Name</th>
+                                    <th>Mass</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in item_list %}
+                                    {% if item.hardpoint_class <= hardpoint.hardpoint_class %}
+                                        {% if item.item_type.name == "Utility Items" %}                                    
+                                            <tr data-item-id='{{item.id}}' data-item-mass='{{item.mass}}'>
+                                                <td class='manufacturer'>{{item.manufacturer}}</td>
+                                                <td class='model'>{{item.name}}</td>
+                                                <td class='mass'>{{item.mass}}</td>
+                                            </tr>
+                                        {% endif %}
+                                    {% endif %}
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endfor %}
+    <div class='footer'>
+        Star Citizen is a registered copyright of Cloud Imperium Games, and all content is theirs, used under permission.
+    </div>
+</div>
+</body>
+
+
+</html>
+

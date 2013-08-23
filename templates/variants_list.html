@@ -1,0 +1,41 @@
+{% extends "base_list.html" %}
+
+	        {% block head_script %}
+		    $('.overlay-delete').tooltip();
+		    $('.overlay-delete').on('click', function(){
+		    	deleteBuild($('.overlay-delete').attr('data-variant-id'))		    	
+		    });
+	        {% endblock head_script %}
+
+						{% block list-content %}
+						{% for variant in variant_list %}
+						<div id='variant_block_{{variant.id}}' class='entry small' style='margin: 8px;'>
+							<div class='thumbnail'>
+								<a href='/variant/{{variant.id}}'>
+									<img src='{{variant.ship.thumbnail}}' width='358'>
+								</a>
+								<div class='role'>
+									<ul class='post-categories'>
+										<li>{{variant.role}}</li>
+									</ul>
+								</div>
+								<!-- {{variant.created_by}}, {{user.username}}, {{user}} -->
+								{% if variant.created_by == user %}
+								<div class='overlay-delete' title='Delete this variant' data-variant-id='{{variant.id}}'>
+									<ul class='post-categories'>
+										<li>X</li>
+									</ul>
+								</div>
+								{% endif %}
+							</div> <!-- end thumbnail -->
+							<h2 class='title'><a href='/variant/{{variant.id}}'>{{variant.name}}</a></h2>
+							<div class='entry-content'>
+								<div class='bottom-bg'>
+									<div class='excerpt'>
+										<p>{{variant.role}}</p>
+									</div> <!-- end excerpt -->
+								</div> <!-- end bottom-bg -->
+							</div> <!-- entry-content -->
+						</div> <!-- end entry -->
+						{% endfor %}
+						{% endblock list-content %}

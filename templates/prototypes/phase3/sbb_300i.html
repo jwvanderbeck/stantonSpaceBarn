@@ -1,0 +1,256 @@
+
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <title>SSB Prototype Phase 3</title>
+
+    <script type='text/javascript' src='//code.jquery.com/jquery-2.0.2.js'></script>
+    <script type='text/javascript' src="../../../static/javascript/jquery.tablesorter.js"></script>
+    <script type="text/javascript" src="//code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
+    <script type='text/javascript' src="../../../static/javascript/app_phase3.js"></script>
+    
+    <link rel="stylesheet" type="text/css" href="../../../static/css/normalize.css">
+    <link rel="stylesheet" type="text/css" href="//code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css">
+    <link rel="stylesheet" type="text/css" href="../../../static/css/table_style.css">
+
+    
+    <script type='text/javascript' defer='defer'>
+    $(window).load(function(){
+        {% for image in image_list %}
+            {% for hardpoint in image.hardpoint_set.all %}
+            var overlay = $('#hardpoint_{{hardpoint.id}}')
+            var speed = 600;
+            var parentImage = overlay.closest('.image_container')
+            moveToRelativeXY(parentImage, overlay, {{hardpoint.overlay_location_x}}, {{hardpoint.overlay_location_y}}, speed);
+            // adjust x1,y1 to center in the overlay div
+            x1 = {{hardpoint.overlay_location_x}} + overlay.width() / 2;
+            y1 = {{hardpoint.overlay_location_y}} + overlay.height() / 2;
+            x2 = {{hardpoint.tag_location_x}};
+            y2 = {{hardpoint.tag_location_y}}
+            // create the line from overlay to point on ship image
+            setTimeout(createLine, speed, parentImage, x1, y1, x2, y2);
+            // create the dot at the end of the line on the ship image
+            setTimeout(createDot, speed + 400, parentImage, x2, y2, 8);
+
+            // sort tables
+            $('#table_hardpoint_guns_{{hardpoint.id}}').tablesorter();
+            $('#table_hardpoint_missilelaunchers_{{hardpoint.id}}').tablesorter();
+        
+            // tabs
+            $(function() {
+                $( "#tabs_hardpoint_{{hardpoint.id}}" ).tabs({
+                  event: "mouseover",
+                  active : 0,
+                });
+              });        
+              {% endfor %}
+        {% endfor %}
+
+        $('.overlay').on('click', overlayClicked);
+        $('tr').on('click', itemClickedInBrowser);
+    })
+    </script>
+    
+    <style type='text/css'>
+    .image_container {
+        width: 700px;
+        margin-left: auto;
+        margin-right: auto;
+        margin-top: 100px;
+        /*border-style : solid;
+        border-color : white;
+        border-width : 1px;*/
+    }
+    .ship {
+        max-width: 700px;
+    }
+    body {
+        background-color: black;
+    }
+    div.overlay {
+        z-index:1;
+        display: block;
+        position: absolute;
+        padding: 5px 5px;
+        width: 275px;
+        height: 75px;
+        background: white;
+        color: rgba(20, 40, 47, 1.0);
+        opacity: 1;
+        top: 0px;
+        left: 0px;
+        border-radius: 10px;
+    }
+    div.browser {
+        z-index:1;
+        display: block;
+        position: absolute;
+        background: white;
+        color: rgba(20, 40, 47, 1.0);
+        opacity: 1;
+        padding: 5px 5px;
+        width: 275px;
+        height: 75px;
+        top: 0px;
+        left: 0px;
+        border-radius: 10px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    div.overlay.highlight {
+        background: rgba(255, 200, 64, 1);
+    }
+    div.row.highlight {
+        background: rgba(255, 200, 64, 1);
+    }
+    div.line {
+        position: ansolute;
+        -webkit-transform-origin: 0 50%;
+        -moz-transform-origin: 0 50%;
+        transform-origin: 0 50%;
+        /* Line width*/
+        height: 2px;
+        background: white;
+        opacity:0.5;
+    }
+    .circle {
+        border-radius: 50%;
+        display: block;
+        position: absolute;
+        margin-right: 20px;
+        border-style: solid;
+        border-width: 1px;
+        background: white;
+        width: 8px;
+        height: 8px;
+        opacity: 0.5;
+        top: 0px;
+        left: 0px;
+    }
+    .browser_data {
+        display: none;
+    }
+    .current_selection.thumbnail {
+        float: left;
+        width: 100px;
+        height: 50px;
+        margin: 5px 5px 5px 5px;
+        text-align: right;
+        border-style: solid;
+        border-color: white;
+        border-width: 1px;
+    }
+    .current_selection.item {
+        float: left;
+        width: 150px;
+        height: 50px;
+        margin: 5px 5px 5px 5px;
+        border-style: solid;
+        border-color: black;
+        border-width: 0px;
+    }
+    .item_image {
+        width:100px;
+        height: 50px;
+    }
+    .clear_both {
+        clear : both;
+    }
+    tr.id {
+        display: none;
+    }
+    </style>
+
+
+</head>
+<body>
+    {% for image in image_list %}
+        {% for h in image.hardpoint_set.all %}
+        {% endfor %}
+    <div class="image_container" id='ship_image_{{image.id}}'>
+        <img class='ship' src='{{image.url}}' />
+        <span>
+        {% for hardpoint in image.hardpoint_set.all %}
+        <div class='overlay' id='hardpoint_{{hardpoint.id}}' data-xpos='{{hardpoint.overlay_location_x}}' data-ypos='{{hardpoint.overlay_location_y}}'>{{hardpoint}}
+            <span class='current_selection'>
+                <div class='clear_both'></div>
+                <div class='current_selection thumbnail'></div>
+                <div class='current_selection item'>Click to add an item<br />to this hardpoint</div>
+                <div class='clear_both'></div>
+            </span>
+            <span class='browser_data'>
+                <p>Use the browser below to select an item to place into this hardpoint.</p>
+                <p>You can click on a column header to sort by that column.  Shift click for multiple column sorting.</p>
+                <p>Use the tabs to select different categories of items.</p>
+                <div id='tabs_hardpoint_{{hardpoint.id}}'>
+                    <ul>
+                        <li><a href='#tabs_hardpoint_{{hardpoint.id}}-1'>Guns</a></li>
+                        <li><a href='#tabs_hardpoint_{{hardpoint.id}}-2'>Missile Launchers</a></li>
+                    </ul>
+                    <div id='tabs_hardpoint_{{hardpoint.id}}-1'>
+                        <table class='tablesorter' id='table_hardpoint_guns_{{hardpoint.id}}'>
+                            <thead>
+                                <tr>
+                                    {% for header in header_list %}
+                                    <th>{{header.name}}</th>
+                                    {% endfor %}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in item_list %}
+                                <!-- '{{item.item_category}}' -->
+                                    {% if item.hardpoint_class <= hardpoint.hardpoint_class %}
+                                        {% if item.item_category.description == "Gun" %}
+                                        <tr>
+                                            <td class='icon'><img class='item_image' src='{{item.icon}}' /></td>
+                                            <td class='manufacturer'>{{item.manufacturer}}</td>
+                                            <td class='model'>{{item.model}}</td>
+                                            <td>{{item.rate_of_fire}}</td>
+                                            <td class='id'>{{item.id}}</td>
+                                        </tr>
+                                        {% endif %}
+                                    {% endif %}
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div id='tabs_hardpoint_{{hardpoint.id}}-2'>
+                        <table class='tablesorter' id='table_hardpoint_missilelaunchers_{{hardpoint.id}}'>
+                            <thead>
+                                <tr>
+                                    {% for header in header_list %}
+                                    <th>{{header.name}}</th>
+                                    {% endfor %}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in item_list %}
+                                    {% if item.hardpoint_class <= hardpoint.hardpoint_class %}
+                                    {% if item.item_category.description == "Missile Launcher" %}
+                                    <tr>
+                                        <td class='icon'><img class='item_image' src='{{item.icon}}' /></td>
+                                        <td class='manufacturer'>{{item.manufacturer}}</td>
+                                        <td class='model'>{{item.model}}</td>
+                                        <td>{{item.rate_of_fire}}</td>
+                                        <td class='id'>{{item.id}}</td>
+                                    </tr>
+                                    {% endif %}
+                                    {% endif %}
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </span>
+        </div>
+        {% endfor %}
+        </span>
+    </div>
+    {% endfor %}
+</body>
+
+
+</html>
+

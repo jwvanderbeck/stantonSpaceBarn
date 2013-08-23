@@ -1,0 +1,22 @@
+{% extends "base_list.html" %}
+						{% block list-content %}
+						{% for ship in ship_list %}
+						{% if ship.available %}
+						<div class='entry small' style='margin: 8px;'>
+							<div class='thumbnail'>
+								<a href='/ship/{{ship.name}}'>
+									<img src='{{ship.thumbnail}}' width='358'>
+								</a>
+							</div> <!-- end thumbnail -->
+							<h2 class='title'><a href='/ship/{{ship.name}}'>{{ship.name}}</a></h2>
+							<div class='entry-content'>
+								<div class='bottom-bg'>
+									<div class='excerpt'>
+										<p>{{ship.description}}</p>
+									</div> <!-- end excerpt -->
+								</div> <!-- end bottom-bg -->
+							</div> <!-- entry-content -->
+						</div> <!-- end entry -->
+						{% endif %}
+						{% endfor %}
+						{% endblock list-content %}

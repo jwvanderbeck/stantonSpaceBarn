@@ -1,0 +1,16 @@
+{% load extra %}
+<html>
+    <head></head>
+    <body>
+        <table>
+        {% for item in item_list|filter_by_category:'Powerplant' %}
+            {% if forloop.first %}
+            {{ item.tableHeader|title }}
+            <tbody>
+            {% endif %}
+            {{ item.asTableRow }}
+        {% endfor %}
+        </tbody>
+        </table>
+    </body>
+</html>

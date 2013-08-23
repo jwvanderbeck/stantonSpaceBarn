@@ -1,0 +1,217 @@
+{% extends "ship_base.html" %}
+
+{% block title %} Quick Variant {% endblock title %}
+
+{% block head_script %}
+	{{ block.super }}
+	// We create a Javascript object containing the item data from the 
+	// variant so that it can then be loaded into the appropriate spots on the ship base
+
+	var variant_data = {
+		'engine_intake' : {% firstof variantData_build.engine_intake.id "-1"%},
+		'powerplant' : {% firstof variantData_build.powerplant.id "-1"%},
+		'main_thruster' : {% firstof variantData_build.main_thruster.id "-1"%},
+		'shield' : {% firstof variantData_build.shield.id "-1"%},
+		'cargo_mod' : {% firstof variantData_build.cargo_mod.id "-1"%}
+	}
+	var variant_data_hardpoints = [
+		{% for hardpointLink in variantData_hardpoints %}
+		{
+			'hardpoint_id' 		: '#hardpoint_{{ hardpointLink.hardpoint.id }}' ,
+			'item_id'			: '{{ hardpointLink.item.id }}'
+		} {% if not forloop.last %},{% endif %}
+		{% endfor %}
+	];
+	var variant_data_engine_mods = [
+		{% for engine_mod in variantData_engine_mods %} '{{ engine_mod.item.id }}'{% if not forloop.last %},{% endif %} {% endfor %}
+	]
+	var variant_data_hull_mods = [
+		{% for hull_mod in variantData_hull_mods %} '{{ hull_mod.item.id }}'{% if not forloop.last %},{% endif %} {% endfor %}
+	]
+
+	// The loadVariantData function is responsible for loading all data for this variant
+	// into the appropriate places in the DOM.  Essentially anything that makes this page
+	// a variant rather than a base ship page is handled here
+	function loadVariantData() {
+
+		// Load base ship mods
+		if (variant_data['engine_intake'] > 0)
+		{
+			var itemTR = $("tr[data-item-id=" + variant_data['engine_intake'] + "]");
+			var itemDatablock = $('#datablock-engine-intakes');
+			copyItemAttributes(itemTR, itemDatablock.find('.current_selection'));
+			setDatablockDescription(itemTR, itemDatablock.find('.current_selection'));
+		}
+		if (variant_data['powerplant'] > 0)
+		{
+			var itemTR = $("tr[data-item-id=" + variant_data['powerplant'] + "]");
+			var itemDatablock = $('#datablock-engines');
+			copyItemAttributes(itemTR, itemDatablock.find('.current_selection'));
+			setDatablockDescription(itemTR, itemDatablock.find('.current_selection'));
+		}
+		if (variant_data['main_thruster'] > 0)
+		{
+			var itemTR = $("tr[data-item-id=" + variant_data['main_thruster'] + "]");
+			var itemDatablock = $('#datablock-main-thrusters');
+			copyItemAttributes(itemTR, itemDatablock.find('.current_selection'));
+			setDatablockDescription(itemTR, itemDatablock.find('.current_selection'));
+		}
+		if (variant_data['shield'] > 0)
+		{
+			var itemTR = $("tr[data-item-id=" + variant_data['shield'] + "]");
+			var itemDatablock = $('#datablock-shield');
+			copyItemAttributes(itemTR, itemDatablock.find('.current_selection'));
+			setDatablockDescription(itemTR, itemDatablock.find('.current_selection'));
+		}
+		if (variant_data['cargo_mod'] > 0)
+		{
+			var itemTR = $("tr[data-item-id=" + variant_data['cargo_mod'] + "]");
+			var itemDatablock = $('#datablock-cargo-expansion');
+			copyItemAttributes(itemTR, itemDatablock.find('.current_selection'));
+			setDatablockDescription(itemTR, itemDatablock.find('.current_selection'));
+		}
+
+		if (variant_data_engine_mods.length > 0)
+		{
+			first = true;
+			for (var i = 0; i < variant_data_engine_mods.length; i++)
+			{
+				if (variant_data_engine_mods[i] == null || variant_data_engine_mods[i] == '' || variant_data_engine_mods[i] == -1 || variant_data_engine_mods[i] == 0)
+					continue;
+
+				if (first)
+				{
+					first = false;
+					var itemTR = $("tr[data-item-id=" + variant_data_engine_mods[i] + "]");
+					var itemDatablock = $('.engine-mods').find('.datablock')
+					copyItemAttributes(itemTR, itemDatablock.find('.current_selection'));
+					setDatablockDescription(itemTR, itemDatablock.find('.current_selection'));
+				}
+				else
+				{
+			        // create a blank datablock at the end
+			        var section = $('.engine-mods');
+			        var newDatablock = $(document.createElement('div')).appendTo(section).addClass('datablock');
+			        newDatablock.addClass('ui-widget');
+			        newDatablock.addClass('ui-widget-content');
+			        newDatablock.addClass('ui-widget-corner-all');
+			        newDatablock.text('Engine Mod');
+			        var newClearButton = $(document.createElement('span')).appendTo(newDatablock).addClass('datablock-clear').addClass('ui-icon').addClass('ui-icon-closethick').attr('title', 'Clear this item');
+			        var newCurrentSelection = $(document.createElement('span')).appendTo(newDatablock).addClass('current_selection');
+			        $(document.createElement('div')).appendTo(newCurrentSelection).addClass('current_selection').addClass('mod');
+			        addDatablockTriggers();
+					var itemTR = $("tr[data-item-id=" + variant_data_engine_mods[i] + "]");
+					var itemDatablock = newDatablock;
+					copyItemAttributes(itemTR, itemDatablock.find('.current_selection'));
+					setDatablockDescription(itemTR, itemDatablock.find('.current_selection'));
+				}
+			}
+			if (!first)
+			{
+		        // create a blank datablock at the end
+		        var section = $('.engine-mods');
+		        var newDatablock = $(document.createElement('div')).appendTo(section).addClass('datablock');
+		        newDatablock.addClass('ui-widget');
+		        newDatablock.addClass('ui-widget-content');
+		        newDatablock.addClass('ui-widget-corner-all');
+		        newDatablock.text('Engine Mod');
+		        var newClearButton = $(document.createElement('span')).appendTo(newDatablock).addClass('datablock-clear').addClass('ui-icon').addClass('ui-icon-closethick').attr('title', 'Clear this item');
+		        var newCurrentSelection = $(document.createElement('span')).appendTo(newDatablock).addClass('current_selection');
+		        $(document.createElement('div')).appendTo(newCurrentSelection).addClass('current_selection').addClass('mod').text('Nothing Loaded');
+		        addDatablockTriggers();
+			}
+	    }
+		if (variant_data_hull_mods.length > 0)
+		{
+			first = true;
+			for (var i = 0; i < variant_data_hull_mods.length; i++)
+			{
+				if (variant_data_hull_mods[i] == null || variant_data_hull_mods[i] == '' || variant_data_hull_mods[i] == -1 || variant_data_hull_mods[i] == 0)
+					continue;
+
+				if (first)
+				{
+					first = false;
+					var itemTR = $("tr[data-item-id=" + variant_data_hull_mods[i] + "]");
+					var itemDatablock = $('.hull-mods').find('.datablock')
+					copyItemAttributes(itemTR, itemDatablock.find('.current_selection'));
+					setDatablockDescription(itemTR, itemDatablock.find('.current_selection'));
+				}
+				else
+				{
+			        // create a blank datablock at the end
+			        var section = $('.hull-mods');
+			        var newDatablock = $(document.createElement('div')).appendTo(section).addClass('datablock');
+			        newDatablock.addClass('ui-widget');
+			        newDatablock.addClass('ui-widget-content');
+			        newDatablock.addClass('ui-widget-corner-all');
+			        newDatablock.text('Hull Mod');
+			        var newClearButton = $(document.createElement('span')).appendTo(newDatablock).addClass('datablock-clear').addClass('ui-icon').addClass('ui-icon-closethick').attr('title', 'Clear this item');
+			        var newCurrentSelection = $(document.createElement('span')).appendTo(newDatablock).addClass('current_selection');
+			        $(document.createElement('div')).appendTo(newCurrentSelection).addClass('current_selection').addClass('mod');
+			        addDatablockTriggers();
+					var itemTR = $("tr[data-item-id=" + variant_data_hull_mods[i] + "]");
+					var itemDatablock = newDatablock;
+					copyItemAttributes(itemTR, itemDatablock.find('.current_selection'));
+					setDatablockDescription(itemTR, itemDatablock.find('.current_selection'));
+				}
+			}
+			if (!first)
+			{
+		        // create a blank datablock at the end
+		        var section = $('.hull-mods');
+		        var newDatablock = $(document.createElement('div')).appendTo(section).addClass('datablock');
+		        newDatablock.addClass('ui-widget');
+		        newDatablock.addClass('ui-widget-content');
+		        newDatablock.addClass('ui-widget-corner-all');
+		        newDatablock.text('Hull Mod');
+		        var newClearButton = $(document.createElement('span')).appendTo(newDatablock).addClass('datablock-clear').addClass('ui-icon').addClass('ui-icon-closethick').attr('title', 'Clear this item');
+		        var newCurrentSelection = $(document.createElement('span')).appendTo(newDatablock).addClass('current_selection');
+		        $(document.createElement('div')).appendTo(newCurrentSelection).addClass('current_selection').addClass('mod').text('Nothing Loaded');
+		        addDatablockTriggers();
+			}
+	    }
+
+		for (var i = 0 ;i < variant_data_hardpoints.length; i++)
+		{
+			if (variant_data_hardpoints[i]['item_id'])
+			{
+				var overlay = $(variant_data_hardpoints[i]['hardpoint_id']);
+	            var overlaySelected = overlay.find('.current_selection');
+	            var itemTR = $("tr[data-item-id=" + variant_data_hardpoints[i]['item_id'] + "]");
+	            copyItemAttributes(itemTR, overlaySelected);
+	            setOverlayDescription(itemTR, overlaySelected);
+			}
+		}
+	}
+{% endblock head_script %}
+
+{% block dialogs %}
+	{{ block.super}}
+{% endblock dialogs %}
+
+{% block global_actions_script %}
+	{{ block.super }}
+{% endblock global_actions_script %}
+
+{% block final_script_actions %}
+	loadVariantData()
+	{{ block.super }}
+{% endblock final_script_actions %}
+
+
+{% block dialog-divs %}
+	{{ block.super }}
+{% endblock dialog-divs %}
+
+{% block global-actions %}
+	{{block.super}}
+{% endblock %}
+
+{% block ship-details-head %}
+	{{ block.super }}
+{% endblock ship-details-head %}
+
+{% block user-actions-head %}
+	{{ block.super }}
+{% endblock user-actions-head %}

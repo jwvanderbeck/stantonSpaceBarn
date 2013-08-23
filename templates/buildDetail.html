@@ -1,0 +1,29 @@
+{% extends "quick_variant.html" %}
+
+{% block title %} Variant Detail {% endblock title %}
+
+{% block head_script %}
+	{{ block.super }}
+{% endblock head_script %}
+{% block global_actions_script %}
+    {{ block.super }}
+{% endblock global_actions_script %}
+
+{% block dialogs %}
+	{{ block.super }}
+{% endblock dialogs %}
+
+{% block global-actions %}
+    <ul>
+        <li><a class='global-actions-create' href='#'>Save Variant</a></li>
+        <li><a class='global-actions-share'  href='#'>Get QuickVariant Link</a></li>
+    </ul>
+{% endblock %}  
+
+{% block ship-details-head %}
+<div class='ship-details' id='internal-sidebar' data-variant-id='{{variantData_build.id}}' data-ship-id='{{ship.id}}' data-empty-mass='{{ship.empty_mass}}' data-empty-memory='{{ship.memory_capacity}}' data-main-thruster-count='{{ ship.main_thruster_count}}' data-empty-upgrade-slots='{{ship.upgrade_capacity}}'>
+{% endblock ship-details-head %}
+
+{% block user-actions-head %}
+<div class='widgetcontent' id='user' data-user-username='{{user.username}}' data-user-variant-owner='{{variantData_build.created_by}}'>
+{% endblock user-actions-head %}

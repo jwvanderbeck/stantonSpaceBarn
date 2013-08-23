@@ -1,0 +1,205 @@
+
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <title>The Stanton Space Barn</title>
+    {% load static %}
+    <script type='text/javascript' src='{% static "js/jquery-1.9.1.js" %}'></script>
+    <script type='text/javascript' src='{% static "js/jquery.tablesorter.js" %}'></script>
+    <script type="text/javascript" src='{% static "js/jquery-ui-1.10.3.custom.min.js" %}'></script>
+    <script type='text/javascript' src='{% static "javascript/app_phase3.js" %}'></script>
+    
+    <link rel="stylesheet" type="text/css" href='{% static "css/ssb/jquery-ui-1.10.3.custom.css" %}'>
+
+    <script type='text/javascript' defer='defer'>
+    $(document).ready(function(){
+        var manufacturer_id;
+        car manufacturer_name;
+        
+        $.get('/ship-builder/ships/', function(data){
+            console.log(data);
+            console.log(data[0]);
+            var ship = data[0];
+            var manufacturer_id = ship.manufacturer;
+
+            $('#ship-name').text(ship.name);
+            $('#ship-manufacturer').text(ship.manufacturer);
+            $('#ship-description').text(ship.description);
+        });
+    });
+    </script>    
+    <style type='text/css'>
+	body{
+		font: 62.5% "Trebuchet MS", sans-serif;
+		margin: 50px;
+        background-color: black;
+        padding: 20px;
+        color: #eee;
+	}
+	h1 {
+	    color: #ffffff;
+	}
+	h2 {
+	    color: #ffffff;
+	}
+    .image_container {
+        position: relative;
+        width: 700px;
+        margin-left: auto;
+        margin-right: 0;
+        margin-top: 0px;
+        margin-bottom: 25px;
+    }
+    .ship {
+        max-width: 700px;
+    }
+    div.container {
+        width: 1024px;;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    .ship-details {
+        position: relative;
+        width: 1024px;
+        marghin-left: auto;
+        margin-right: 0;
+        margin-top: 0;
+        margin-bottom: 25px;
+    }
+    div.footer {
+        margin-top: 200px;
+        margin-bottom: 20px;
+        width: 700px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    div.overlay {
+        z-index:1;
+        display: block;
+        position: absolute;
+        padding: 5px;
+        width: 250px;
+        height: 55px;
+    }
+    div.overlay.highlight {
+        background: rgba(250, 250, 250, 1);
+        color: rgba(40, 40, 40, 1);
+    }
+    div.row.highlight {
+        background: rgba(255, 200, 64, 1);
+    }
+    div.line {
+        position: absolute;
+        -webkit-transform-origin: 0 50%;
+        -moz-transform-origin: 0 50%;
+        transform-origin: 0 50%;
+        /* Line width*/
+        height: 2px;
+        background: white;
+        opacity:1.0;
+    }
+    .circle {
+        border-radius: 50%;
+        display: block;
+        position: absolute;
+        margin-right: 20px;
+        border-style: solid;
+        border-width: 2px;
+        background: white;
+        width: 15px;
+        height: 15px;
+        opacity: 0.5;
+        top: 0px;
+        left: 0px;
+    }
+    .browser_data {
+        display: none;
+        position: absolute;
+    }
+    .current_selection.thumbnail {
+        float: right;
+        width: 100px;
+        height: 50px;
+        margin: 2px 2px 2px 2px;
+        text-align: right;
+        border-style: solid;
+        border-color: white;
+        border-width: 1px;
+    }
+    .current_selection.item {
+        float: left;
+        width: 125px;
+        height: 50px;
+        margin: 5px 5px 5px 5px;
+        border-style: solid;
+        border-color: black;
+        border-width: 0px;
+    }
+    .item_image {
+        width:100px;
+        height: 50px;
+    }
+    .clear_both {
+        clear : both;
+    }
+    td.id {
+        display: none;
+    }
+    /* tables */
+    table.tablesorter {
+    	/*font-family:arial;*/
+    	background-color: #CDCDCD;
+    	margin:10px 0pt 15px;
+    	/*font-size: 8pt;*/
+    	width: 800px;
+    	text-align: left;
+    }
+    table.tablesorter thead tr th, table.tablesorter tfoot tr th {
+    	background-color: rgba(40,40,40,1);
+    	border: 1px solid #FFF;
+    	/*font-size: 8pt;*/
+    	font-size: 0.8em;
+    	padding: 4px;
+    	color: rgba(250,250,250,1);
+    }
+    table.tablesorter thead tr .header {
+    	background-image: url(bg.gif);
+    	background-repeat: no-repeat;
+    	background-position: center right;
+    	cursor: pointer;
+    }
+    table.tablesorter tbody td {
+    	color: #3D3D3D;
+    	padding: 4px;
+    	background-color: #FFF;
+    	vertical-align: top;
+    	width:500px;
+    }
+    table.tablesorter tbody tr.odd td {
+    	background-color:#F0F0F6;
+    }
+    table.tablesorter thead tr .headerSortUp {
+    	background-image: url(asc.gif);
+    }
+    table.tablesorter thead tr .headerSortDown {
+    	background-image: url(desc.gif);
+    }
+    table.tablesorter thead tr .headerSortDown, table.tablesorter thead tr .headerSortUp {
+        background-color: rgba(250,250,250,1);
+        color: rgba(40,40,40,1);
+    }
+    </style>
+
+
+</head>
+<body>
+<h1 id='ship-name'></h1>
+<h2 id='ship-manufacturer'></h2>
+<p id='ship-description'></p>
+</body>
+
+
+</html>
+

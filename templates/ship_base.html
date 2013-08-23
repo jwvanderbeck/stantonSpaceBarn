@@ -1,0 +1,470 @@
+{% extends "base.html" %}
+{% load humanize %}
+{% load extra %}
+    {% block title %}The Stanton Space Barn{% endblock %}
+
+    {% load static %}
+        {% block head_script %}
+            {{ block.super }}
+        function createHardpoint(id, x1, y1, x2, y2, hardpoint_class) {
+            var overlay = $('#hardpoint_' + id);
+            var speed = 600;
+            var parentImage = overlay.closest('.image_container')
+
+            // DEBUG
+            moveToAbsoluteXY(overlay, x1, y1, speed);
+            console.log(parentImage);
+            // adjust x1,y1 to center in the overlay div
+            x1 = x1 + (overlay.width() / 2);
+            y1 = y1 + ((overlay.height() + 20)/ 2);
+            // create the line from overlay to point on ship image
+            setTimeout(createLine, speed, parentImage, x1, y1, x2, y2, id);
+            // create the dot at the end of the line on the ship image
+            setTimeout(createDot, speed + 400, parentImage, x2, y2, 15, id);
+
+            // sort tables
+            $('#table_hardpoint_guns_' + id).tablesorter();
+            $('#table_hardpoint_missilelaunchers_' + id).tablesorter();
+            $('#table_hardpoint_items_' + id).tablesorter();
+        
+            // tabs
+            $('#tabs_hardpoint_' + id).tabs({
+                  event: "click",
+                  active : 0,
+                });
+            // Browser Dialog
+            var shipDetailsBlock = $('.ship-details');
+            $('#browser_data_hardpoint_' + id).dialog({
+                modal : true,
+                height : 800,
+                width: 1100,
+                position: { my: "left top", at: "right top", of: shipDetailsBlock },
+                autoOpen : false,
+                title : 'Class ' + hardpoint_class + ' Hardpoint',
+                create: function() {
+                        $(this).closest('div.ui-dialog').find('button.ui-dialog-titlebar-close').click(function(e) {
+                            closeHardpoint(id);
+                            e.preventDefault();
+                            });}
+            });
+        }
+
+        function initHardpoints() {
+            var hardpoints = $('.overlay');
+            hardpoints.each( function(index) {
+                var hardpointID = $(this).attr('data-hardpoint-id');
+                var hardpointClass = $(this).attr('data-hardpoint-class');
+                var x1 = parseInt($(this).attr('data-hardpoint-posx'), 10);
+                var y1 = parseInt($(this).attr('data-hardpoint-posy'), 10);
+                var x2 = parseInt($(this).attr('data-tag-posx'), 10);
+                var y2 = parseInt($(this).attr('data-tag-posy'), 10);
+                createHardpoint(hardpointID, x1, y1, x2, y2, hardpointClass);
+            });
+        }
+        {% endblock head_script %}
+
+        {% block script_event_triggers %}
+        // Set up event triggers
+        addOverlayTriggers();
+        addDatablockTriggers();
+        $('.hardpoint-item').on('click', itemClickedInBrowser);
+        $('.datablock-item').on('click', selectDatablockItem);
+        {% endblock script_event_triggers %}
+
+        {% block dialogs %}
+        {{ block.super }}        
+        // Define the 'Save As' Dialog
+        $('.save-build-details').dialog( {
+            modal: true,
+            height: 175,
+            width: 500,
+            position: { my: "left top", at: "right top", of: shipDetailsBlock },
+            autoOpen: false,
+            title : 'Save New Variant',
+            buttons : [ { text: 'Create New Variant', click: function() {submitBuild({{ship.id}});} }, { text : 'Cancel', click: function() { $(this).dialog("close");}  } ]
+        });
+        {% endblock dialogs %}
+
+        {% block global_actions_script %}
+        {{ block.super }}
+            $('.global-actions-create').click(function(){ saveVariant(); });
+            $('.global-actions-share').click(function(){ getLink('{{ship.name}}'); });
+        {% endblock global_actions_script %}
+
+        {% block user_actions_script %}
+        {{ block.super }}
+        {% endblock user_actions_script %}
+
+        {% block final_script_actions %}
+        // update ship mass with items loaded
+        updateStats();
+        // place hardpoint overlays in correct position, and draw lines and tags
+        initHardpoints();
+
+        $('.datablock-clear').tooltip();
+        $('.overlay-clear').tooltip();
+
+        // set up non hardpoint browser tables
+        $('#table-engine-mods-engines').tablesorter();
+        $('#table-engine-mods-mainthrusters').tablesorter();
+        $('#table-engine-mods-engine-intakes').tablesorter();
+        $('#table-engine-mods-engine-mods').tablesorter();
+        $('#table-hull-shields').tablesorter();
+        $('#table-hull-mods-cargo-expansions').tablesorter();
+        $('#table-hull-mods').tablesorter();
+    
+        // tabs
+        $('#tabs-engine-mods').tabs({
+              event: "click",
+              active : 0,
+            });
+        $('#tabs-hull-mods').tabs({
+              event: "click",
+              active : 0,
+            });
+        // Browser Dialogs
+        var engineDetailsBlock = $('.propulsion');
+        $('#engine-mod-browser').dialog({
+            modal : true,
+            height : 500,
+            width: 1100,
+            position: { my: "left top", at: "right top", of: engineDetailsBlock },
+            autoOpen : false,
+            title : 'Engine Modifications',
+            create: function() {
+                    $(this).closest('div.ui-dialog').find('button.ui-dialog-titlebar-close').click(function(e) {
+                        e.preventDefault();
+                        });}
+        });
+        var hullDetailsBlock = $('.structural');
+        $('#hull-mod-browser').dialog({
+            modal : true,
+            height : 500,
+            width: 1100,
+            position: { my: "left top", at: "right top", of: hullDetailsBlock },
+            autoOpen : false,
+            title : 'Hull Modifications',
+            create: function() {
+                    $(this).closest('div.ui-dialog').find('button.ui-dialog-titlebar-close').click(function(e) {
+                        e.preventDefault();
+                        });}
+        });
+
+        {% if user.is_authenticated %}
+        setUserState(true, '{{user.username}}');
+        {% else %}
+        setUserState(false, '');
+        {% endif %}
+        {% endblock final_script_actions %}
+
+    {% block dialog-divs %}
+    {{ block.super }}
+    <div class='save-build-details'>
+        <h2>Specify a Name and Role for this Variant</h2>
+        <form name='save-build' id='save-build' action='/save-variant/' method='POST'>
+        {%csrf_token%}
+        {{ saveVariantForm.as_table }}
+        </form>
+    </div>
+    {% endblock dialog-divs %}
+    <div class='container'>
+        {% block global-actions %}
+        <ul>
+            <li><a class='global-actions-create' href='#'>Create New Variant</a></li>
+            <li><a class='global-actions-share'  href='#'>Get QuickVariant Link</a></li>
+        </ul>
+        {% endblock %}  
+        {% block user-actions %}
+            {{ block.super }}
+        {% endblock user-actions %}
+
+        {% block ship-details-head %}
+        <div class='ship-details' data-ship-id='{{ship.id}}' data-empty-mass='{{ship.empty_mass}}' data-empty-memory='{{ship.memory_capacity}}' data-main-thruster-count='{{ ship.main_thruster_count}}' data-empty-upgrade-slots='{{ship.upgrade_capacity}}'>
+        {% endblock ship-details-head %}
+            {% block ship-details %}
+            <div class='widget details'>
+                <h3 class='widgettitle'>Ship Statistics</h3>
+                <table>
+                    <tbody>
+                        <tr>
+                            <td class='stat-name'>Crew (max)</td>
+                            <td class='stat-unit'></td>
+                            <td class='stat-value'>{{ship.maximum_crew}}</td>
+                        </tr>
+                        <tr>
+                            <td class='stat-name'>Mass (configured)</td>
+                            <td class='stat-unit'>kg</td>
+                            <td class='stat-value ship-current-mass'>{{ship.empty_mass}}</td>
+                        </tr>
+                        <tr>
+                            <td class='stat-name'>Memory (configured)</td>
+                            <td class='stat-unit'>Gb</td>
+                            <td class='stat-value ship-current-memory'>0</td>
+                        </tr>
+                        <tr>
+                            <td class='stat-name'>Length</td>
+                            <td class='stat-unit'>m</td>
+                            <td class='stat-value'>{{ship.length}}</td>
+                        </tr>
+                        <tr>
+                            <td class='stat-name'>Power</td>
+                            <td class='stat-unit'>MW</td>
+                            <td class='stat-value ship-current-power'>0</td>
+                        </tr>
+                        <tr>
+                            <td class='stat-name'>Power Plant Size</td>
+                            <td class='stat-unit'></td>
+                            <td class='stat-value ship-current-powerplant-size'>0</td>
+                        </tr>
+                        <tr>
+                            <td class='stat-name'>Main Thrusters</td>
+                            <td class='stat-unit'></td>
+                            <td class='stat-value ship-current-main-thruster'>{{ship.main_thruster_count}} x TR0</td>
+                        </tr>
+                        <tr>
+                            <td class='stat-name'>Control Thrusters</td>
+                            <td class='stat-unit'></td>
+                            <td class='stat-value'>{{ship.control_thruster_count}} x TR{{ship.control_thruster_max_rating}}</td>
+                        </tr>
+                        <tr>
+                            <td class='stat-name'>Velocity (max)</td>
+                            <td class='stat-unit'>kp/h</td>
+                            <td class='stat-value ship-current-max-velocity'>0</td>
+                        </tr>
+                        <tr>
+                            <td class='stat-name'>Upgrade Capacity</td>
+                            <td class='stat-unit'></td>
+                            <td class='stat-value ship-current-upgrade-slots '>{{ship.upgrade_capacity}}</td>
+                        </tr>
+                        <tr>
+                            <td class='stat-name'>Cargo Capacity</td>
+                            <td class='stat-unit'>t</td>
+                            <td class='stat-value ship-current-cargo-capacity'>0</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class='widget propulsion'>
+                <h3 class='widgettitle'>Propulsion Modifications</h3>
+                <table>
+                    <tbody>
+                    </tbody>
+                </table>
+                <div class='datablock ui-widget ui-widget-content ui-corner-all' id='datablock-engine-intakes'>Engine Intakes
+                    <span class='datablock-clear ui-icon ui-icon-closethick' title='Clear this item'></span>
+                    <span class='current_selection'>
+                        <div class='current_selection mod'>Nothing Loaded</div>
+                    </span>
+                </div>
+                <div class='datablock ui-widget ui-widget-content ui-corner-all' id='datablock-engines'>Power Plant
+                    <span class='datablock-clear ui-icon ui-icon-closethick' title='Clear this item'></span>
+                    <span class='current_selection'>
+                        <div class='current_selection mod'>Nothing Loaded</div>
+                    </span>
+                </div>
+                <div class='datablock ui-widget ui-widget-content ui-corner-all' id='datablock-main-thrusters'>Main Thrusters
+                    <span class='datablock-clear ui-icon ui-icon-closethick' title='Clear this item'></span>
+                    <span class='current_selection'>
+                        <div class='current_selection mod'>Nothing Loaded</div>
+                    </span>
+                </div>
+                <div class='engine-mods'>
+                    <div class='datablock ui-widget ui-widget-content ui-corner-all'>Engine Mod
+                        <span class='datablock-clear ui-icon ui-icon-closethick' title='Clear this item'></span>
+                        <span class='current_selection'>
+                            <div class='current_selection mod'>Nothing Loaded</div>
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class='item-browser' id='engine-mod-browser'>
+                <div id='tabs-engine-mods'>
+                    <ul>
+                        <li><a href='#tabs-engine-mods-1'>Power Plants</a></li>
+                        <li><a href='#tabs-engine-mods-2'>Main Thrusters</a></li>
+                        <li><a href='#tabs-engine-mods-3'>Engine Intakes</a></li>
+                        <li><a href='#tabs-engine-mods-4'>Engine Mods</a></li>
+                    </ul>
+                    <div id='tabs-engine-mods-1'>
+                        <table class='tablesorter' id='table-engine-mods-engines'>
+                                {% for item in item_list|filter_by_category:'Powerplant' %}
+                                {% if forloop.first %} {{ item.tableHeader|title }}
+                                <tbody> {% endif %}
+                                    {% if item.powerplant_data.powerplant_class <= ship.powerplant_class_max %}
+                                    {{ item.asTableRow }}
+                                    {% endif %}
+                                {% endfor %}
+                                </tbody>
+                        </table>
+                    </div>
+                    <div id='tabs-engine-mods-2'>
+                        <table class='tablesorter' id='table-engine-mods-mainthrusters'>
+                                {% for item in item_list|filter_by_category:'Main_Thruster' %}
+                                {% if forloop.first %} {{ item.tableHeader|title }}
+                                <tbody> {% endif %}
+                                    {% if item.thruster_data.thrust_rating <= ship.main_thruster_max_rating %}
+                                    {{ item.asTableRow }}
+                                    {% endif %}
+                                {% endfor %}
+                                </tbody>
+                        </table>
+                    </div>
+                    <div id='tabs-engine-mods-3'>
+                        <table class='tablesorter' id='table-engine-mods-engine-intakes'>
+                                {% for item in item_list|filter_by_category:'Engine_Intake' %}
+                                {% if forloop.first %} {{ item.tableHeader|title }}
+                                <tbody> {% endif %}
+                                    {{ item.asTableRow }}
+                                {% endfor %}
+                                </tbody>
+                        </table>
+                    </div>
+                    <div id='tabs-engine-mods-4'>
+                        <table class='tablesorter' id='table-engine-mods-engine-mods'>
+                                {% for item in item_list|filter_by_category:'Engine_Mod' %}
+                                {% if forloop.first %} {{ item.tableHeader|title }}
+                                <tbody> {% endif %}
+                                    {{ item.asTableRow }}
+                                {% endfor %}
+                                </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class='structural widget'>
+                <h3 class='widgettitle'>Hull Modifications</h3>
+                <table>
+                    <tbody>
+                    </tbody>
+                </table>
+                <div class='datablock ui-widget ui-widget-content ui-corner-all' id='datablock-shield'>Shield
+                    <span class='datablock-clear ui-icon ui-icon-closethick' title='Clear this item'></span>
+                    <span class='current_selection'>
+                        <div class='current_selection mod'>Nothing Loaded</div>
+                    </span>
+                </div>
+                <div class='datablock ui-widget ui-widget-content ui-corner-all' id='datablock-cargo-expansion'>Cargo Expansion
+                    <span class='datablock-clear ui-icon ui-icon-closethick' title='Clear this item'></span>
+                    <span class='current_selection'>
+                        <div class='current_selection mod'>Nothing Loaded</div>
+                    </span>
+                </div>
+                <div class='hull-mods'>
+                    <div class='datablock ui-widget ui-widget-content ui-corner-all'>Hull Mod
+                        <span class='datablock-clear ui-icon ui-icon-closethick' title='Clear this item'></span>
+                        <span class='current_selection'>
+                            <div class='current_selection mod'>Nothing Loaded</div>
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class='item-browser' id='hull-mod-browser'>
+                <div id='tabs-hull-mods'>
+                    <ul>
+                        <li><a href='#tabs-hull-mods-1'>Shields</a></li>
+                        <li><a href='#tabs-hull-mods-2'>Cargo Expansions</a></li>
+                        <li><a href='#tabs-hull-mods-3'>Hull Mods</a></li>
+                    </ul>
+                    <div id='tabs-hull-mods-1'>
+                        <table class='tablesorter' id='table-hull-mods-shields'>
+                                {% for item in item_list|filter_by_category:'Shield' %}
+                                {% if forloop.first %} {{ item.tableHeader|title }}
+                                <tbody> {% endif %}
+                                    {{ item.asTableRow }}
+                                {% endfor %}
+                                </tbody>
+                        </table>
+                    </div>
+                    <div id='tabs-hull-mods-2'>
+                        <table class='tablesorter' id='table-hull-mods-cargo-expansions'>
+                                {% for item in item_list|filter_by_category:'Cargo_Expansion' %}
+                                {% if forloop.first %} {{ item.tableHeader|title }}
+                                <tbody> {% endif %}
+                                    {{ item.asTableRow }}
+                                {% endfor %}
+                                </tbody>
+                        </table>
+                    </div>
+                    <div id='tabs-hull-mods-3'>
+                        <table class='tablesorter' id='table-hull-mods'>
+                                {% for item in item_list|filter_by_category:'Hull_Mod' %}
+                                {% if forloop.first %} {{ item.tableHeader|title }}
+                                <tbody> {% endif %}
+                                    {{ item.asTableRow }}
+                                {% endfor %}
+                                </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endblock ship-details %}
+        </div>
+        {% block hardpoints %}
+            {% for image in image_list %}
+            <div class="image_container" id='ship_image_{{image.id}}'>
+                <img class='ship' src='{{image.url}}'>
+                {% for hardpoint in image.hardpoint_set.all %}
+                <div class='overlay ui-widget ui-widget-content ui-corner-all' id='hardpoint_{{hardpoint.id}}' data-hardpoint-id='{{hardpoint.id}}'  data-hardpoint-class='{{hardpoint.hardpoint_class}}' data-hardpoint-posx='{{hardpoint.overlay_location_x}}' data-hardpoint-posy='{{hardpoint.overlay_location_y}}' data-tag-posx='{{hardpoint.tag_location_x}}' data-tag-posy='{{hardpoint.tag_location_y}}'>Class {{hardpoint.hardpoint_class}} Hardpoint
+                    <span class='overlay-clear ui-icon ui-icon-closethick' title='Clear this item'></span>
+                    <span class='current_selection' data-hardpoint-id='{{hardpoint.id}}'>
+                        <div class='current_selection item'>Nothing Loaded</div>
+                    </span>
+                    <div class='browser_data' id='browser_data_hardpoint_{{hardpoint.id}}'>
+                        <p>Use the browser below to select an item to place into this hardpoint.</p>
+                        <p>You can click on a column header to sort by that column.  Shift click for multiple column sorting.</p>
+                        <p>Use the tabs to select different categories of items.</p>
+                        <div id='tabs_hardpoint_{{hardpoint.id}}'>
+                            <ul>
+                                <li><a href='#tabs_hardpoint_{{hardpoint.id}}-1'>Guns</a></li>
+                                <li><a href='#tabs_hardpoint_{{hardpoint.id}}-2'>Missile Launchers</a></li>
+                                <li><a href='#tabs_hardpoint_{{hardpoint.id}}-3'>Utility Items</a></li>
+                            </ul>
+                            <div id='tabs_hardpoint_{{hardpoint.id}}-1'>
+                                <table class='tablesorter' id='table_hardpoint_guns_{{hardpoint.id}}'>
+                                    {% for item in item_list|filter_by_category:'Gun' %}
+                                    {% if forloop.first %} {{ item.tableHeader|title }}
+                                    <tbody> {% endif %}
+                                        {% if item.hardpoint_class <= hardpoint.hardpoint_class %}
+                                        {{ item.asTableRow }}
+                                        {% endif %}
+                                    {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div id='tabs_hardpoint_{{hardpoint.id}}-2'>
+                                <table class='tablesorter' id='table_hardpoint_missilelaunchers_{{hardpoint.id}}'>
+                                    {% for item in item_list|filter_by_category:'Missile_Launcher' %}
+                                    {% if forloop.first %} {{ item.tableHeader|title }}
+                                    <tbody> {% endif %}
+                                        {% if item.hardpoint_class <= hardpoint.hardpoint_class %}
+                                        {{ item.asTableRow }}
+                                        {% endif %}
+                                    {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div id='tabs_hardpoint_{{hardpoint.id}}-3'>
+                                <table class='tablesorter' id='table_hardpoint_items_{{hardpoint.id}}'>
+                                    {% for item in item_list|filter_by_category:'Utility' %}
+                                    {% if forloop.first %} {{ item.tableHeader|title }}
+                                    <tbody> {% endif %}
+                                        {% if item.hardpoint_class <= hardpoint.hardpoint_class %}
+                                        {{ item.asTableRow }}
+                                        {% endif %}
+                                    {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endfor %}
+        {% endblock hardpoints %}
+
+        {% block footer %}
+        Star Citizen is a registered copyright of Cloud Imperium Games, and all content is theirs, used under permission.
+        {% endblock footer %}
+

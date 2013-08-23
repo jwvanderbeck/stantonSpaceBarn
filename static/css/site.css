@@ -1,0 +1,212 @@
+.image_container {
+    position: relative;
+    width: auto;
+    margin-left: 10%;
+    margin-right: auto;
+    margin-top: 100px;
+    margin-bottom: 25px;
+}
+.ship {
+    min-width: 700px;
+}
+.browser_data {
+    display: none;
+}
+div.container {
+    width: 1000px;;
+    margin-left: auto;
+    margin-right: auto;
+}
+.ship-statistics {
+    position: relative;
+    width: 700px;
+    margin-left: 250px;
+    margin-right: auto;
+    margin-top: 0;
+    margin-bottom: 25px;
+    padding: 5px;
+}
+div.global-actions {
+    float: right;
+}
+ul.global-actions {
+    list-style-type: none;
+}
+span.global-actions-save {
+    width: 175px;
+    margin: 2px;
+}
+span.global-actions-share {
+    width: 175px;
+    margin: 2px;
+}
+span.global-actions-create {
+    width: 175px;
+    margin: 2px;
+}
+div.ship-details {
+    float: left;
+    position: relative;
+    min-width: 300px;
+    margin-left: 0px;
+    margin-right: 0;
+    margin-top: 100px;
+    margin-bottom: 25px;
+    padding: 5px;
+}
+div.details, div.propulsion, div.structural {
+    margin-top: 10px;
+    padding: 5px;
+}
+div.footer {
+    margin-top: 200px;
+    margin-bottom: 20px;
+    width: 700px;
+    margin-left: auto;
+    margin-right: auto;
+}
+div.overlay {
+    z-index:1;
+    display: block;
+    position: absolute;
+    padding: 5px;
+    width: 125px;
+    height: 55px;
+    cursor: pointer;
+}
+div.datablock {
+    height: 50px;
+    margin-top: 10px;
+    padding: 5px;
+    cursor: pointer;
+}
+span.datablock-clear {
+    float: right;
+    cursor: pointer;
+}
+span.overlay-clear {
+    float: right;
+    cursor: pointer;
+}
+.current_selection.mod {
+    width: 300px;
+    height: 40px;
+    padding-left: 5px;
+    padding-top: 5px;
+    cursor: pointer;
+}.current_selection.item {
+    width: 120px;
+    height: 50px;
+    padding-left: 5px;
+    padding-top: 5px;
+    cursor: pointer;
+}
+.current_selection.mass {
+    display: none;
+}
+div.line {
+    position: absolute;
+    -webkit-transform-origin: 0 50%;
+    -moz-transform-origin: 0 50%;
+    transform-origin: 0 50%;
+    /* Line width*/
+    height: 2px;
+    background: white;
+    opacity:1.0;
+}
+.circle {
+    border-radius: 50%;
+    display: block;
+    position: absolute;
+    margin-right: 20px;
+    border-style: solid;
+    border-width: 2px;
+    background: white;
+    width: 15px;
+    height: 15px;
+    opacity: 0.5;
+    top: 0px;
+    left: 0px;
+}
+.clear_both {
+    clear : both;
+}
+td.id {
+    display: none;
+}
+td.stat-unit {
+    text-align: center;
+    width: 20%;
+}
+td.stat-name {
+    position: relative;
+    width: 150px;
+    text-align: right;
+}
+td.stat-value {
+    width: 70px;
+    text-align: left;
+    margin-right: 0px;
+}
+/* tables */
+table.tablesorter {
+	/*font-family:arial;*/
+	background-color: #CDCDCD;
+	margin:10px 0pt 15px;
+	/*font-size: 8pt;*/
+	width: 1040px;
+	text-align: left;
+}
+table.tablesorter thead tr th, table.tablesorter tfoot tr th {
+	background-color: rgba(40,40,40,1);
+	border: 1px solid #FFF;
+	/*font-size: 8pt;*/
+	font-size: 0.8em;
+	padding: 4px;
+	color: rgba(250,250,250,1);
+}
+table.tablesorter thead tr .header {
+	background-image: url(bg.gif);
+	background-repeat: no-repeat;
+	background-position: center right;
+	cursor: pointer;
+}
+table.tablesorter tbody td {
+	color: #3D3D3D;
+	padding: 4px;
+	background-color: #FFF;
+	vertical-align: top;
+	width:auto;
+    cursor: pointer;
+}
+table.tablesorter tbody tr.odd td {
+	background-color:#F0F0F6;
+}
+table.tablesorter thead tr .headerSortUp {
+	background-image: url(asc.gif);
+}
+table.tablesorter thead tr .headerSortDown {
+	background-image: url(desc.gif);
+}
+table.tablesorter thead tr .headerSortDown, table.tablesorter thead tr .headerSortUp {
+    background-color: rgba(250,250,250,1);
+    color: rgba(40,40,40,1);
+}
+div.results {
+    display: none;
+}
+div.not-logged-in {
+    display: none;
+}
+div.save-build-details {
+    display: none;
+}
+div.quick-variant-url {
+    display: none;
+}
+div.login-form {
+    display: none;
+}
+div.newuser-form {
+    display: none;
+}
