@@ -29,6 +29,8 @@ class ItemType(models.Model):
 
 class Item(models.Model):
     name = models.CharField(max_length = 30, default='')
+    rating = models.PositiveIntegerField(default=1)
+    size = models.IntegerField(default=0)
     description = models.CharField(max_length=255, blank=True)
     manufacturer = models.ForeignKey(Manufacturer)
     item_category = models.ForeignKey(ItemCategory)
@@ -37,6 +39,7 @@ class Item(models.Model):
     mass = models.FloatField(default=0.0)
     item_type = models.ForeignKey('ItemType', default=0)
     power = models.FloatField(default=0.0)
+    energy = models.FloatField(default=0.0)
     memory = models.FloatField(default=0.0)
     upgrade_slots = models.PositiveIntegerField(default=1)
     weapon_data = models.ForeignKey('WeaponData', null=True, blank=True)
@@ -181,9 +184,13 @@ class Item(models.Model):
 
 class WeaponData(models.Model):
     rate_of_fire = models.FloatField(default=0.0,blank=True,null=True)
-    damage = models.FloatField(default=0.0,blank=True,null=True)
     explosive_radius = models.FloatField(default=0.0,blank=True,null=True)
     missile_count = models.PositiveIntegerField(blank=True, null=True)
+    # Fields seen in Hangar Video
+    # Looks like they display as bargraphs, so might want to normalize
+    # values at say 0-100
+    damage = models.FloatField(default=0.0,blank=True,null=True)
+    velocity = models.FloatField(default=0.0)
 
     def __unicode__(self):
         if self.rate_of_fire >= 0.1:
@@ -249,6 +256,7 @@ class Ship(models.Model):
     powerplant_class_max = models.PositiveIntegerField(default=1)
     thumbnail = models.URLField(default='')
     available = models.BooleanField(default=False)
+    ship_class = models.PositiveIntegerField(default=1)
     
     def __unicode__(self):
         return self.name
@@ -310,6 +318,8 @@ class Build(models.Model):
     up_votes = models.PositiveIntegerField(default=0)
     down_votes = models.PositiveIntegerField(default=0)
     creation_date = models.DateTimeField(auto_now_add=True)
+    base_ship = models.BooleanField(default=False)
+
 
     def __unicode__(self):
         return "%s %s variant:%s" % (self.ship.name, self.role, self.name)
