@@ -777,3 +777,32 @@ def submitVariant(request):
         return redirect('/variant/%d' % variant['build'].id)
     else:
         return Http404
+
+def testView(request):
+    shipName = '300i'  
+    # Get all hardpoints
+    hardpoints = Hardpoint.objects.filter(ship__name__iexact=shipName).order_by('tag_location_y')
+    items = Item.objects.all()
+    images = Image.objects.filter(ship__name__iexact=shipName)
+    item_types = ItemType.objects.filter(hardpoint_type=True)
+    submitBuildForm = SubmitBuildForm()
+    loginForm = AuthenticationForm()
+    createUserForm = UserCreationForm()
+    if len(images) == 0:
+        raise Http404() 
+    renderContext = {
+    'hardpoint_list'    : hardpoints,
+    'item_list'         : items,
+    'image_list'        : images,
+    'shipname'          : shipName,
+    'ship'              : images[0].ship,
+    'itemtype_list'     : item_types,
+    'saveVariantForm'           : submitBuildForm,
+    'loginForm'                 : loginForm,
+    'createUserForm'            : createUserForm
+    }
+
+    # The bit here about context_instance=RequestContext(request) is ABSOLUTELY VITAL 
+    # as it is what enables the resulting rendered view to contain the CSRF token!
+    # !!!!!!!!!!!!!
+    return render_to_response('testView.html', renderContext, context_instance=RequestContext(request))
