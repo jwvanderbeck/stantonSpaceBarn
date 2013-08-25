@@ -285,7 +285,7 @@
     }
     function updateStats() {
         console.log('Updating ship stats');
-        var shipDetails = $('.ship-details')
+        var shipDetails = $('.details')
 
         // Mass
         console.log('mass...');
@@ -316,7 +316,7 @@
         var thrusterDrain = $('#datablock-main-thrusters').find('.current_selection').attr('data-item-power');
         if (thrusterDrain != undefined)
         {
-            var thrusterCount = $('.ship-details').attr('data-main-thruster-count');
+            var thrusterCount = $('.details').attr('data-main-thruster-count');
             if (thrusterCount != undefined)
                 thrusterCount = parseInt(thrusterCount, 10);
 
@@ -356,7 +356,7 @@
         // Main thrusters
         console.log('Main thrusters...');
         var thrusterRating = $('#datablock-main-thrusters').find('.current_selection').attr('data-item-thrust-rating');
-        var thrusterCount = $('.ship-details').attr('data-main-thruster-count');
+        var thrusterCount = $('.details').attr('data-main-thruster-count');
         if (thrusterRating == undefined)
             thrusterRating = 0;
         shipDetails.find('td.ship-current-main-thruster').text(thrusterCount + ' x TR' + thrusterRating);

@@ -20,9 +20,9 @@
     </ul>
 {% endblock %}  
 
-{% block ship-details-head %}
-<div class='ship-details' id='internal-sidebar' data-variant-id='{{variantData_build.id}}' data-ship-id='{{ship.id}}' data-empty-mass='{{ship.empty_mass}}' data-empty-memory='{{ship.memory_capacity}}' data-main-thruster-count='{{ ship.main_thruster_count}}' data-empty-upgrade-slots='{{ship.upgrade_capacity}}'>
-{% endblock ship-details-head %}
+{% block details-head %}
+<div class='details' id='internal-sidebar' data-variant-id='{{variantData_build.id}}' data-ship-id='{{ship.id}}' data-empty-mass='{{ship.empty_mass}}' data-empty-memory='{{ship.memory_capacity}}' data-main-thruster-count='{{ ship.main_thruster_count}}' data-empty-upgrade-slots='{{ship.upgrade_capacity}}'>
+{% endblock details-head %}
 
 {% block user-actions-head %}
 <div class='widgetcontent' id='user' data-user-username='{{user.username}}' data-user-variant-owner='{{variantData_build.created_by}}'>

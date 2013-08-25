@@ -33,7 +33,7 @@
                   active : 0,
                 });
             // Browser Dialog
-            var shipDetailsBlock = $('.ship-details');
+            var shipDetailsBlock = $('.details');
             $('#browser_data_hardpoint_' + id).dialog({
                 modal : true,
                 height : 800,
@@ -178,10 +178,10 @@
             {{ block.super }}
         {% endblock user-actions %}
 
-        {% block ship-details-head %}
+        {% block details-head %}
         <div class='ship-details' data-ship-id='{{ship.id}}' data-empty-mass='{{ship.empty_mass}}' data-empty-memory='{{ship.memory_capacity}}' data-main-thruster-count='{{ ship.main_thruster_count}}' data-empty-upgrade-slots='{{ship.upgrade_capacity}}'>
-        {% endblock ship-details-head %}
-            {% block ship-details %}
+        {% endblock details-head %}
+            {% block details %}
             <div class='widget details' data-ship-id='{{ship.id}}' data-empty-mass='{{ship.empty_mass}}' data-empty-memory='{{ship.memory_capacity}}' data-main-thruster-count='{{ ship.main_thruster_count}}' data-empty-upgrade-slots='{{ship.upgrade_capacity}}'>
                 <h3 class='widgettitle'>Ship Statistics</h3>
                 <table>
@@ -398,7 +398,7 @@
                 </div>
             </div>
         
-        {% endblock ship-details %}
+        {% endblock details %}
         </div>
         {% block hardpoints %}
             {% for image in image_list %}

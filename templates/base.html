@@ -40,7 +40,7 @@
         {% endblock script_event_triggers %}
 
         {% block dialogs %}
-            var shipDetailsBlock = $('.ship-details');
+            var shipDetailsBlock = $('.details');
             var userAuthenticationBlock = $('#user');
             // Results dialog.  Used for JSON results on error
             $('.results').dialog( {
@@ -197,8 +197,8 @@
                         {% endblock user-actions %}
                         </div>
                     </div>  
-                    {% block ship-details %}
-                    {% endblock ship-details %}
+                    {% block details %}
+                    {% endblock details %}
                 </div>
             </div>
                 <div id='content-bottom-bg'></div>

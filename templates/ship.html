@@ -155,7 +155,7 @@
     div.global-actions {
         float: right;
     }
-    div.ship-details {
+    div.details {
         float: left;
         position: relative;
         width: 175px;
@@ -165,7 +165,7 @@
         margin-bottom: 25px;
         padding: 5px;
     }
-    ul.ship-details {
+    ul.details {
       list-style-type: none;
       margin: 0;
       padding: 0;
@@ -301,8 +301,8 @@
         <h1>{{ ship.name }}</h1>
         <h2>{{ ship.manufacturer }}</h2>
     </div>
-    <div class='ship-details ui-widget ui-widget-content ui-corner-all' data-empty-mass='{{ship.empty_mass}}'>
-        <ul class='ship-details'>
+    <div class='details ui-widget ui-widget-content ui-corner-all' data-empty-mass='{{ship.empty_mass}}'>
+        <ul class='details'>
             <li>Maximum Crew    : {{ship.maximum_crew}}</li>
             <li>Empty Mass (kg) : {{ship.empty_mass}}</li>
             <li class='mass'>Configured Mass (kg) : {{ship.empty_mass}}</li>
