@@ -19,7 +19,7 @@ div.container {
 }
 .ship-statistics {
     position: relative;
-    width: 700px;
+    width: auto;
     margin-left: 250px;
     margin-right: auto;
     margin-top: 0;

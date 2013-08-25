@@ -182,7 +182,7 @@
         <div class='ship-details' data-ship-id='{{ship.id}}' data-empty-mass='{{ship.empty_mass}}' data-empty-memory='{{ship.memory_capacity}}' data-main-thruster-count='{{ ship.main_thruster_count}}' data-empty-upgrade-slots='{{ship.upgrade_capacity}}'>
         {% endblock ship-details-head %}
             {% block ship-details %}
-            <div class='widget details'>
+            <div class='widget details' data-ship-id='{{ship.id}}' data-empty-mass='{{ship.empty_mass}}' data-empty-memory='{{ship.memory_capacity}}' data-main-thruster-count='{{ ship.main_thruster_count}}' data-empty-upgrade-slots='{{ship.upgrade_capacity}}'>
                 <h3 class='widgettitle'>Ship Statistics</h3>
                 <table>
                     <tbody>
@@ -397,7 +397,7 @@
                     </div>
                 </div>
             </div>
-        </div>
+        
         {% endblock ship-details %}
         </div>
         {% block hardpoints %}

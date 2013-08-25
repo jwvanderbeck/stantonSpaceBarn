@@ -11,6 +11,7 @@
     
     <link rel="stylesheet" type="text/css" href='{% static "css/ssb/jquery-ui-1.10.3.custom.css" %}'>
     <link rel="stylesheet" type="text/css" href='{% static "css/style.css" %}'>
+    <link rel="stylesheet" type="text/css" media="screen and (max-device-width: 1280px)" href='{% static "css/tablet-style.css" %}'>
     <link rel="stylesheet" type="text/css" href='{% static "css/site.css" %}'>
     <script type="text/javascript">
 
@@ -187,19 +188,17 @@
                         {% endblock user-actions-head %}
                         {% block user-actions %}
                             <p id='user-actions-message-loggedin' style='display: none;'>Welcome to the Barn, {{ user.username }}. Thanks for visting. All of our facilities are avilable for your use.  Enjoy your stay and see you in the 'verse.</p>
-                            <p id='user-actions-message-notloggedin' style='display: none;'>Welcome to the Barn, pilot.  You are not currently checked in.  Feel free to use the barn's facilities as an anonymous pilot.  You can create custom variants, and get QuickVariant links to bookmark or share at any time.  For the security of all pilots however, you will be unable to save or modify variants in our records without checking in.</p>
+                            <p id='user-actions-message-notloggedin' style='display: none;'>Welcome to the Barn, pilot.  You are not currently checked in.</p>
                             <ul>
                                 <li><a href='#' id='user-actions-logout' style='display: none;'>Logout</a></li>
                                 <li><a href='#' id='user-actions-login' style='display: none;'>Login</a>
                                 <li><a href='#' id='user-actions-create' style='display: none;'>Create Account</a>
                             </ul>
                         {% endblock user-actions %}
-                                {% block ship-details-head %}
-                                {% endblock ship-details-head %}
-                                {% block ship-details %}
-                                {% endblock ship-details %}
                         </div>
                     </div>  
+                    {% block ship-details %}
+                    {% endblock ship-details %}
                 </div>
             </div>
                 <div id='content-bottom-bg'></div>
