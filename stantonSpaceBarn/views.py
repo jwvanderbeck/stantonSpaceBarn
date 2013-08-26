@@ -13,6 +13,7 @@ from django.core import serializers
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
+from django.core.mail import send_mail
 
 def stringToIntArray(s):
     intArray = []
@@ -777,6 +778,16 @@ def submitVariant(request):
         return redirect('/variant/%d' % variant['build'].id)
     else:
         return Http404
+
+@ensure_csrf_cookie
+def submissionForms(request):
+    renderContext = {}
+    return render_to_response('bootstrap/light-blue/data_submissions.html', renderContext, context_instance=RequestContext(request))
+
+@ensure_csrf_cookie
+def submissionFormShip(request):
+    print request.body
+    assert False
 
 def testView(request):
     shipName = '300i'  

@@ -6,10 +6,27 @@
     <title>Stanton Space Barn - Data Submission</title>
     <link href='{% static "theme/light-blue/css/application.css" %}' rel="stylesheet">
     <link rel="shortcut icon" href='{% static "theme/light-blue/img/favicon.png" %}'>
+    <script src='{% static "theme/light-blue/lib/jquery/jquery.1.9.0.min.js" %}'> </script>
+    <script type='text/javascript' src='{% static "js/app.js" %}'></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="">
     <meta name="author" content="">
     <meta charset="utf-8">
+    <script type="text/javascript">
+
+      var _gaq = _gaq || [];
+      var pluginUrl = '//www.google-analytics.com/plugins/ga/inpage_linkid.js';
+      _gaq.push(['_require', 'inpage_linkid', pluginUrl]);
+      _gaq.push(['_setAccount', 'UA-278263-23']);
+      _gaq.push(['_trackPageview']);
+
+      (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
+
+    </script>
 </head>
 <body class="background-dark">
 <div class="logo">
@@ -113,7 +130,8 @@
                         </h4>
                     </header>
                     <div class="body">
-                    <form class="form-horizontal" method="post">
+                    <form class="form-horizontal" class='ajax-form' id='item-submission' method="post" action="/submissions/weapon/">
+                        {% csrf_token %}
                         <fieldset>
                             <legend class="section">Submit Weapon Data</legend>
                         <div class='control-group controls-row'>
@@ -212,7 +230,8 @@
                         </h4>
                     </header>
                     <div class="body">
-                    <form class="form-horizontal" method="post">
+                    <form class="form-horizontal" class='ajax-form' id='ship-submission' method="post" action='/submissions/ship/'>
+                        {% csrf_token %}
                         <fieldset>
                             <legend class="section">Submit Ship Data</legend>
                         <div class='control-group controls-row'>
@@ -236,12 +255,11 @@
                     </form>
                     </div>
                 </section>
-            </div>        </div>
+            </div>      
     </div>
 </div>
 
 <!-- jquery and friends -->
-<script src='{% static "theme/light-blue/lib/jquery/jquery.1.9.0.min.js" %}'> </script>
 <script src='{% static "theme/light-blue/lib/jquery/jquery-migrate-1.1.0.min.js" %}'> </script>
 
 <!-- jquery plugins -->
@@ -329,6 +347,22 @@
         $('#item-damage').on('change', function() {
             console.log('test');
             $('#item-damage-bar').css({'width': $(this).attr('value') + '%'});
+        });
+        $('#ship-submission').submit(function(event) {
+            var form = $(this);
+            console.log(form[0])
+            console.log(form[0].serialize())
+            return false;
+            // $.ajax({
+            //   type: form.attr('method'),
+            //   url: form.attr('action'),
+            //   data: form.serialize()
+            // }).done(function() {
+            //   // Optionally alert the user of success here...
+            // }).fail(function() {
+            //   // Optionally alert the user of an error here...
+            // });
+            event.preventDefault(); // Prevent the form from submitting via the browser.
         });
     });
 </script>
