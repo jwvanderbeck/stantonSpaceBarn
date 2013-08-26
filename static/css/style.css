@@ -107,7 +107,7 @@ img#about-image { float: left; margin: 3px 8px 8px 0px; }
 	#container2 { background:  url(images/container-bg-right.png) top right repeat-y; min-height: 300px; padding: 0px 0 0px 5%; }
 		#logo { margin: 25px 0px 5px 0px; width:700px; }
 
-		#search-form {float: right; background: url(images/search-bg.png) no-repeat; width: 191px; height: 33px; margin: 12px 3% 0px 0px;}
+		#search-form {float: right; width: 800px; height: 33px; margin: 12px 3% 0px 0px;}
 			input#searchinput { background:none; border: none; font-size: 12px; font-style: italic; color: #595959; text-shadow: 1px 1px 1px #000; margin-top:0px; padding-left:13px; width:146px; float: left; position: relative; top: 5px; }
 			input#searchsubmit { float:left; margin-top:10px; }
 

@@ -1,12 +1,51 @@
 {% extends "base_list.html" %}
 
 	        {% block head_script %}
+			function makeActive(){
+				jQuery(this).addClass('active').css('z-index','7').find('.bottom-bg .excerpt');
+				jQuery('.entry').not(this).animate({opacity:0.3},200);
+			}
+			function makeInactive(){
+				jQuery(this).css('z-index','1').find('.bottom-bg .excerpt');
+				jQuery('.entry').removeClass('active').animate({opacity:1},200);
+			}
+		    jQuery(".entry").hoverIntent({
+					over: makeActive,
+					timeout: 100,
+					out: makeInactive
+				});
+		    console.log('enabling buttonset')
+		    $("#variants-radio").buttonset();
+		    $('#variants-radio').find('input[type=radio]').on('change', function() { 
+		    	var value = $(this).attr('value');
+		    	$('.entry').each( function() {
+		    		var role = $(this).find('.role-name');
+		    		var roleName = role.text();
+		    		if (roleName.indexOf(value) == -1)
+		    			$(this).hide(500);
+		    		else
+		    			$(this).show(500);
+		    	});
+		    });
 		    $('.overlay-delete').tooltip();
 		    $('.overlay-delete').on('click', function(){
 		    	deleteBuild($('.overlay-delete').attr('data-variant-id'))		    	
 		    });
 	        {% endblock head_script %}
 
+						{% block search %}
+						{{block.super}}
+							<div id="variants-radio">
+							  <input type="radio" id="variants-radio1" name="variant_filter" value="" checked='checked'><label for="variants-radio1">All</label>
+							  <input type="radio" id="variants-radio2" name="variant_filter" value="Interdiction"><label for="variants-radio2">Interdiction</label>
+							  <input type="radio" id="variants-radio3" name="variant_filter" value="Exploration"><label for="variants-radio3">Exploration</label>
+							  <input type="radio" id="variants-radio4" name="variant_filter" value="Piracy"><label for="variants-radio4">Piracy</label>
+							  <input type="radio" id="variants-radio5" name="variant_filter" value="Transport"><label for="variants-radio5">Transport</label>
+							  <input type="radio" id="variants-radio6" name="variant_filter" value="Racing"><label for="variants-radio6">Racing</label>
+							  <input type="radio" id="variants-radio7" name="variant_filter" value="Escort"><label for="variants-radio7">Escort</label>
+							  <input type="radio" id="variants-radio8" name="variant_filter" value="Bounty Hunting"><label for="variants-radio8">Bounty Hunting</label>
+							</div>
+						{% endblock search %}
 						{% block list-content %}
 						{% for variant in variant_list %}
 						<div id='variant_block_{{variant.id}}' class='entry small' style='margin: 8px;'>
@@ -16,7 +55,7 @@
 								</a>
 								<div class='role'>
 									<ul class='post-categories'>
-										<li>{{variant.role}}</li>
+										<li class='role-name'>{{variant.role}}</li>
 									</ul>
 								</div>
 								<!-- {{variant.created_by}}, {{user.username}}, {{user}} -->
