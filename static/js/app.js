@@ -611,6 +611,7 @@
             // LOGGEDIN
             isUserLoggedIn = true;
             $('#user-actions-message-loggedin').show();
+            $('#user-actions-message-loggedin').html("<p>Welcome to the Barn, " + username + ".  Thanks for visting.</p><p>All of our facilities are avilable for your use.  Enjoy your stay and see you in the 'verse.</p>");
             $('#user-actions-message-notloggedin').hide();
 
             $('#user-actions-logout').show();
