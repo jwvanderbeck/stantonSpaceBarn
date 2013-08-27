@@ -786,7 +786,81 @@ def submissionForms(request):
 
 @ensure_csrf_cookie
 def submissionFormShip(request):
+    print 'ship submission'
     print request.body
+    response_data = {}
+    if request.is_ajax():
+        print "Ajax"
+        try:
+            requestData = simplejson.loads(request.body)
+            print "JSON Data:"
+            print requestData
+            data = {}
+            for index in requestData:
+                data[index['name']] = index['value']
+            print data
+        except:
+            print "json parse failed"
+            response_data = {
+            'success' : False,
+            'response' : 'Unable to parse JSON object.'
+            }
+            return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
+
+        response_data = {
+            'success' : True,
+            'response' : 'ok'
+        }
+        body = """
+        The following ship data was submitted:
+        ======================================
+        ship name: %s
+        ship class: %s
+        """ % (data['ship-name'], data['ship-class'])
+        send_mail('[SSB] Ship Data Submission', body, 'no-reply@stantonspacebarn.com', ['jwvanderbeck@gmail.com'], fail_silently = True)
+        return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
+
+    # should never get here, if it we do its f'ed up
+    assert False
+
+@ensure_csrf_cookie
+def submissionFormData(request):
+    print "Generic submission"
+    print request.body
+    response_data = {}
+    if request.is_ajax():
+        print "Ajax"
+        try:
+            requestData = simplejson.loads(request.body)
+            print "JSON Data:"
+            print requestData
+            data = {}
+            for index in requestData:
+                data[index['name']] = index['value']
+            print data
+        except:
+            print "json parse failed"
+            response_data = {
+            'success' : False,
+            'response' : 'Unable to parse JSON object.'
+            }
+            return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
+
+        response_data = {
+            'success' : True,
+            'response' : 'ok'
+        }
+        body = """
+        The following data was submitted:
+        ======================================
+        """
+        for item in data:
+            if item != "csrfmiddlewaretoken":
+                body = body + item + ": " + data[item] + "\n"
+        send_mail('[SSB] Data Submission', body, 'no-reply@stantonspacebarn.com', ['jwvanderbeck@gmail.com'], fail_silently = True)
+        return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
+
+    # should never get here, if it we do its f'ed up
     assert False
 
 def testView(request):

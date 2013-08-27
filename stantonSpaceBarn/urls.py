@@ -26,7 +26,8 @@ urlpatterns = patterns('stantonSpaceBarn.views',
 	url(r'^quick-variant/([a-zA-Z0-9]+)/([0-9a-zA-Z-]+)', 'quickVariant'),
 	url(r'^quick-variant/([a-zA-Z0-9]+)/', 'quickVariant'),
 	url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
-	url(r'^submissions/ship/', 'submissionFormShip'),
+	url(r'^submissions/ship/', 'submissionFormData'),
+	url(r'^submissions/weapon/', 'submissionFormData'),
 	url(r'^submissions/', 'submissionForms'),
 )
 
