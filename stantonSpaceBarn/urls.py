@@ -6,7 +6,8 @@ from django.contrib import admin
 admin.autodiscover()
 
 urlpatterns = patterns('stantonSpaceBarn.views',
-	url(r'^$', 'redirectToBlog'),
+	url(r'^$', 'shipList'),
+	url(r'^barn/$', 'shipList'),
 	url(r'^users/login/$', 'userLogin'),
 	url(r'^users/logout/$', 'userLogout'),
 	url(r'^users/create/$', 'userCreate'),
