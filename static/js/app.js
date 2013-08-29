@@ -746,7 +746,7 @@
         var hardpointID = hardpoint.attr('id');
         var currentSelection = hardpoint.find('.current_selection');
         clearItemAttributes(currentSelection);
-        currentSelection.find('.item').text('Nothing Loaded');
+        currentSelection.find('.item').text('Click to select...');
         updateStats();
         e.stopPropagation();
     }
@@ -758,7 +758,7 @@
         {
             var currentSelection = datablock.find('.current_selection');
             clearItemAttributes(currentSelection);
-            currentSelection.find('.mod').text('Nothing Loaded');
+            currentSelection.find('.mod').text('Click to select...');
         }
         else
         {
@@ -824,7 +824,7 @@
                 newDatablock.text('Engine Mod');
                 var newClearButton = $(document.createElement('span')).appendTo(newDatablock).addClass('datablock-clear').addClass('ui-icon').addClass('ui-icon-closethick').attr('title', 'Clear this item');
                 var newCurrentSelection = $(document.createElement('span')).appendTo(newDatablock).addClass('current_selection');
-                $(document.createElement('div')).appendTo(newCurrentSelection).addClass('current_selection').addClass('mod').text('Nothing Loaded');
+                $(document.createElement('div')).appendTo(newCurrentSelection).addClass('current_selection').addClass('mod').text('Click to select...');
                 addDatablockTriggers();
             }
             else
@@ -866,7 +866,7 @@
                 newDatablock.text('Hull Mod');
                 var newClearButton = $(document.createElement('span')).appendTo(newDatablock).addClass('datablock-clear').addClass('ui-icon').addClass('ui-icon-closethick').attr('title', 'Clear this item');
                 var newCurrentSelection = $(document.createElement('span')).appendTo(newDatablock).addClass('current_selection');
-                $(document.createElement('div')).appendTo(newCurrentSelection).addClass('current_selection').addClass('mod').text('Nothing Loaded');
+                $(document.createElement('div')).appendTo(newCurrentSelection).addClass('current_selection').addClass('mod').text('Click to select...');
                 addDatablockTriggers();
             }
             else
