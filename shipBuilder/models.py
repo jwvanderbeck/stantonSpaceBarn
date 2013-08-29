@@ -132,6 +132,8 @@ class Item(models.Model):
         output = "<thead><tr>"
         for field in self.displayedFields['item']:
             output = output + str.format("<th>{0}</th>", field.replace('_', ' '))
+        if self.item_type.hardpoint_type:
+            output = output + str.format("<th>Hardpoint Class</th>")
 
         if self.item_category.description in self.displayedFields:
             for field in self.displayedFields[self.item_category.description]:
@@ -174,6 +176,10 @@ class Item(models.Model):
         # Displayed fields
         for field in self.displayedFields['item']:
             output = output + str.format("<td>{0}</td>", getattr(self, field))
+
+        if self.item_type.hardpoint_type:
+            output = output + str.format("<td>{0}</td>", getattr(self, 'hardpoint_class'))
+
         if linkedData and category in self.displayedFields:
             for field in self.displayedFields[category]:
                 output = output + str.format("<td>{0}</td>", getattr(linkedData, field))
