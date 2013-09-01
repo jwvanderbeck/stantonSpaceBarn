@@ -1,0 +1,490 @@
+{% load static %}
+<link rel="stylesheet" type="text/css" href='{% static "css/ssb/jquery-ui-1.10.3.custom.css" %}'>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Stanton Space Barn - Data Submission</title>
+    <link href='{% static "theme/light-blue/css/application.css" %}' rel="stylesheet">
+    <link rel="shortcut icon" href='{% static "theme/light-blue/img/favicon.png" %}'>
+    <script src='{% static "theme/light-blue/lib/jquery/jquery.1.9.0.min.js" %}'> </script>
+    <script type='text/javascript' src='{% static "js/app.js" %}'></script>
+    <script type='text/javascript' src='{% static "js/jquery.form.min.js" %}'></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <meta charset="utf-8">
+    <script type="text/javascript">
+
+      var _gaq = _gaq || [];
+      var pluginUrl = '//www.google-analytics.com/plugins/ga/inpage_linkid.js';
+      _gaq.push(['_require', 'inpage_linkid', pluginUrl]);
+      _gaq.push(['_setAccount', 'UA-278263-23']);
+      _gaq.push(['_trackPageview']);
+
+      (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
+
+    </script>
+</head>
+<body class="background-dark">
+<div class="logo">
+    <h4><a href="/ships.html">Stanton <strong>Space Barn</strong></a></h4>
+</div>
+<nav id="sidebar" class="sidebar nav-collapse collapse">
+    <ul id="side-nav" class="side-nav">
+        <li >
+            <a href="/hangar/"><i class="icon-home"></i> <span class="name">My Hangar</span></a>
+        </li>
+        <li class="accordion-group">
+            <a class="accordion-toggle collapsed" data-toggle="collapse"
+               data-parent="#side-nav" href="#forms-collapse"><i class="icon-fighter-jet"></i> <span class="name">The Barn</span></a>
+            <ul id="forms-collapse" class="accordion-body collapse">
+                <li><a href="/ships/">Ships</a></li>
+                <li><a href="/variants/">Variants</a></li>
+            </ul>
+        </li>
+    </ul>
+    <div id="sidebar-settings" class="settings">
+        <button type="button"
+                data-value="icons"
+                class="btn-icons btn btn-transparent btn-small">Icons</button>
+        <button type="button"
+                data-value="auto"
+                class="btn-auto btn btn-transparent btn-small">Auto</button>
+    </div>
+</nav>
+<div class="wrap">
+    <header class="page-header">
+        
+    </header>
+    <div class="content container-fluid">
+        <div class="row-fluid">
+            <div class="span12">
+                <h2 class="page-title">Item Browser</h2>
+            </div>
+        </div>
+        <div class="row-fluid">
+            <div class="span6">
+                <section class="widget normalx2">
+                    <header>
+                        <h4>
+                            Weapons
+                        </h4>
+                    </header>
+                    <div class="body">
+                    <ul>
+                        {% for item in items %}
+                        <li><a href='/items/weapons/{{item.name}}'>{{item.displayName}}</a></li>
+                        {% endfor %}
+                    </ul>
+                    </div>
+                </section>
+            </div>
+            <div class="span6">
+                <section class="widget normalx2">
+                    <header><h4>{{itemData.displayName}}</h4></header>
+                    <div class="body">
+                        <p>Class: {{itemData.itemClass}}</p>
+                        <p>Size: {{itemData.itemSize}}</p>
+                        {% for stat in itemData.itemStats.all %}
+                        <h5>{{stat.name}}</h5>
+                        <div class="progress">
+                            <div class="bar" style="width: {{stat.value}}%;"></div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                        <section class="widget normal">
+                            <header>
+                                <h4><i class="icon-circle-arrow-right"></i> Power Consumption</h4>
+                            </header>
+                            <div id="power-chart-line" class="body chart">
+                                <svg></svg>
+                        </section>
+                        <section class="widget normal">
+                            <header>
+                                <h4><i class="icon-circle-arrow-right"></i> Heat Generation</h4>
+                            </header>
+                            <div id="heat-chart-line" class="body chart">
+                                <svg></svg>
+                        </section>
+                        <section class="widget normal">
+                            <header>
+                                <h4><i class="icon-circle-arrow-right"></i> Avionics Utilization</h4>
+                            </header>
+                            <div id="avionics-chart-line" class="body chart">
+                                <svg></svg>
+                        </section>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- jquery and friends -->
+<script src='{% static "theme/light-blue/lib/jquery/jquery-migrate-1.1.0.min.js" %}'> </script>
+
+<!-- jquery plugins -->
+<script src='{% static "theme/light-blue/lib/jquery-maskedinput/jquery.maskedinput.js" %}'></script>
+<script src='{% static "theme/light-blue/lib/parsley/parsley.js" %}'> </script>
+<script src='{% static "theme/light-blue/lib/icheck.js/jquery.icheck.js" %}'></script>
+<script src='{% static "theme/light-blue/lib/select2.js" %}'></script>
+
+<!-- d3, nvd3-->
+<script src='{% static "theme/light-blue/lib/nvd3/lib/d3.v2.js" %}'></script>
+<script src='{% static "theme/light-blue/lib/nvd3/nv.d3.custom.js" %}'></script>
+
+<!-- nvd3 models -->
+<script src='{% static "theme/light-blue/lib/nvd3/src/models/scatter.js" %}'></script>
+<script src='{% static "theme/light-blue/lib/nvd3/src/models/axis.js" %}'></script>
+<script src='{% static "theme/light-blue/lib/nvd3/src/models/legend.js" %}'></script>
+<script src='{% static "theme/light-blue/lib/nvd3/src/models/stackedArea.js" %}'></script>
+<script src='{% static "theme/light-blue/lib/nvd3/src/models/stackedAreaChart.js" %}'></script>
+<script src='{% static "theme/light-blue/lib/nvd3/src/models/line.js" %}'></script>
+<script src='{% static "theme/light-blue/lib/nvd3/src/models/pie.js" %}'></script>
+<script src='{% static "theme/light-blue/lib/nvd3/src/models/pieChartTotal.js" %}'></script>
+<script src='{% static "theme/light-blue/lib/nvd3/stream_layers.js" %}'></script>
+<script src='{% static "theme/light-blue/lib/nvd3/src/models/lineChart.js" %}'></script>
+<script src='{% static "theme/light-blue/lib/nvd3/src/models/multiBar.js" %}'></script>
+<script src='{% static "theme/light-blue/lib/nvd3/src/models/multiBarChart.js" %}'></script>
+
+<!--backbone and friends -->
+<script src='{% static "theme/light-blue/lib/backbone/underscore-min.js" %}'></script>
+
+<!-- bootstrap default plugins -->
+<script src='{% static "theme/light-blue/js/bootstrap/bootstrap-transition.js" %}'></script>
+<script src='{% static "theme/light-blue/js/bootstrap/bootstrap-collapse.js" %}'></script>
+<script src='{% static "theme/light-blue/js/bootstrap/bootstrap-alert.js" %}'></script>
+<script src='{% static "theme/light-blue/js/bootstrap/bootstrap-tooltip.js" %}'></script>
+<script src='{% static "theme/light-blue/js/bootstrap/bootstrap-popover.js" %}'></script>
+<script src='{% static "theme/light-blue/js/bootstrap/bootstrap-button.js" %}'></script>
+<script src='{% static "theme/light-blue/js/bootstrap/bootstrap-dropdown.js" %}'></script>
+<script src='{% static "theme/light-blue/js/bootstrap/bootstrap-modal.js" %}'></script>
+<script src='{% static "theme/light-blue/js/bootstrap/bootstrap-tab.js" %}'> </script>
+
+<!-- basic application js-->
+<script src='{% static "theme/light-blue/js/app.js" %}'></script>
+<script src='{% static "theme/light-blue/js/settings.js" %}'></script>
+
+
+<script type="text/template" id="settings-template">
+    <div class="setting clearfix">
+        <div>Background</div>
+        <div id="background-toggle" class="pull-left btn-group" data-toggle="buttons-radio">
+            <% dark = background == 'dark'; light = background == 'light';%>
+            <button type="button" data-value="dark" class="btn btn-small btn-transparent <%= dark? 'active' : '' %>">Dark</button>
+            <button type="button" data-value="light" class="btn btn-small btn-transparent <%= light? 'active' : '' %>">Light</button>
+        </div>
+    </div>
+    <div class="setting clearfix">
+        <div>Sidebar on the</div>
+        <div id="sidebar-toggle" class="pull-left btn-group" data-toggle="buttons-radio">
+            <% onRight = sidebar == 'right'%>
+            <button type="button" data-value="left" class="btn btn-small btn-transparent <%= onRight? '' : 'active' %>">Left</button>
+            <button type="button" data-value="right" class="btn btn-small btn-transparent <%= onRight? 'active' : '' %>">Right</button>
+        </div>
+    </div>
+    <div class="setting clearfix">
+        <div>Sidebar</div>
+        <div id="display-sidebar-toggle" class="pull-left btn-group" data-toggle="buttons-radio">
+            <% display = displaySidebar%>
+            <button type="button" data-value="true" class="btn btn-small btn-transparent <%= display? 'active' : '' %>">Show</button>
+            <button type="button" data-value="false" class="btn btn-small btn-transparent <%= display? '' : 'active' %>">Hide</button>
+        </div>
+    </div>
+</script>
+
+<script type="text/template" id="sidebar-settings-template">
+        <% auto = sidebarState == 'auto'%>
+        <% if (auto) {%>
+            <button type="button"
+                    data-value="icons"
+                    class="btn-icons btn btn-transparent btn-small">Icons</button>
+    <button type="button"
+            data-value="auto"
+            class="btn-auto btn btn-transparent btn-small">Auto</button>
+        <%} else {%>
+            <button type="button"
+                    data-value="auto"
+                    class="btn btn-transparent btn-small">Auto</button>
+        <% } %>
+</script>
+
+<script type='text/javascript'>
+    $(document).ready( function () {
+        $('#item-energy').on('change', function() {
+            console.log('test');
+            $('#item-energy-bar').css({'width': $(this).attr('value') + '%'});
+        });
+        $('#item-power').on('change', function() {
+            console.log('test');
+            $('#item-power-bar').css({'width': $(this).attr('value') + '%'});
+        });
+        $('#item-velocity').on('change', function() {
+            console.log('test');
+            $('#item-velocity-bar').css({'width': $(this).attr('value') + '%'});
+        });
+        $('#item-damage').on('change', function() {
+            console.log('test');
+            $('#item-damage-bar').css({'width': $(this).attr('value') + '%'});
+        });
+        var frm = $('#ship-submission');
+        frm.submit(function (event) {
+            var jsonData = JSON.stringify(frm.serializeArray());
+            console.log(jsonData);
+            $.post(frm.attr('action'), jsonData).done(function(data) {
+                if (data['success'] == false)
+                {
+                    console.log(data['response']);
+                }
+                else
+                {
+                }
+            });  
+            event.preventDefault();
+        });
+        var frm = $('#weapon-submission');
+        frm.submit(function (event) {
+            var jsonData = JSON.stringify(frm.serializeArray());
+            console.log(jsonData);
+            $.post(frm.attr('action'), jsonData).done(function(data) {
+                if (data['success'] == false)
+                {
+                    console.log(data['response']);
+                }
+                else
+                {
+                }
+            });  
+            event.preventDefault();
+        });
+        function getPower() {
+            // We need to make one for each state
+            {% for state in itemData.power.all %}
+                var power_{{state.state}} = [];
+                var stateValue = "{{state.value}}";
+                var values = stateValue.split(",");
+                if (values.length == 1)
+                {
+                    power_{{state.state}}.push({x: 0, y:"{{state.value}}" });
+                    power_{{state.state}}.push({x: 30, y:"{{state.value}}" });
+                }
+                else
+                {
+                    var total = 0
+                    for (var i = 0; i < values.length; i++)
+                    {
+                        var chunk = values[i];
+                        var split = chunk.split(":");
+                        total = total + split[1]
+                        power_{{state.state}}.push({ x : split[0], y : total  });
+                    }
+                }
+            {% endfor %}
+
+            return [
+                {% for state in itemData.power.all %}
+                {
+                    values : power_{{state.state}},
+                    key : "{{state.state}}",
+                    {% if state.state == "Idle" %}
+                    color : "#00AA00"
+                    {% endif %}
+                    {% if state.state == "Active" %}
+                    color : "#AAAA00"
+                    {% endif %}
+                    {% if state.state == "Targeting" %}
+                    color : "#AA0000"
+                    {% endif %}
+                    {% if state.state == "Shooting" %}
+                    color : "#AA0000"
+                    {% endif %}
+                } {% if not forloop.last %},{% endif %}
+                {% endfor %}
+            ];
+        }
+        function getAvionics() {
+            // We need to make one for each state
+            {% for state in itemData.avionics.all %}
+                var power_{{state.state}} = [];
+                var stateValue = "{{state.value}}";
+                var values = stateValue.split(",");
+                if (values.length == 1)
+                {
+                    power_{{state.state}}.push({x: 0, y:'{{state.value}}' });
+                    power_{{state.state}}.push({x: 30, y:'{{state.value}}' });
+                }
+                else
+                {
+                    var total = 0
+                    for (var i = 0; i < values.length; i++)
+                    {
+                        var chunk = values[i];
+                        var split = chunk.split(":");
+                        total = total + split[1]
+                        power_{{state.state}}.push({ x : split[0], y : total  });
+                    }
+                }
+            {% endfor %}
+
+            return [
+                {% for state in itemData.avionics.all %}
+                {
+                    values : power_{{state.state}},
+                    key : "{{state.state}}"
+                } {% if not forloop.last %},{% endif %}
+                {% endfor %}
+            ];
+        }
+        function getHeat() {
+            // We need to make one for each state
+            {% for state in itemData.heat.all %}
+                var power_{{state.state}} = [];
+                var stateValue = "{{state.value}}";
+                var values = stateValue.split(",");
+                if (values.length == 1)
+                {
+                    power_{{state.state}}.push({x: 0, y:"{{state.value}}" });
+                    power_{{state.state}}.push({x: 30, y:"{{state.value}}" });
+                }
+                else
+                {
+                    var total = 0
+                    for (var i = 0; i < values.length; i++)
+                    {
+                        var chunk = values[i];
+                        var split = chunk.split(":");
+                        var time = parseInt(split[0], 10)
+                        var val = parseInt(split[1], 10)
+                        total = total + val
+                        power_{{state.state}}.push({ x : time, y : total  });
+                    }
+                }
+            {% endfor %}
+
+            return [
+                {% for state in itemData.heat.all %}
+                {
+                    values : power_{{state.state}},
+                    key : "{{state.state}}",
+                    {% if state.state == "Idle" %}
+                    color : "#00AA00"
+                    {% endif %}
+                    {% if state.state == "Active" %}
+                    color : "#AAAA00"
+                    {% endif %}
+                    {% if state.state == "Targeting" %}
+                    color : "#AA0000"
+                    {% endif %}
+                    {% if state.state == "Shooting" %}
+                    color : "#AA0000"
+                    {% endif %}
+                } {% if not forloop.last %},{% endif %}
+                {% endfor %}
+            ];
+        }
+        var lineResize;
+        function lineChartOperaHack(){
+            //lineChart is somehow not rendered correctly after updates. Need to reupdate
+            if ($.browser.opera){
+                clearTimeout(lineResize);
+                lineResize = setTimeout(lineChart.update, 300);
+            }
+        }
+        nv.addGraph(function() {
+            var chart = nv.models.lineChart()
+                .margin({top: 0, bottom: 25, left: 30, right: 0})
+                .showLegend(true)
+                .color(keyColor);
+
+            chart.yAxis
+                .axisLabel('Power')
+                .showMaxMin(true)
+                .tickFormat(d3.format(',.f'));
+
+            chart.xAxis
+                .axisLabel('Seconds')
+                .showMaxMin(true)
+                .tickFormat(d3.format(',.f'));
+
+            d3.select('#power-chart-line svg')
+                .datum(getPower())
+                // .datum([{key:'Power', values:[10,100], color : '#AAAAAA'}])
+                .transition().duration(500)
+                .call(chart);
+
+            nv.utils.windowResize(chart.update);
+            lineChart = chart;
+
+            lineChartOperaHack();
+
+            return chart;
+        });
+        nv.addGraph(function() {
+            var chart = nv.models.lineChart()
+                .margin({top: 0, bottom: 25, left: 30, right: 0})
+                .showLegend(true)
+                .color(keyColor);
+
+            chart.yAxis
+                .axisLabel('Heat')
+                .showMaxMin(true)
+                .tickFormat(d3.format(',.f'));
+
+            chart.xAxis
+                .axisLabel('Seconds')
+                .showMaxMin(true)
+                .tickFormat(d3.format(',.f'));
+
+            d3.select('#heat-chart-line svg')
+                .datum(getHeat())
+                // .datum([{key:'Power', values:[10,100], color : '#AAAAAA'}])
+                .transition().duration(500)
+                .call(chart);
+
+            nv.utils.windowResize(chart.update);
+            lineChart = chart;
+
+            lineChartOperaHack();
+
+            return chart;
+        });
+        nv.addGraph(function() {
+            var chart = nv.models.lineChart()
+                .margin({top: 0, bottom: 25, left: 30, right: 0})
+                .showLegend(true)
+                .color(keyColor);
+
+            chart.yAxis
+                .axisLabel('Avionics')
+                .showMaxMin(true)
+                .tickFormat(d3.format(',.f'));
+
+            chart.xAxis
+                .axisLabel('Seconds')
+                .showMaxMin(true)
+                .tickFormat(d3.format(',.f'));
+
+            d3.select('#avionics-chart-line svg')
+                .datum(getAvionics())
+                // .datum([{key:'Power', values:[10,100], color : '#AAAAAA'}])
+                .transition().duration(500)
+                .call(chart);
+
+            nv.utils.windowResize(chart.update);
+            lineChart = chart;
+
+            lineChartOperaHack();
+
+            return chart;
+        });
+    });
+</script>
+
+<script>
+</script>
+
+</body>

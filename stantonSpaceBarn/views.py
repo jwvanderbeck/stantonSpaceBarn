@@ -863,6 +863,41 @@ def submissionFormData(request):
     # should never get here, if it we do its f'ed up
     assert False
 
+def weaponDetails(request, itemName):
+    # Get the item
+    items = VehicleItem.objects.filter(name__iexact=itemName)
+    allItems = VehicleItem.objects.all()
+    if len(items) > 0:
+        item = items[0]
+    else:
+        item = None
+
+    if not item:
+        raise Http404()
+
+    renderContext = {
+        'itemData'      : item,
+        'items'         : allItems
+    }
+
+    # The bit here about context_instance=RequestContext(request) is ABSOLUTELY VITAL 
+    # as it is what enables the resulting rendered view to contain the CSRF token!
+    # !!!!!!!!!!!!!
+    return render_to_response('bootstrap/light-blue/weapon.html', renderContext, context_instance=RequestContext(request))
+
+def weaponList(request):
+    # Get the item
+    allItems = VehicleItem.objects.all()
+
+    renderContext = {
+        'items'         : allItems
+    }
+
+    # The bit here about context_instance=RequestContext(request) is ABSOLUTELY VITAL 
+    # as it is what enables the resulting rendered view to contain the CSRF token!
+    # !!!!!!!!!!!!!
+    return render_to_response('bootstrap/light-blue/weapons.html', renderContext, context_instance=RequestContext(request))
+
 def testView(request):
     shipName = '300i'  
     # Get all hardpoints

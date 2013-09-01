@@ -30,6 +30,8 @@ urlpatterns = patterns('stantonSpaceBarn.views',
 	url(r'^submissions/ship/', 'submissionFormData'),
 	url(r'^submissions/weapon/', 'submissionFormData'),
 	url(r'^submissions/', 'submissionForms'),
+	url(r'^items/weapons/([a-zA-Z0-9_-]+)/$', 'weaponDetails'),
+	url(r'^items/weapons/$', 'weaponList'),
 )
 
 
