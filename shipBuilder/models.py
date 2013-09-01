@@ -329,3 +329,60 @@ class Build(models.Model):
 
     def __unicode__(self):
         return "%s %s variant:%s" % (self.ship.name, self.role, self.name)
+
+
+
+
+######################################################
+## Phase 2
+## New models based on actual game data rather than
+## best guesses!
+######################################################
+
+class VehicleItemParams(models.Model):
+    name = models.CharField(max_length = 255)
+    value = models.FloatField(default = 0.0)
+
+    def __unicode__(self):
+        return u"%s:%.2f" % (self.name, self.value)
+
+class VehicleItemPower(models.Model):
+    state = models.CharField(max_length = 128)
+    # Value couldbe a packed value curve
+    value = models.CharField(max_length = 255)
+
+    def __unicode__(self):
+        return u"%s - %s" % (self.state, self.value)
+
+class VehicleItemHeat(models.Model):
+    state = models.CharField(max_length = 128)
+    # Value couldbe a packed value curve
+    value = models.CharField(max_length = 255)
+
+    def __unicode__(self):
+        return u"%s - %s" % (self.state, self.value)
+
+class VehicleItemAvionics(models.Model):
+    state = models.CharField(max_length = 128)
+    # Value couldbe a packed value curve
+    value = models.CharField(max_length = 255)
+
+    def __unicode__(self):
+        return u"%s - %s" % (self.state, self.value)
+
+class VehicleItem(models.Model):
+    itemClass = models.PositiveIntegerField(default = 1)
+    description = models.TextField(blank = True)
+    name = models.CharField(max_length = 255)
+    displayName = models.CharField(max_length = 255, blank = True)
+    itemType = models.CharField(max_length = 128)
+    itemSubType = models.CharField(max_length = 128, blank = True)
+    manufacturer = models.ForeignKey('Manufacturer')
+    itemSize = models.PositiveIntegerField(default = 0)
+    itemStats = models.ManyToManyField('VehicleItemParams')
+    power = models.ManyToManyField('VehicleItemPower')
+    heat = models.ManyToManyField('VehicleItemHeat')
+    avionics = models.ManyToManyField('VehicleItemAvionics')
+
+    def __unicode__(self):
+        return u"%s" % (self.name)
