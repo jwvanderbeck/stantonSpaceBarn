@@ -77,7 +77,7 @@
                     <div class="body">
                     <ul>
                         {% for item in items %}
-                        <li><a href='/items/weapons/{{item.name}}'>{{item.displayName}}</a></li>
+                        <li><a href='/items/weapons/{{item.name}}'>{% firstof item.displayName item.name %}</a></li>
                         {% endfor %}
                     </ul>
                     </div>
@@ -85,14 +85,28 @@
             </div>
             <div class="span6">
                 <section class="widget normalx2">
-                    <header><h4>{{itemData.displayName}}</h4></header>
+                    <header><h4>{% firstof itemData.displayName itemData.name "Item" %}</h4></header>
                     <div class="body">
-                        <p>Class: {{itemData.itemClass}}</p>
-                        <p>Size: {{itemData.itemSize}}</p>
+                        <table class="table">
+                            <tbody>
+                            <tr>
+                                <td>Class</td>
+                                <td>{{itemData.itemClass}}</td>
+                                <td>Size</td>
+                                <td>{{itemData.itemSize}}</td>
+                            </tr>
+                            <tr>
+                                <td>Item Type</td>
+                                <td>{{itemData.itemType}}</td>
+                                <td>Item SubType</td>
+                                <td>{{itemData.itemSubType}}</td>
+                            </tr>
+                            </tbody>
+                        </table>
                         {% for stat in itemData.itemStats.all %}
                         <h5>{{stat.name}}</h5>
                         <div class="progress">
-                            <div class="bar" style="width: {{stat.value}}%;"></div>
+                            <div class="bar" style="width: {{stat.value}}%;">{{stat.value}}</div>
                         </div>
                         {% endfor %}
                     </div>
@@ -265,24 +279,28 @@
             // We need to make one for each state
             {% for state in itemData.power.all %}
                 var power_{{state.state}} = [];
+
+                {% if "," in state.value %}
                 var stateValue = "{{state.value}}";
                 var values = stateValue.split(",");
-                if (values.length == 1)
+                var total = 0
+                for (var i = 0; i < values.length; i++)
                 {
-                    power_{{state.state}}.push({x: 0, y:"{{state.value}}" });
-                    power_{{state.state}}.push({x: 30, y:"{{state.value}}" });
+                    var chunk = values[i];
+                    var split = chunk.split(":");
+                    var val = parseInt(split[1], 10)
+                    if (val < 0)
+                        val = val * -1;
+                    total = total + val
+                    power_{{state.state}}.push({ x : split[0], y : total  });
                 }
-                else
-                {
-                    var total = 0
-                    for (var i = 0; i < values.length; i++)
-                    {
-                        var chunk = values[i];
-                        var split = chunk.split(":");
-                        total = total + split[1]
-                        power_{{state.state}}.push({ x : split[0], y : total  });
-                    }
-                }
+                {% else %}
+                var stateValue = parseInt("{{state.value}}", 10);
+                if (stateValue < 0)
+                    stateValue = stateValue * -1;
+                power_{{state.state}}.push({x: 0, y:stateValue });
+                power_{{state.state}}.push({x: 30, y:stateValue });
+                {% endif %}
             {% endfor %}
 
             return [
@@ -292,15 +310,62 @@
                     key : "{{state.state}}",
                     {% if state.state == "Idle" %}
                     color : "#00AA00"
-                    {% endif %}
-                    {% if state.state == "Active" %}
+                    {% elif state.state == "Active" %}
                     color : "#AAAA00"
+                    {% elif state.state == "Targeting" %}
+                    color : "#d62728"
+                    {% elif state.state == "Shooting" %}
+                    color : "#d62728"
+                    {% else %}
+                    color : "#AAAAAA"
                     {% endif %}
-                    {% if state.state == "Targeting" %}
-                    color : "#AA0000"
-                    {% endif %}
-                    {% if state.state == "Shooting" %}
-                    color : "#AA0000"
+                } {% if not forloop.last %},{% endif %}
+                {% endfor %}
+            ];
+        }
+        function getHeat() {
+            // We need to make one for each state
+            {% for state in itemData.heat.all %}
+                var heat_{{state.state}} = [];
+
+                {% if "," in state.value %}
+                var stateValue = "{{state.value}}";
+                var values = stateValue.split(",");
+                var total = 0
+                for (var i = 0; i < values.length; i++)
+                {
+                    var chunk = values[i];
+                    var split = chunk.split(":");
+                    var val = parseInt(split[1], 10)
+                    if (val < 0)
+                        val = val * -1;
+                    total = total + val
+                    heat_{{state.state}}.push({ x : split[0], y : total  });
+                }
+                {% else %}
+                var stateValue = parseInt("{{state.value}}", 10);
+                if (stateValue < 0)
+                    stateValue = stateValue * -1;
+                heat_{{state.state}}.push({x: 0, y:stateValue });
+                heat_{{state.state}}.push({x: 30, y:stateValue });
+                {% endif %}
+            {% endfor %}
+
+            return [
+                {% for state in itemData.heat.all %}
+                {
+                    values : heat_{{state.state}},
+                    key : "{{state.state}}",
+                    {% if state.state == "Idle" %}
+                    color : "#00AA00"
+                    {% elif state.state == "Active" %}
+                    color : "#AAAA00"
+                    {% elif state.state == "Targeting" %}
+                    color : "#d62728"
+                    {% elif state.state == "Shooting" %}
+                    color : "#d62728"
+                    {% else %}
+                    color : "#AAAAAA"
                     {% endif %}
                 } {% if not forloop.last %},{% endif %}
                 {% endfor %}
@@ -309,79 +374,36 @@
         function getAvionics() {
             // We need to make one for each state
             {% for state in itemData.avionics.all %}
-                var power_{{state.state}} = [];
+                var avionics_{{state.state}} = [];
+
+                {% if "," in state.value %}
                 var stateValue = "{{state.value}}";
                 var values = stateValue.split(",");
-                if (values.length == 1)
+                var total = 0
+                for (var i = 0; i < values.length; i++)
                 {
-                    power_{{state.state}}.push({x: 0, y:'{{state.value}}' });
-                    power_{{state.state}}.push({x: 30, y:'{{state.value}}' });
+                    var chunk = values[i];
+                    var split = chunk.split(":");
+                    var val = parseInt(split[1], 10)
+                    if (val < 0)
+                        val = val * -1;
+                    total = total + val
+                    avionics_{{state.state}}.push({ x : split[0], y : total  });
                 }
-                else
-                {
-                    var total = 0
-                    for (var i = 0; i < values.length; i++)
-                    {
-                        var chunk = values[i];
-                        var split = chunk.split(":");
-                        total = total + split[1]
-                        power_{{state.state}}.push({ x : split[0], y : total  });
-                    }
-                }
+                {% else %}
+                var stateValue = parseInt("{{state.value}}", 10);
+                if (stateValue < 0)
+                    stateValue = stateValue * -1;
+                avionics_{{state.state}}.push({x: 0, y:stateValue });
+                avionics_{{state.state}}.push({x: 30, y:stateValue });
+                {% endif %}
             {% endfor %}
 
             return [
                 {% for state in itemData.avionics.all %}
                 {
-                    values : power_{{state.state}},
+                    values : avionics_{{state.state}},
                     key : "{{state.state}}"
-                } {% if not forloop.last %},{% endif %}
-                {% endfor %}
-            ];
-        }
-        function getHeat() {
-            // We need to make one for each state
-            {% for state in itemData.heat.all %}
-                var power_{{state.state}} = [];
-                var stateValue = "{{state.value}}";
-                var values = stateValue.split(",");
-                if (values.length == 1)
-                {
-                    power_{{state.state}}.push({x: 0, y:"{{state.value}}" });
-                    power_{{state.state}}.push({x: 30, y:"{{state.value}}" });
-                }
-                else
-                {
-                    var total = 0
-                    for (var i = 0; i < values.length; i++)
-                    {
-                        var chunk = values[i];
-                        var split = chunk.split(":");
-                        var time = parseInt(split[0], 10)
-                        var val = parseInt(split[1], 10)
-                        total = total + val
-                        power_{{state.state}}.push({ x : time, y : total  });
-                    }
-                }
-            {% endfor %}
-
-            return [
-                {% for state in itemData.heat.all %}
-                {
-                    values : power_{{state.state}},
-                    key : "{{state.state}}",
-                    {% if state.state == "Idle" %}
-                    color : "#00AA00"
-                    {% endif %}
-                    {% if state.state == "Active" %}
-                    color : "#AAAA00"
-                    {% endif %}
-                    {% if state.state == "Targeting" %}
-                    color : "#AA0000"
-                    {% endif %}
-                    {% if state.state == "Shooting" %}
-                    color : "#AA0000"
-                    {% endif %}
                 } {% if not forloop.last %},{% endif %}
                 {% endfor %}
             ];
@@ -396,7 +418,7 @@
         }
         nv.addGraph(function() {
             var chart = nv.models.lineChart()
-                .margin({top: 0, bottom: 25, left: 30, right: 0})
+                //.margin({top: 0, bottom: 35, left: 30, right: 0})
                 .showLegend(true)
                 .color(keyColor);
 
@@ -425,7 +447,7 @@
         });
         nv.addGraph(function() {
             var chart = nv.models.lineChart()
-                .margin({top: 0, bottom: 25, left: 30, right: 0})
+                // .margin({top: 0, bottom: 25, left: 30, right: 0})
                 .showLegend(true)
                 .color(keyColor);
 
@@ -454,7 +476,7 @@
         });
         nv.addGraph(function() {
             var chart = nv.models.lineChart()
-                .margin({top: 0, bottom: 25, left: 30, right: 0})
+                // .margin({top: 0, bottom: 25, left: 30, right: 0})
                 .showLegend(true)
                 .color(keyColor);
 
@@ -470,7 +492,6 @@
 
             d3.select('#avionics-chart-line svg')
                 .datum(getAvionics())
-                // .datum([{key:'Power', values:[10,100], color : '#AAAAAA'}])
                 .transition().duration(500)
                 .call(chart);
 
