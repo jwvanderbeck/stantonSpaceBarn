@@ -246,8 +246,8 @@ class Ship(models.Model):
     # about the BASE unmodified ships available in the game
     # The Build model is what stores the ship plus all the mods
     name = models.CharField(max_length = 30, default='')
-    description = models.TextField(max_length=255, blank=True)
     manufacturer = models.ForeignKey(Manufacturer)
+    description = models.TextField(max_length=255, blank=True)
     maximum_crew = models.PositiveIntegerField(default=1)
     empty_mass = models.BigIntegerField(default=0)
     length = models.FloatField(default=0)
@@ -339,6 +339,21 @@ class Build(models.Model):
 ## best guesses!
 ######################################################
 
+### Vehicle Items
+
+class VehicleItemType(models.Model):
+    typeName = models.CharField(max_length = 255)
+
+    def __unicode__(self):
+        return self.typeName
+
+class VehicleItemSubType(models.Model):
+    subTypeName = models.CharField(max_length = 255)
+    parent = models.ForeignKey('VehicleItemType')
+
+    def __unicode__(self):
+        return self.subTypeName
+
 class VehicleItemParams(models.Model):
     name = models.CharField(max_length = 255)
     value = models.FloatField(default = 0.0)
@@ -375,14 +390,53 @@ class VehicleItem(models.Model):
     description = models.TextField(blank = True)
     name = models.CharField(max_length = 255)
     displayName = models.CharField(max_length = 255, blank = True)
-    itemType = models.CharField(max_length = 128)
-    itemSubType = models.CharField(max_length = 128, blank = True)
+    itemType = models.ForeignKey('VehicleItemType')
+    itemSubType = models.ForeignKey('VehicleItemSubType')
     manufacturer = models.ForeignKey('Manufacturer')
     itemSize = models.PositiveIntegerField(default = 0)
-    itemStats = models.ManyToManyField('VehicleItemParams')
-    power = models.ManyToManyField('VehicleItemPower')
-    heat = models.ManyToManyField('VehicleItemHeat')
-    avionics = models.ManyToManyField('VehicleItemAvionics')
+    itemStats = models.ManyToManyField('VehicleItemParams', blank = True, null = True)
+    power = models.ManyToManyField('VehicleItemPower', blank = True, null = True)
+    heat = models.ManyToManyField('VehicleItemHeat', blank = True, null = True)
+    avionics = models.ManyToManyField('VehicleItemAvionics', blank = True, null = True)
 
     def __unicode__(self):
         return u"%s" % (self.name)
+
+### Vehicles
+
+class ItemPort(models.Model):
+    # Basic fields as required by game model
+    displayName = models.CharField(max_length = 255, blank = True)
+    name = models.CharField(max_length = 255)
+    flags = models.CharField(max_length = 512, blank = True)
+    maxSize = models.PositiveIntegerField(default = 1)
+    minSize = models.PositiveIntegerField(default = 0)
+    supportedTypes = models.ManyToManyField('VehicleItemType') 
+    supportedSubTypes = models.ManyToManyField('VehicleItemSubType')
+    parentVehicle = models.ForeignKey('Vehicle')
+    # Added just in case the game starts using it
+    portClass = models.PositiveIntegerField(default = 0)
+    # Additional fields required for The Barn
+    image = models.ForeignKey('Image', default=0, null=True, blank=True)
+    tagLocationX = models.IntegerField(default = 0)
+    tagLocationY = models.IntegerField(default = 0)
+
+class VehicleCategory(models.Model):
+    name = models.CharField(max_length = 255)
+
+class Vehicle(models.Model):
+    # Basic fields as required by game model
+    vehicleClass = models.PositiveIntegerField(default = 1)
+    category = models.ForeignKey('VehicleCategory')
+    displayName = models.CharField(max_length = 255)
+    name = models.CharField(max_length = 255)
+    # Additional fields required for The Barn
+    upgradeSlots = models.PositiveIntegerField(default = 0)
+    maximum_crew = models.PositiveIntegerField(default=1)
+    empty_mass = models.BigIntegerField(default=0)
+    length = models.FloatField(default=0)
+    width = models.FloatField(default=0)
+    height = models.FloatField(default=0)
+    thumbnail = models.URLField(default='')
+    available = models.BooleanField(default=False)
+
