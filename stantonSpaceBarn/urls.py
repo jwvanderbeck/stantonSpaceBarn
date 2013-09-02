@@ -31,6 +31,7 @@ urlpatterns = patterns('stantonSpaceBarn.views',
 	url(r'^submissions/weapon/', 'submissionFormData'),
 	url(r'^submissions/', 'submissionForms'),
 	url(r'^items/detail/([a-zA-Z0-9_-]+)/$', 'itemDetails'),
+	url(r'^items/pipegraph/$', 'getPipeGraph'),
 	url(r'^items/([a-zA-Z0-9_-]+)/$', 'itemList'),
 )
 

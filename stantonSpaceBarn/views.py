@@ -911,7 +911,7 @@ def itemDetails(request, itemName):
     if not item:
         raise Http404()
 
-    allItems = VehicleItem.objects.all().order_by('displayName').filter(itemType__exact=item.itemType)
+    allItems = VehicleItem.objects.all().order_by('displayName')
 
     renderContext = {
         'itemData'      : item,
@@ -931,7 +931,7 @@ def itemList(request, itemTypeName):
         raise Http404()
 
     itemType = itemTypes[0]
-    allItems = VehicleItem.objects.all().filter(itemType__exact=itemType).order_by('displayName')
+    allItems = VehicleItem.objects.all().order_by('displayName')
 
     renderContext = {
         'itemType'      : itemTypeName,
@@ -942,6 +942,211 @@ def itemList(request, itemTypeName):
     # as it is what enables the resulting rendered view to contain the CSRF token!
     # !!!!!!!!!!!!!
     return render_to_response('bootstrap/light-blue/itemList.html', renderContext, context_instance=RequestContext(request))
+def extrapolateStateValues(state, duration=30, stacking=False):
+    # This method takes in a VehicleItem* state object with one or more values
+    # and extrapolates those values to the specified duration in seconds
+    if not state:
+        return []
+
+    stateValue = state.value
+    values = []
+    if "," in stateValue:
+        pass
+    else:
+        # Simple case, a single value
+        if stacking:
+            pass
+        else:
+            # Simplest of all cases, we just hold the value from 0-duration
+            for i in range(0, duration + 1, 1):
+                values.append(stateValue)
+
+    return values
+
+def getGraphColorForState(stateName):
+    if stateName.lower() == "idle":
+        return "#AAAAAA"
+    elif stateName.lower() == "active":
+        return "#64c1d8"
+    elif stateName.lower() == "shooting":
+        return "#d62728"
+    elif stateName.lower() == "targeting":
+        return "#d62728"
+    elif stateName.lower() == "manualcontrol":
+        return "#aaaaaa"
+    elif stateName.lower() == "autocontrol":
+        return "#64c1d8"
+    elif stateName.lower() == "default":
+        return "#AAAAAA"
+    else:
+        return "#AAAAAA"
+
+
+def getPipeGraph(request):
+    # JSON callable function to retrive the graph data
+    # For a given pipe, and a given state
+    if request.is_ajax():
+        try:
+            requestData = simplejson.loads(request.body)
+            print "JSON Data:"
+            print requestData
+        except:
+            print "json parse failed"
+            response_data = {
+            'success' : False,
+            'response' : 'Unable to parse JSON object.',
+            'data' : [{"values":[]}]
+            }
+            return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
+
+
+        # Retrieve the specified item
+        try:
+            print "Looking for %s" % (requestData['itemName'])
+            items = VehicleItem.objects.all().filter(name__iexact=requestData['itemName'])
+            item = items[0]
+        except Exception as e:
+            response_data = {
+            'success' : False,
+            'response' : 'Unable to find specified item.',
+            'data' : [{"values":[]}]
+            }
+            print response_data
+            print e
+            return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
+
+        # Get the proper pipe
+        stacking = False
+        try:
+            if requestData['pipe'].lower() == "power":
+                pipe = item.power
+            elif requestData['pipe'].lower() == "heat":
+                stacking = True # Heat stacks over time
+                pipe = item.heat
+            elif requestData['pipe'].lower() == "avionics":
+                pipe = item.avionics
+            else:
+                response_data = {
+                'success' : False,
+                'response' : 'Invalid pipe requested.',
+                'data' : [{"values":[]}]
+                }
+                print response_data
+                return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
+        except:
+                response_data = {
+                'success' : False,
+                'response' : 'Failed to load pipe data.',
+                'data' : [{"values":[]}]
+                }
+                print response_data
+                return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
+
+
+        if not pipe:
+            response_data = {
+            'success' : False,
+            'response' : 'Unable to find specified pipe.',
+            'data' : [{"values":[]}]
+            }
+            print response_data
+            return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
+
+        if not "state" in requestData:
+            response_data = {
+            'success' : False,
+            'response' : 'No state requested.',
+            'data' : [{"values":[]}]
+            }
+            print response_data
+            return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
+
+        requestedState = requestData['state']
+        requestedStates = []
+        if "," in requestedState:
+            for stateName in requestedState.split(','):
+                try:
+                    state = pipe.get(state=stateName)
+                except: 
+                    print "Unable to find state %s.  Ignoring" % stateName
+                    state = None
+                if state:
+                    requestedStates.append(state)
+        elif requestedState.lower() == "all":
+            requestedStates = pipe.all()
+        else:
+            try:
+                state = pipe.get(state=requestedState)
+            except: 
+                print "Unable to find state %s.  Ignoring" % requestedState
+                state = None
+            if state:
+                requestedStates.append(state)
+
+        if len(requestedStates) == 0:
+            response_data = {
+            'success' : False,
+            'response' : 'No vaid states found.',
+            'data' : [{"values":[]}]
+            }
+            print response_data
+            return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
+
+        # At this point we should have a list of all pipe states
+        # requested that we were able to find.
+        # We extrapolate the data out to a 30 second period
+        # for the chart
+
+        data = []
+        for state in requestedStates:
+            stateValues = extrapolateStateValues(state, 30, stacking)
+            print stateValues
+            stateData = {   'key'    : state.state,
+                            'color'  : getGraphColorForState(state.state),
+                            'values' : []
+                        }
+            for second in range(0,31,1):
+                value = stateValues[second]
+                stateData['values'].append( {'x' : second, 'y' : value} )
+
+            data.append(stateData)
+
+        response_data = {
+        'success' : True,
+        'response' : 'Blah',
+        'data' : data
+        }
+        print response_data
+        return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
+
+    else:
+        # This should never be anything but an AJAX call, so
+        # someone is doing somethign fishy!
+        assert False
+
+def graphData(request):
+    # This is just a test view
+    # The idea is to take a JSON request for a certain item pipe state
+    # and return the data for the webpage to graph it
+    print "getTestData"
+    response_data = {
+    'success' : True,
+    'data' : [
+            {
+                "values" : [
+                        {'x':0,'y':0},
+                        {'x':1,'y':1},
+                        {'x':2,'y':2},
+                        {'x':3,'y':3},
+                        {'x':4,'y':4},
+                        {'x':5,'y':5},
+                    ],
+                "key" : "Test JSON Data",
+                "color" : "#aaaaaa"
+            }
+        ]
+    }
+    return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
 
 def testView(request):
     shipName = '300i'  
