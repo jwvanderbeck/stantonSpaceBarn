@@ -866,7 +866,7 @@ def submissionFormData(request):
 def weaponDetails(request, itemName):
     # Get the item
     items = VehicleItem.objects.filter(name__iexact=itemName)
-    allItems = VehicleItem.objects.all()
+    allItems = VehicleItem.objects.all().order_by('displayName')
     if len(items) > 0:
         item = items[0]
     else:
@@ -875,6 +875,8 @@ def weaponDetails(request, itemName):
     if not item:
         raise Http404()
 
+    # Apparently the charts have problems with negative values, so as a temporary workaround
+    # Invert any negative values
     renderContext = {
         'itemData'      : item,
         'items'         : allItems
@@ -887,7 +889,7 @@ def weaponDetails(request, itemName):
 
 def weaponList(request):
     # Get the item
-    allItems = VehicleItem.objects.all()
+    allItems = VehicleItem.objects.all().filter()
 
     renderContext = {
         'items'         : allItems
@@ -897,6 +899,49 @@ def weaponList(request):
     # as it is what enables the resulting rendered view to contain the CSRF token!
     # !!!!!!!!!!!!!
     return render_to_response('bootstrap/light-blue/weapons.html', renderContext, context_instance=RequestContext(request))
+
+def itemDetails(request, itemName):
+    # Get the item
+    items = VehicleItem.objects.filter(name__iexact=itemName)
+    if len(items) > 0:
+        item = items[0]
+    else:
+        item = None
+
+    if not item:
+        raise Http404()
+
+    allItems = VehicleItem.objects.all().order_by('displayName').filter(itemType__exact=item.itemType)
+
+    renderContext = {
+        'itemData'      : item,
+        'items'         : allItems,
+        'itemType'      : item.itemType
+    }
+
+    # The bit here about context_instance=RequestContext(request) is ABSOLUTELY VITAL 
+    # as it is what enables the resulting rendered view to contain the CSRF token!
+    # !!!!!!!!!!!!!
+    return render_to_response('bootstrap/light-blue/itemDetail.html', renderContext, context_instance=RequestContext(request))
+
+def itemList(request, itemTypeName):
+    # Get the item type
+    itemTypes = VehicleItemType.objects.all().filter(typeName__iexact=itemTypeName)
+    if len(itemTypes) == 0:
+        raise Http404()
+
+    itemType = itemTypes[0]
+    allItems = VehicleItem.objects.all().filter(itemType__exact=itemType).order_by('displayName')
+
+    renderContext = {
+        'itemType'      : itemTypeName,
+        'items'         : allItems
+    }
+
+    # The bit here about context_instance=RequestContext(request) is ABSOLUTELY VITAL 
+    # as it is what enables the resulting rendered view to contain the CSRF token!
+    # !!!!!!!!!!!!!
+    return render_to_response('bootstrap/light-blue/itemList.html', renderContext, context_instance=RequestContext(request))
 
 def testView(request):
     shipName = '300i'  
