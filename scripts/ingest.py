@@ -149,3 +149,4 @@ for dataFile in allFiles:
 				avionicsEntry.value = avionicsBase[state]
 				avionicsEntry.save()
 				item.avionics.add(avionicsEntry)
+

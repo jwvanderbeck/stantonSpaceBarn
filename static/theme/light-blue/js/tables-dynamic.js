@@ -6,7 +6,7 @@ $(function(){
 
     var PageableTerritories = Backbone.PageableCollection.extend({
         model: Territory,
-        url: "lib/examples/pageable-territories.json",
+        url: '{% static "theme/light-blue/lib/examples/pageable-territories.json" %}',
         state: {
             pageSize: 9
         },

@@ -924,6 +924,7 @@ def itemDetails(request, itemName):
     # !!!!!!!!!!!!!
     return render_to_response('bootstrap/light-blue/itemDetail.html', renderContext, context_instance=RequestContext(request))
 
+@ensure_csrf_cookie
 def itemdata(request):
     renderContext = {
     }
@@ -1027,6 +1028,7 @@ def getGraphColorForState(stateName):
     else:
         return "#AAAAAA"
 
+@ensure_csrf_cookie
 def getBackgridItemList(request, itemTypeName):
     # JSON callable function to retrive a list of
     # items in Backgrid table format
@@ -1061,6 +1063,7 @@ def getBackgridItemList(request, itemTypeName):
         return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
 
     assert False        
+@ensure_csrf_cookie
 def getItemDetails(request):
     '''
     Responds to an AJAX call with item details on a specified item
@@ -1107,8 +1110,9 @@ def getItemDetails(request):
             response_data['itemstats'].append( {'name' : stat.name, 'value' : stat.value} )
         return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
 
-    assert False        
-
+    assert False   
+         
+@ensure_csrf_cookie
 def getPipeGraph(request):
     # JSON callable function to retrive the graph data
     # For a given pipe, and a given state
