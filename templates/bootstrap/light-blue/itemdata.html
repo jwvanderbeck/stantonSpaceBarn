@@ -975,7 +975,14 @@
     pageableThrusters.fetch();
     pageableThrustersCompare.fetch();
 
-        console.log("Done");
+    console.log("Done");
+
+    {% if itemData %}
+        getItemDetails("{{itemData.name}}");
+        chartPipe("{{itemData.name}}", "Power", "All")
+        chartPipe("{{itemData.name}}", "Heat", "All")
+        chartPipe("{{itemData.name}}", "Avionics", "All")
+    {% endif %}
 
     });
 </script>

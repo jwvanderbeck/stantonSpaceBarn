@@ -862,7 +862,7 @@ def submissionFormData(request):
 
     # should never get here, if it we do its f'ed up
     assert False
-
+@ensure_csrf_cookie
 def weaponDetails(request, itemName):
     # Get the item
     items = VehicleItem.objects.filter(name__iexact=itemName)
@@ -886,7 +886,7 @@ def weaponDetails(request, itemName):
     # as it is what enables the resulting rendered view to contain the CSRF token!
     # !!!!!!!!!!!!!
     return render_to_response('bootstrap/light-blue/weapon.html', renderContext, context_instance=RequestContext(request))
-
+@ensure_csrf_cookie
 def weaponList(request):
     # Get the item
     allItems = VehicleItem.objects.all().filter()
@@ -900,6 +900,7 @@ def weaponList(request):
     # !!!!!!!!!!!!!
     return render_to_response('bootstrap/light-blue/weapons.html', renderContext, context_instance=RequestContext(request))
 
+@ensure_csrf_cookie
 def itemDetails(request, itemName):
     # Get the item
     items = VehicleItem.objects.filter(name__iexact=itemName)
@@ -922,7 +923,7 @@ def itemDetails(request, itemName):
     # The bit here about context_instance=RequestContext(request) is ABSOLUTELY VITAL 
     # as it is what enables the resulting rendered view to contain the CSRF token!
     # !!!!!!!!!!!!!
-    return render_to_response('bootstrap/light-blue/itemDetail.html', renderContext, context_instance=RequestContext(request))
+    return render_to_response('bootstrap/light-blue/itemdata.html', renderContext, context_instance=RequestContext(request))
 
 @ensure_csrf_cookie
 def itemdata(request):
@@ -1111,7 +1112,7 @@ def getItemDetails(request):
         return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
 
     assert False   
-         
+
 @ensure_csrf_cookie
 def getPipeGraph(request):
     # JSON callable function to retrive the graph data
