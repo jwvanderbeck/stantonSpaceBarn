@@ -62,6 +62,14 @@
             </ul>
         </li>
     </ul>
+    <div id="sidebar-settings" class="settings">
+        <button type="button"
+                data-value="icons"
+                class="btn-icons btn btn-transparent btn-small">Icons</button>
+        <button type="button"
+                data-value="auto"
+                class="btn-auto btn btn-transparent btn-small">Auto</button>
+    </div>
 </nav>
 
 <div class="wrap">
@@ -75,61 +83,23 @@
             </div>
         </div>
         <div class="row-fluid">
-            <div class="span4">
-                <section class="widget">
+            <div class="span6">
+                <section class="widget normalx2">
                     <header>
-                        <h5>
-                            Item Selection
-                        </h5>
+                        <h4>
+                            {{itemType|title}}
+                        </h4>
                     </header>
                     <div class="body">
-                        <div class="tabbable tabs-left">
-                            <ul id="items-list" class="nav nav-tabs">
-                                <li class="active"><a href="#weapons-list" data-toggle="tab">Weapons</a></li>
-                                <li><a href="#thrusters-list" data-toggle="tab">Thrusters</a></li>
-                            </ul>
-                            <div id="items-list-content" class="tab-content" >
-                                <div class="tab-pane fade in active" id="weapons-list">
-                                    <ul>
-                                        {% for item in items %}
-                                        {% if item.itemType.typeName == "Weapon" %}
-                                        <li><a class="item-select" href='{{item.name}}'>{% firstof item.displayName item.name %}</a></li>
-                                        {% endif %}
-
-                                        {% endfor %}
-                                    </ul>
-                                </div>
-                                <div class="tab-pane fade" id="thrusters-list">
-                                    <ul>
-                                        {% for item in items %}
-                                        {% if item.itemType.typeName == "Thruster" %}
-                                        <li><a class="item-select" href='/items/detail/{{item.name}}'>{% firstof item.displayName item.name %}</a></li>
-                                        {% endif %}
-
-                                        {% endfor %}
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
+                    <ul>
+                        {% for item in items %}
+                        <li><a href='/items/detail/{{item.name}}'>{% firstof item.displayName item.name %}</a></li>
+                        {% endfor %}
+                    </ul>
                     </div>
                 </section>
-                <section class="widget normal">
-                    <header>
-                        {% for state in itemData.power.all %}
-                            {% if forloop.first %}
-                                {% if "-" in state.value %}
-                                <h4><i class="icon-circle-arrow-right"></i> Power Consumption</h4>
-                                {% else %}
-                                <h4><i class="icon-circle-arrow-right"></i> Power Generation</h4>
-                                {% endif %}
-                            {% endif %}
-                        {% endfor %}
-                    </header>
-                    <div id="power-chart-line" class="body chart">
-                        <svg></svg>
-                </section>
             </div>
-            <div class="span4">
+            <div class="span6">
                 <section class="widget normalx2">
                     <header><h4>{% firstof itemData.displayName itemData.name "Item" %}</h4></header>
                     <div class="body">
@@ -144,8 +114,6 @@
                             <tr>
                                 <td>Item Type</td>
                                 <td>{{itemData.itemType}}</td>
-                            </tr>
-                            <tr>
                                 <td>Item SubType</td>
                                 <td>{{itemData.itemSubType}}</td>
                             </tr>
@@ -270,6 +238,33 @@
 <script src='{% static "theme/light-blue/js/settings.js" %}'></script>
 
 
+<script type="text/template" id="settings-template">
+    <div class="setting clearfix">
+        <div>Background</div>
+        <div id="background-toggle" class="pull-left btn-group" data-toggle="buttons-radio">
+            <% dark = background == 'dark'; light = background == 'light';%>
+            <button type="button" data-value="dark" class="btn btn-small btn-transparent <%= dark? 'active' : '' %>">Dark</button>
+            <button type="button" data-value="light" class="btn btn-small btn-transparent <%= light? 'active' : '' %>">Light</button>
+        </div>
+    </div>
+    <div class="setting clearfix">
+        <div>Sidebar on the</div>
+        <div id="sidebar-toggle" class="pull-left btn-group" data-toggle="buttons-radio">
+            <% onRight = sidebar == 'right'%>
+            <button type="button" data-value="left" class="btn btn-small btn-transparent <%= onRight? '' : 'active' %>">Left</button>
+            <button type="button" data-value="right" class="btn btn-small btn-transparent <%= onRight? 'active' : '' %>">Right</button>
+        </div>
+    </div>
+    <div class="setting clearfix">
+        <div>Sidebar</div>
+        <div id="display-sidebar-toggle" class="pull-left btn-group" data-toggle="buttons-radio">
+            <% display = displaySidebar%>
+            <button type="button" data-value="true" class="btn btn-small btn-transparent <%= display? 'active' : '' %>">Show</button>
+            <button type="button" data-value="false" class="btn btn-small btn-transparent <%= display? '' : 'active' %>">Hide</button>
+        </div>
+    </div>
+</script>
+
 <script type="text/template" id="sidebar-settings-template">
         <% auto = sidebarState == 'auto'%>
         <% if (auto) {%>
@@ -288,25 +283,51 @@
 
 <script type='text/javascript'>
     $(document).ready( function () {
-        // var frm = $('#ship-submission');
-        // frm.submit(function (event) {
-        //     var jsonData = JSON.stringify(frm.serializeArray());
-        //     console.log(jsonData);
-        //     $.post(frm.attr('action'), jsonData).done(function(data) {
-        //         if (data['success'] == false)
-        //         {
-        //             console.log(data['response']);
-        //         }
-        //         else
-        //         {
-        //         }
-        //     });  
-        //     event.preventDefault();
-        // });
-
-        $(".item-select").on("click", function(event) {
+        $('#item-energy').on('change', function() {
+            console.log('test');
+            $('#item-energy-bar').css({'width': $(this).attr('value') + '%'});
+        });
+        $('#item-power').on('change', function() {
+            console.log('test');
+            $('#item-power-bar').css({'width': $(this).attr('value') + '%'});
+        });
+        $('#item-velocity').on('change', function() {
+            console.log('test');
+            $('#item-velocity-bar').css({'width': $(this).attr('value') + '%'});
+        });
+        $('#item-damage').on('change', function() {
+            console.log('test');
+            $('#item-damage-bar').css({'width': $(this).attr('value') + '%'});
+        });
+        var frm = $('#ship-submission');
+        frm.submit(function (event) {
+            var jsonData = JSON.stringify(frm.serializeArray());
+            console.log(jsonData);
+            $.post(frm.attr('action'), jsonData).done(function(data) {
+                if (data['success'] == false)
+                {
+                    console.log(data['response']);
+                }
+                else
+                {
+                }
+            });  
             event.preventDefault();
-            getJSONData($(this).attr("href"), "Power", "All")
+        });
+        var frm = $('#weapon-submission');
+        frm.submit(function (event) {
+            var jsonData = JSON.stringify(frm.serializeArray());
+            console.log(jsonData);
+            $.post(frm.attr('action'), jsonData).done(function(data) {
+                if (data['success'] == false)
+                {
+                    console.log(data['response']);
+                }
+                else
+                {
+                }
+            });  
+            event.preventDefault();
         });
         function getPower() {
             // We need to make one for each state
@@ -441,59 +462,6 @@
                 {% endfor %}
             ];
         }
-        function getJSONData(itemName, pipe, state) {
-            jsonData = {
-                "itemName"  : itemName,
-                "pipe"      : pipe,
-                "state"     : state
-            }
-            var jsonData = JSON.stringify(jsonData);
-            console.log(jsonData);
-            $.ajaxSetup({
-              async: false
-            });
-            $.post('/items/pipegraph/', jsonData).done(function(data) {
-                if (data['success'] == false)
-                {
-                    console.log(data['response']);
-                    $('.results').html('<h2>An Error Occured</h2><p>' + data['response'] + '</p>');
-                    $('.results').dialog('open');
-                }
-                else
-                {
-                    console.log(data['data']);
-                    nv.addGraph(function() {
-                        var chart = nv.models.lineChart()
-                            //.margin({top: 0, bottom: 35, left: 30, right: 0})
-                            .showLegend(true)
-                            .color(keyColor);
-
-                        chart.yAxis
-                            .axisLabel('Power')
-                            .showMaxMin(true)
-                            .tickFormat(d3.format(',.f'));
-
-                        chart.xAxis
-                            .axisLabel('Seconds')
-                            .showMaxMin(true)
-                            .tickFormat(d3.format(',.f'));
-
-                        d3.select('#power-chart-line svg')
-                            .datum(data['data'])
-                            // .datum([{key:'Power', values:[10,100], color : '#AAAAAA'}])
-                            .transition().duration(500)
-                            .call(chart);
-
-                        nv.utils.windowResize(chart.update);
-                        lineChart = chart;
-
-                        lineChartOperaHack();
-
-                        return chart;
-                    });
-                }
-            });
-        }
         var lineResize;
         function lineChartOperaHack(){
             //lineChart is somehow not rendered correctly after updates. Need to reupdate
@@ -502,36 +470,35 @@
                 lineResize = setTimeout(lineChart.update, 300);
             }
         }
-        getJSONData()
-        // nv.addGraph(function() {
-        //     var chart = nv.models.lineChart()
-        //         //.margin({top: 0, bottom: 35, left: 30, right: 0})
-        //         .showLegend(true)
-        //         .color(keyColor);
+        nv.addGraph(function() {
+            var chart = nv.models.lineChart()
+                //.margin({top: 0, bottom: 35, left: 30, right: 0})
+                .showLegend(true)
+                .color(keyColor);
 
-        //     chart.yAxis
-        //         .axisLabel('Power')
-        //         .showMaxMin(true)
-        //         .tickFormat(d3.format(',.f'));
+            chart.yAxis
+                .axisLabel('Power')
+                .showMaxMin(true)
+                .tickFormat(d3.format(',.f'));
 
-        //     chart.xAxis
-        //         .axisLabel('Seconds')
-        //         .showMaxMin(true)
-        //         .tickFormat(d3.format(',.f'));
+            chart.xAxis
+                .axisLabel('Seconds')
+                .showMaxMin(true)
+                .tickFormat(d3.format(',.f'));
 
-        //     d3.select('#power-chart-line svg')
-        //         .datum(getPower())
-        //         // .datum([{key:'Power', values:[10,100], color : '#AAAAAA'}])
-        //         .transition().duration(500)
-        //         .call(chart);
+            d3.select('#power-chart-line svg')
+                .datum(getPower())
+                // .datum([{key:'Power', values:[10,100], color : '#AAAAAA'}])
+                .transition().duration(500)
+                .call(chart);
 
-        //     nv.utils.windowResize(chart.update);
-        //     lineChart = chart;
+            nv.utils.windowResize(chart.update);
+            lineChart = chart;
 
-        //     lineChartOperaHack();
+            lineChartOperaHack();
 
-        //     return chart;
-        // });
+            return chart;
+        });
         nv.addGraph(function() {
             var chart = nv.models.lineChart()
                 // .margin({top: 0, bottom: 25, left: 30, right: 0})
