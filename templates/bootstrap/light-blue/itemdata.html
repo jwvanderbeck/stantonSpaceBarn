@@ -1,0 +1,986 @@
+{% load static %}
+<link rel="stylesheet" type="text/css" href='{% static "css/ssb/jquery-ui-1.10.3.custom.css" %}'>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Stanton Space Barn - Data Submission</title>
+    <link href='{% static "theme/light-blue/css/application.css" %}' rel="stylesheet">
+    <link rel="shortcut icon" href='{% static "theme/light-blue/img/favicon.png" %}'>
+    <script src='{% static "theme/light-blue/lib/jquery/jquery.1.9.0.min.js" %}'> </script>
+    <script type='text/javascript' src='{% static "js/app.js" %}'></script>
+    <script type='text/javascript' src='{% static "js/jquery.form.min.js" %}'></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <meta charset="utf-8">
+    <script type="text/javascript">
+
+      var _gaq = _gaq || [];
+      var pluginUrl = '//www.google-analytics.com/plugins/ga/inpage_linkid.js';
+      _gaq.push(['_require', 'inpage_linkid', pluginUrl]);
+      _gaq.push(['_setAccount', 'UA-278263-23']);
+      _gaq.push(['_trackPageview']);
+
+      (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
+
+    </script>
+</head>
+<body class="background-dark">
+<div class="logo">
+    <h4><a href="/ships/">Stanton <strong>Space Barn</strong></a></h4>
+</div>
+<nav id="sidebar" class="sidebar nav-collapse collapse">
+    <ul id="side-nav" class="side-nav">
+        <li >
+            <a href="/hangar/"><i class="icon-home"></i> <span class="name">My Hangar</span></a>
+        </li>
+        <li class="accordion-group">
+            <a class="accordion-toggle collapsed" data-toggle="collapse"
+               data-parent="#side-nav" href="#barn-collapse"><i class="icon-fighter-jet"></i> <span class="name">The Barn</span></a>
+            <ul id="barn-collapse" class="accordion-body collapse">
+                <li><a href="/ships/">Ships</a></li>
+                <li><a href="/variants/">Variants</a></li>
+            </ul>
+        </li>
+        <li class="accordion-group">
+            <a class="accordion-toggle" data-toggle="collapse"
+               data-parent="#side-nav" href="#items-collapse"><i class="icon-book"></i> <span class="name">Item Browser</span></a>
+            <ul id="items-collapse" class="accordion-body collapse in">
+                <li><a href="/items/avionics">Avionics</a></li>
+                <li><a href="/items/battery">Batteries</a></li>
+                <li><a href="/items/container">Cargo</a></li>
+                <li><a href="/items/cooler">Coolers</a></li>
+                <li><a href="/items/display">Displays</a></li>
+                <li><a href="/items/powerplant">Power Plants</a></li>
+                <li><a href="/items/radar">Radars</a></li>
+                <li><a href="/items/thruster">Thrusters</a></li>
+                <li><a href="/items/weapon/">Weapons</a></li>
+            </ul>
+        </li>
+    </ul>
+</nav>
+
+<div class="wrap">
+    <header class="page-header">
+        
+    </header>
+    <div class="content container-fluid">
+        <div class="row-fluid">
+            <div class="span12">
+                <h2 class="page-title">Item Browser</h2>
+            </div>
+        </div>
+        <div class="row-fluid">
+            <div class="span6">
+                <section class="widget">
+                    <header>
+                    <h4>Items</h4>
+                        <div class="actions">
+                            <input id="search" type="search" placeholder="Filter">
+                        </div>
+                    </header>
+                    <div class="body">
+                        <div class="tabbable tabs-left">
+                            <ul id="items-lists" class="nav nav-tabs">
+                                <li class="active"><a href="#avionics-list" data-toggle="tab">Avionics</a></li>
+                                <li><a href="#batteries-list" data-toggle="tab">Batteries</a></li>
+                                <li><a href="#cargo-list" data-toggle="tab">Cargo</a></li>
+                                <li><a href="#coolers-list" data-toggle="tab">Coolers</a></li>
+                                <li><a href="#displays-list" data-toggle="tab">Displays</a></li>
+                                <li><a href="#powerplants-list" data-toggle="tab">Powerplants</a></li>
+                                <li><a href="#radars-list" data-toggle="tab">Radars</a></li>
+                                <li><a href="#thrusters-list" data-toggle="tab">Thrusters</a></li>
+                                <li><a href="#weapons-list" data-toggle="tab">Weapons</a></li>
+                            </ul>
+                            <div id="items-list-content" class="tab-content" >
+                                <div class="tab-pane fade in active" id="avionics-list">
+                                    <div id="table-dynamic-avionics">
+                                    </div>
+                                </div>
+                                <div class="tab-pane fade" id="batteries-list">
+                                    <div id="table-dynamic-batteries">
+                                    </div>
+                                </div>
+                                <div class="tab-pane fade" id="cargo-list">
+                                    <div id="table-dynamic-cargo">
+                                    </div>
+                                </div>
+                                <div class="tab-pane fade" id="coolers-list">
+                                    <div id="table-dynamic-coolers">
+                                    </div>
+                                </div>
+                                <div class="tab-pane fade" id="displays-list">
+                                    <div id="table-dynamic-displays">
+                                    </div>
+                                </div>
+                                <div class="tab-pane fade" id="powerplants-list">
+                                    <div id="table-dynamic-powerplants">
+                                    </div>
+                                </div>
+                                <div class="tab-pane fade" id="radars-list">
+                                    <div id="table-dynamic-radars">
+                                    </div>
+                                </div>
+                                <div class="tab-pane fade" id="thrusters-list">
+                                    <div id="table-dynamic-thrusters">
+                                    </div>
+                                </div>
+                                <div class="tab-pane fade" id="weapons-list">
+                                    <div id="table-dynamic-weapons">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+            <div class="span6">
+                <section class="widget">
+                    <header>
+                    <h4>Items</h4>
+                        <div class="actions">
+                            <input id="search-compare" type="search" placeholder="Filter">
+                        </div>
+                    </header>
+                    <div class="body">
+                        <div class="tabbable tabs-left">
+                            <ul id="items-lists-compare" class="nav nav-tabs">
+                                <li class="active"><a href="#avionics-list-compare" data-toggle="tab">Avionics</a></li>
+                                <li><a href="#batteries-list-compare" data-toggle="tab">Batteries</a></li>
+                                <li><a href="#cargo-list-compare" data-toggle="tab">Cargo</a></li>
+                                <li><a href="#coolers-list-compare" data-toggle="tab">Coolers</a></li>
+                                <li><a href="#displays-list-compare" data-toggle="tab">Displays</a></li>
+                                <li><a href="#powerplants-list-compare" data-toggle="tab">Powerplants</a></li>
+                                <li><a href="#radars-list-compare" data-toggle="tab">Radars</a></li>
+                                <li><a href="#thrusters-list-compare" data-toggle="tab">Thrusters</a></li>
+                                <li><a href="#weapons-list-compare" data-toggle="tab">Weapons</a></li>
+                            </ul>
+                            <div id="items-list-content" class="tab-content" >
+                                <div class="tab-pane fade in active" id="avionics-list-compare">
+                                    <div id="table-dynamic-avionics-compare">
+                                    </div>
+                                </div>
+                                <div class="tab-pane fade" id="batteries-list-compare">
+                                    <div id="table-dynamic-batteries-compare">
+                                    </div>
+                                </div>
+                                <div class="tab-pane fade" id="cargo-list-compare">
+                                    <div id="table-dynamic-cargo-compare">
+                                    </div>
+                                </div>
+                                <div class="tab-pane fade" id="coolers-list-compare">
+                                    <div id="table-dynamic-coolers-compare">
+                                    </div>
+                                </div>
+                                <div class="tab-pane fade" id="displays-list-compare">
+                                    <div id="table-dynamic-displays-compare">
+                                    </div>
+                                </div>
+                                <div class="tab-pane fade" id="powerplants-list-compare">
+                                    <div id="table-dynamic-powerplants-compare">
+                                    </div>
+                                </div>
+                                <div class="tab-pane fade" id="radars-list-compare">
+                                    <div id="table-dynamic-radars-compare">
+                                    </div>
+                                </div>
+                                <div class="tab-pane fade" id="thrusters-list-compare">
+                                    <div id="table-dynamic-thrusters-compare">
+                                    </div>
+                                </div>
+                                <div class="tab-pane fade" id="weapons-list-compare">
+                                    <div id="table-dynamic-weapons-compare">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+        <div class="row-fluid">
+            <div class="span6">
+                <section class="widget" id="item-details" style="display:none;">
+                    <header>
+                        <h4 id="item-details-itemname">Item Name</h4>
+                    </header>
+                    <div class="body" id="item-details-body">
+                        <table class="table" id="item-details-basics">
+                            <tbody>
+                            <tr>
+                                <td>Class</td>
+                                <td id="item-details-itemclass"></td>
+                                <td>Size</td>
+                                <td id="item-details-itemsize"></td>
+                                <td></td>
+                                <td id="item-details-itemunkown"></td>
+                            </tr>
+                            <tr>
+                                <td>Item Type</td>
+                                <td id="item-details-itemtype"></td>
+                            </tr>
+                            <tr>
+                                <td>Item SubType</td>
+                                <td id="item-details-itemsubtype"></td>
+                            </tr>
+                            </tbody>
+                        </table>
+                        <div id="item-details-weaponbars">
+                        </div>
+                        <div id="item-details-misc">
+                        </div>
+                    </div>
+                </section>
+                <section class="widget normal" style="display:none;">
+                    <header>
+                        <h4 id="power-chart-header">Power</h4>
+                    </header>
+                    <div id="power-chart-line" class="body chart">
+                        <svg></svg>
+                    </div>
+                </section>
+                <section class="widget normal" style="display:none;">
+                    <header>
+                        <h4 id="heat-chart-header">Heat</h4>
+                    </header>
+                    <div id="heat-chart-line" class="body chart">
+                        <svg></svg>
+                    </div>
+                </section>
+                <section class="widget normal" style="display:none;">
+                    <header>
+                        <h4 id="avionics-chart-header">Avionics</h4>
+                    </header>
+                    <div id="avionics-chart-line" class="body chart">
+                        <svg></svg>
+                    </div>
+                </section>
+            </div>
+            <div class="span6">
+                <section class="widget" id="item-details-compare" style="display:none;">
+                    <header>
+                        <h4 id="item-details-itemname-compare">Item Name</h4>
+                    </header>
+                    <div class="body" id="item-details-body-compare">
+                        <table class="table" id="item-details-basics-compare">
+                            <tbody>
+                            <tr>
+                                <td>Class</td>
+                                <td id="item-details-itemclass-compare"></td>
+                                <td>Size</td>
+                                <td id="item-details-itemsize-compare"></td>
+                                <td></td>
+                                <td id="item-details-itemunkown-compare"></td>
+                            </tr>
+                            <tr>
+                                <td>Item Type</td>
+                                <td id="item-details-itemtype-compare"></td>
+                            </tr>
+                            <tr>
+                                <td>Item SubType</td>
+                                <td id="item-details-itemsubtype-compare"></td>
+                            </tr>
+                            </tbody>
+                        </table>
+                        <div id="item-details-weaponbars-compare">
+                        </div>
+                        <div id="item-details-misc-compare">
+                        </div>
+                    </div>
+                </section>
+                <section class="widget normal" style="display:none;">
+                    <header>
+                        <h4 id="power-chart-header-compare">Power</h4>
+                    </header>
+                    <div id="power-chart-line-compare" class="body chart">
+                        <svg></svg>
+                    </div>
+                </section>
+                <section class="widget normal" style="display:none;">
+                    <header>
+                        <h4 id="heat-chart-header-compare">Heat</h4>
+                    </header>
+                    <div id="heat-chart-line-compare" class="body chart">
+                        <svg></svg>
+                    </div>
+                </section>
+                <section class="widget normal" style="display:none;">
+                    <header>
+                        <h4 id="avionics-chart-header-compare">Avionics</h4>
+                    </header>
+                    <div id="avionics-chart-line-compare" class="body chart">
+                        <svg></svg>
+                    </div>
+                </section>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- jquery and friends -->
+<script src='{% static "theme/light-blue/lib/jquery/jquery-migrate-1.1.0.min.js" %}'> </script>
+
+<!-- jquery plugins -->
+<script src='{% static "theme/light-blue/lib/jquery-maskedinput/jquery.maskedinput.js" %}'></script>
+<script src='{% static "theme/light-blue/lib/parsley/parsley.js" %}'> </script>
+<script src='{% static "theme/light-blue/lib/icheck.js/jquery.icheck.js" %}'></script>
+<script src='{% static "theme/light-blue/lib/select2.js" %}'></script>
+
+<!-- d3, nvd3-->
+<script src='{% static "theme/light-blue/lib/nvd3/lib/d3.v2.js" %}'></script>
+<script src='{% static "theme/light-blue/lib/nvd3/nv.d3.custom.js" %}'></script>
+
+<!-- nvd3 models -->
+<script src='{% static "theme/light-blue/lib/nvd3/src/models/scatter.js" %}'></script>
+<script src='{% static "theme/light-blue/lib/nvd3/src/models/axis.js" %}'></script>
+<script src='{% static "theme/light-blue/lib/nvd3/src/models/legend.js" %}'></script>
+<script src='{% static "theme/light-blue/lib/nvd3/src/models/stackedArea.js" %}'></script>
+<script src='{% static "theme/light-blue/lib/nvd3/src/models/stackedAreaChart.js" %}'></script>
+<script src='{% static "theme/light-blue/lib/nvd3/src/models/line.js" %}'></script>
+<script src='{% static "theme/light-blue/lib/nvd3/src/models/pie.js" %}'></script>
+<script src='{% static "theme/light-blue/lib/nvd3/src/models/pieChartTotal.js" %}'></script>
+<script src='{% static "theme/light-blue/lib/nvd3/stream_layers.js" %}'></script>
+<script src='{% static "theme/light-blue/lib/nvd3/src/models/lineChart.js" %}'></script>
+<script src='{% static "theme/light-blue/lib/nvd3/src/models/multiBar.js" %}'></script>
+<script src='{% static "theme/light-blue/lib/nvd3/src/models/multiBarChart.js" %}'></script>
+
+<!--backbone and friends -->
+<script src='{% static "theme/light-blue/lib/backbone/underscore-min.js" %}'></script>
+<script src='{% static "theme/light-blue/lib/backbone/backbone-min.js" %}'></script>
+<script src='{% static "theme/light-blue/lib/backbone/backbone-pageable.js" %}'></script>
+<script src='{% static "theme/light-blue/lib/backgrid/backgrid.js" %}'></script>
+<script src='{% static "theme/light-blue/lib/backgrid/backgrid-paginator.js" %}'></script>
+
+<!-- bootstrap default plugins -->
+<script src='{% static "theme/light-blue/js/bootstrap/bootstrap-transition.js" %}'></script>
+<script src='{% static "theme/light-blue/js/bootstrap/bootstrap-collapse.js" %}'></script>
+<script src='{% static "theme/light-blue/js/bootstrap/bootstrap-alert.js" %}'></script>
+<script src='{% static "theme/light-blue/js/bootstrap/bootstrap-tooltip.js" %}'></script>
+<script src='{% static "theme/light-blue/js/bootstrap/bootstrap-popover.js" %}'></script>
+<script src='{% static "theme/light-blue/js/bootstrap/bootstrap-button.js" %}'></script>
+<script src='{% static "theme/light-blue/js/bootstrap/bootstrap-dropdown.js" %}'></script>
+<script src='{% static "theme/light-blue/js/bootstrap/bootstrap-modal.js" %}'></script>
+<script src='{% static "theme/light-blue/js/bootstrap/bootstrap-tab.js" %}'> </script>
+
+<!-- basic application js-->
+<script src='{% static "theme/light-blue/js/app.js" %}'></script>
+<script src='{% static "theme/light-blue/js/settings.js" %}'></script>
+
+
+<script type="text/template" id="sidebar-settings-template">
+        <% auto = sidebarState == 'auto'%>
+        <% if (auto) {%>
+            <button type="button"
+                    data-value="icons"
+                    class="btn-icons btn btn-transparent btn-small">Icons</button>
+    <button type="button"
+            data-value="auto"
+            class="btn-auto btn btn-transparent btn-small">Auto</button>
+        <%} else {%>
+            <button type="button"
+                    data-value="auto"
+                    class="btn btn-transparent btn-small">Auto</button>
+        <% } %>
+</script>
+
+<script type='text/javascript'>
+    $(document).ready( function () {
+        // var frm = $('#ship-submission');
+        // frm.submit(function (event) {
+        //     var jsonData = JSON.stringify(frm.serializeArray());
+        //     console.log(jsonData);
+        //     $.post(frm.attr('action'), jsonData).done(function(data) {
+        //         if (data['success'] == false)
+        //         {
+        //             console.log(data['response']);
+        //         }
+        //         else
+        //         {
+        //         }
+        //     });  
+        //     event.preventDefault();
+        // });
+
+        $(".item-select").on("click", function(event) {
+            event.preventDefault();
+            chartPipe($(this).attr("href"), "Power", "All")
+            chartPipe($(this).attr("href"), "Heat", "All")
+            chartPipe($(this).attr("href"), "Avionics", "All")
+        });
+        function getItemDetails(itemName) {
+            jsonData = {
+                "itemName"  : itemName,
+            }
+            var jsonData = JSON.stringify(jsonData);
+            console.log(jsonData);
+            $.ajaxSetup({
+              async: false
+            });
+            $.post('/items/details/', jsonData).done(function(data) {
+                if (data['success'] == false)
+                {
+                    $("#item-details").hide();
+                }
+                else
+                {
+                    $("#item-details").show();
+                    var section = $("#item-details");
+                    $("#item-details-itemname").text(data['itemname']);
+                    $("#item-details-itemclass").text(data['itemclass']);
+                    $("#item-details-itemsize").text(data['itemsize']);
+                    $("#item-details-itemtype").text(data['itemtype']);
+                    $("#item-details-itemsubtype").text(data['itemsubtype']);
+                    // clear the sub divs so we;re starting fresh
+                    var weaponbars = $("#item-details-weaponbars");
+                    weaponbars.empty();
+                    var misc = $("#item-details-misc");
+                    misc.empty();
+                    if (data['itemtype'] == "Weapon")
+                    {
+                        var stats = data['itemstats']
+                        for (var index = 0; index < stats.length; index++)
+                        {
+                            var h = $(document.createElement('h5')).appendTo(weaponbars).text(stats[index]['name']);
+                            var progress = $(document.createElement('div')).appendTo(weaponbars).addClass("progress");
+                            var bar = $(document.createElement('div')).appendTo(progress).addClass("bar").text(stats[index]['value'])
+                            .css("width",stats[index]['value'] + "%");
+                        }
+                    }
+                    else
+                    {
+                        var stats = data['itemstats']
+                        var table = $(document.createElement('table')).appendTo(misc).addClass("table");
+                        var tableBody = $(document.createElement('tbody')).appendTo(table);
+                        for (var index = 0; index < stats.length; index++)
+                        {
+                            var tableRow = $(document.createElement('tr')).appendTo(tableBody);
+                            $(document.createElement('td')).appendTo(tableRow).text(stats[index]['name']);
+                            $(document.createElement('td')).appendTo(tableRow).text(stats[index]['value']);
+                        }
+                    }
+                }
+            });
+        }
+
+        function chartPipe(itemName, pipe, state) {
+            jsonData = {
+                "itemName"  : itemName,
+                "pipe"      : pipe,
+                "state"     : state,
+                "metric"    : 0
+            }
+            var jsonData = JSON.stringify(jsonData);
+            console.log(jsonData);
+            $.ajaxSetup({
+              async: false
+            });
+            $.post('/items/pipegraph/', jsonData).done(function(data) {
+                if (data['success'] == false)
+                {
+                    console.log(data['response']);
+                    $("#" + pipe.toLowerCase() + "-chart-line").parent().hide(0)
+                }
+                else
+                {
+                    console.log(data['data']);
+                    $("#" + pipe.toLowerCase() + "-chart-line").parent().show()
+                    var chartID = "#" + pipe.toLowerCase() + "-chart-line svg" 
+                    console.log($(chartID));
+                    if (pipe == "Power")
+                    {
+                        if (data['negative'])
+                            $("#power-chart-header").text("Power Consumption (per second)")
+                        else
+                            $("#power-chart-header").text("Power Generation (per second)")
+                    }
+                    else if (pipe == "Heat")
+                    {
+                        if (data['negative'])
+                            $("#heat-chart-header").text("Heat Dissipation (per second)")
+                        else
+                            $("#heat-chart-header").text("Heat Generation (per second)")
+                    }
+                    else if (pipe == "Avionics")
+                    {
+                        if (data['negative'])
+                            $("#avionics-chart-header").text("Avionics Offloading (per second)")
+                        else
+                            $("#avionics-chart-header").text("Avionics Consumption (per second)")
+                    }
+
+                    nv.addGraph(function() {
+                        var chart = nv.models.lineChart()
+                            .showLegend(true)
+
+                        chart.yAxis
+                            .axisLabel(pipe)
+                            .showMaxMin(true)
+                            .tickFormat(d3.format(',.f'));
+
+                        chart.xAxis
+                            .axisLabel('Seconds')
+                            .showMaxMin(true)
+                            .tickFormat(d3.format(',.f'));
+
+                        d3.select(chartID)
+                            .datum(data['data'])
+                            .transition().duration(0)
+                            .call(chart);
+
+                        nv.utils.windowResize(chart.update);
+                        lineChart = chart;
+
+                        lineChartOperaHack();
+
+                        return chart;
+                    });
+                }
+            });
+        }
+        function getItemDetailsCompare(itemName) {
+            jsonData = {
+                "itemName"  : itemName,
+            }
+            var jsonData = JSON.stringify(jsonData);
+            console.log(jsonData);
+            $.ajaxSetup({
+              async: false
+            });
+            $.post('/items/details/', jsonData).done(function(data) {
+                if (data['success'] == false)
+                {
+                    $("#item-details-compare").hide();
+                }
+                else
+                {
+                    $("#item-details-compare").show();
+                    var section = $("#item-details-compare");
+                    $("#item-details-itemname-compare").text(data['itemname']);
+                    $("#item-details-itemclass-compare").text(data['itemclass']);
+                    $("#item-details-itemsize-compare").text(data['itemsize']);
+                    $("#item-details-itemtype-compare").text(data['itemtype']);
+                    $("#item-details-itemsubtype-compare").text(data['itemsubtype']);
+                    // clear the sub divs so we;re starting fresh
+                    var weaponbars = $("#item-details-weaponbars-compare");
+                    weaponbars.empty();
+                    var misc = $("#item-details-misc-compare");
+                    misc.empty();
+                    if (data['itemtype'] == "Weapon")
+                    {
+                        var stats = data['itemstats']
+                        for (var index = 0; index < stats.length; index++)
+                        {
+                            var h = $(document.createElement('h5')).appendTo(weaponbars).text(stats[index]['name']);
+                            var progress = $(document.createElement('div')).appendTo(weaponbars).addClass("progress");
+                            var bar = $(document.createElement('div')).appendTo(progress).addClass("bar").text(stats[index]['value'])
+                            .css("width",stats[index]['value'] + "%");
+                        }
+                    }
+                    else
+                    {
+                        var stats = data['itemstats']
+                        var table = $(document.createElement('table')).appendTo(misc).addClass("table");
+                        var tableBody = $(document.createElement('tbody')).appendTo(table);
+                        for (var index = 0; index < stats.length; index++)
+                        {
+                            var tableRow = $(document.createElement('tr')).appendTo(tableBody);
+                            $(document.createElement('td')).appendTo(tableRow).text(stats[index]['name']);
+                            $(document.createElement('td')).appendTo(tableRow).text(stats[index]['value']);
+                        }
+                    }
+                }
+            });
+        }
+
+        function chartPipeCompare(itemName, pipe, state) {
+            jsonData = {
+                "itemName"  : itemName,
+                "pipe"      : pipe,
+                "state"     : state,
+                "metric"    : 0
+            }
+            var jsonData = JSON.stringify(jsonData);
+            console.log(jsonData);
+            $.ajaxSetup({
+              async: false
+            });
+            $.post('/items/pipegraph/', jsonData).done(function(data) {
+                if (data['success'] == false)
+                {
+                    console.log(data['response']);
+                    $("#" + pipe.toLowerCase() + "-chart-line-compare").parent().hide(0)
+                }
+                else
+                {
+                    console.log(data['data']);
+                    $("#" + pipe.toLowerCase() + "-chart-line-compare").parent().show()
+                    var chartID = "#" + pipe.toLowerCase() + "-chart-line-compare svg" 
+                    console.log($(chartID));
+                    if (pipe == "Power")
+                    {
+                        if (data['negative'])
+                            $("#power-chart-header-compare").text("Power Consumption (per second)")
+                        else
+                            $("#power-chart-header-compare").text("Power Generation (per second)")
+                    }
+                    else if (pipe == "Heat")
+                    {
+                        if (data['negative'])
+                            $("#heat-chart-header-compare").text("Heat Dissipation (per second)")
+                        else
+                            $("#heat-chart-header-compare").text("Heat Generation (per second)")
+                    }
+                    else if (pipe == "Avionics")
+                    {
+                        if (data['negative'])
+                            $("#avionics-chart-header-compare").text("Avionics Offloading (per second)")
+                        else
+                            $("#avionics-chart-header-compare").text("Avionics Consumption (per second)")
+                    }
+
+                    nv.addGraph(function() {
+                        var chart = nv.models.lineChart()
+                            .showLegend(true)
+
+                        chart.yAxis
+                            .axisLabel(pipe)
+                            .showMaxMin(true)
+                            .tickFormat(d3.format(',.f'));
+
+                        chart.xAxis
+                            .axisLabel('Seconds')
+                            .showMaxMin(true)
+                            .tickFormat(d3.format(',.f'));
+
+                        d3.select(chartID)
+                            .datum(data['data'])
+                            .transition().duration(0)
+                            .call(chart);
+
+                        nv.utils.windowResize(chart.update);
+                        lineChart = chart;
+
+                        lineChartOperaHack();
+
+                        return chart;
+                    });
+                }
+            });
+        }
+        var lineResize;
+        function lineChartOperaHack(){
+            //lineChart is somehow not rendered correctly after updates. Need to reupdate
+            if ($.browser.opera){
+                clearTimeout(lineResize);
+                lineResize = setTimeout(lineChart.update, 300);
+            }
+        }
+        console.log("Setting up Backbone");
+    //Backgrid part
+
+    var Items = Backbone.Model.extend({});
+
+    var PageableAvionics = Backbone.PageableCollection.extend({
+        model: Items,
+        url: '/items/list/avionics',
+        state: {
+            pageSize: 10
+        },
+        mode: "client" // page entirely on the client side
+    });
+    var PageableBatteries = Backbone.PageableCollection.extend({
+        model: Items,
+        url: '/items/list/battery',
+        state: {
+            pageSize: 10
+        },
+        mode: "client" // page entirely on the client side
+    });
+    var PageableCooler = Backbone.PageableCollection.extend({
+        model: Items,
+        url: '/items/list/cooler',
+        state: {
+            pageSize: 10
+        },
+        mode: "client" // page entirely on the client side
+    });
+    var PageableCargo = Backbone.PageableCollection.extend({
+        model: Items,
+        url: '/items/list/container',
+        state: {
+            pageSize: 10
+        },
+        mode: "client" // page entirely on the client side
+    });
+    var PageableDisplays = Backbone.PageableCollection.extend({
+        model: Items,
+        url: '/items/list/display',
+        state: {
+            pageSize: 10
+        },
+        mode: "client" // page entirely on the client side
+    });
+    var PageablePowerplants = Backbone.PageableCollection.extend({
+        model: Items,
+        url: '/items/list/powerplant',
+        state: {
+            pageSize: 10
+        },
+        mode: "client" // page entirely on the client side
+    });
+    var PageableRadars = Backbone.PageableCollection.extend({
+        model: Items,
+        url: '/items/list/radar',
+        state: {
+            pageSize: 10
+        },
+        mode: "client" // page entirely on the client side
+    });
+    var PageableWeapons = Backbone.PageableCollection.extend({
+        model: Items,
+        url: '/items/list/weapon',
+        state: {
+            pageSize: 10
+        },
+        mode: "client" // page entirely on the client side
+    });
+    var PageableThrusters = Backbone.PageableCollection.extend({
+        model: Items,
+        url: '/items/list/thruster',
+        state: {
+            pageSize: 10
+        },
+        mode: "client" // page entirely on the client side
+    });
+
+    var pageableAvionics = new PageableAvionics(),
+        initialAvionics = pageableAvionics;
+    var pageableAvionicsCompare = new PageableAvionics(),
+        initialAvionicsCompare = pageableAvionicsCompare;
+
+    var pageableBatteries = new PageableBatteries(),
+        initialBatteries = pageableBatteries;
+    var pageableBatteriesCompare = new PageableBatteries(),
+        initialBatteriesCompare = pageableBatteriesCompare;
+
+    var pageableCargo = new PageableCargo(),
+        initialCargo = pageableCargo;
+    var pageableCargoCompare = new PageableCargo(),
+        initialCargo = pageableCargoCompare;
+
+    var pageableCooler = new PageableCooler(),
+        initialCooler = pageableCooler;
+    var pageableCoolerCompare = new PageableCooler(),
+        initialCoolerCompare = pageableCoolerCompare;
+
+    var pageableDisplays = new PageableDisplays(),
+        initialDisplays = pageableDisplays;
+    var pageableDisplaysCompare = new PageableDisplays(),
+        initialDisplaysCompare = pageableDisplaysCompare;
+
+    var pageableRadars = new PageableRadars(),
+        initialRadars = pageableRadars;
+    var pageableRadarsCompare = new PageableRadars(),
+        initialRadarsCompare = pageableRadarsCompare;
+
+    var pageablePowerplants = new PageablePowerplants(),
+        initialPowerplants = pageablePowerplants;
+    var pageablePowerplantsCompare = new PageablePowerplants(),
+        initialPowerplantsCompare = pageablePowerplantsCompare;
+
+
+    var pageableWeapons = new PageableWeapons(),
+        initialWeapons = pageableWeapons;
+    var pageableWeaponsCompare = new PageableWeapons(),
+        initialWeaponsCompare = pageableWeaponsCompare;
+
+    var pageableThrusters = new PageableThrusters(),
+        initialThrusters = pageableThrusters;
+    var pageableThrustersCompare = new PageableThrusters(),
+        initialThrustersCompare = pageableThrustersCompare;
+
+    var ClickableRow = Backgrid.Row.extend({
+      events: {
+        "click": "onClick"
+        // "mouseenter" : "onMouseEnter",
+        // "mouseleave" : "onMouseLeave",
+      },
+      onClick: function () {
+        Backbone.trigger("rowclicked", this.model);
+      }
+    });
+
+    Backbone.on("rowclicked", function (model) {
+        console.log(model.get("displayName"));
+        getItemDetails(model.get("name"));
+        chartPipe(model.get("name"), "Power", "All")
+        chartPipe(model.get("name"), "Heat", "All")
+        chartPipe(model.get("name"), "Avionics", "All")
+    });        
+
+    var ClickableRowCompare = Backgrid.Row.extend({
+      events: {
+        "click": "onClick"
+        // "mouseenter" : "onMouseEnter",
+        // "mouseleave" : "onMouseLeave",
+      },
+      onClick: function () {
+        Backbone.trigger("rowclickedCompare", this.model);
+      }
+    });
+
+    Backbone.on("rowclickedCompare", function (model) {
+        console.log(model.get("displayName"));
+        getItemDetailsCompare(model.get("name"));
+        chartPipeCompare(model.get("name"), "Power", "All")
+        chartPipeCompare(model.get("name"), "Heat", "All")
+        chartPipeCompare(model.get("name"), "Avionics", "All")
+    });        
+    function createBackgrid(collection, parentElement){
+        var columns = [{
+            name: "displayName",
+            label: "Item",
+            editable : false,
+            // The cell type can be a reference of a Backgrid.Cell subclass, any Backgrid.Cell subclass instances like *id* above, or a string
+            cell: "string" // This is converted to "StringCell" and a corresponding class in the Backgrid package namespace is looked up
+        }, {
+            name: "subtype",
+            label: "Sub Type",
+            editable : false,
+            cell: "string" // An integer cell is a number cell that displays humanized integers
+        }]
+
+        var pageableGrid = new Backgrid.Grid({
+            columns: columns,
+            row : ClickableRow,
+            collection: collection,
+            footer: Backgrid.Extension.Paginator.extend({
+                //okendoken. rewrite template to add pagination class to container
+                template: _.template('<tr><td class="pagination" colspan="<%= colspan %>"><ul><% _.each(handles, function (handle) { %><li <% if (handle.className) { %>class="<%= handle.className %>"<% } %>><a href="#" <% if (handle.title) {%> title="<%= handle.title %>"<% } %>><%= handle.label %></a></li><% }); %></ul></td></tr>')
+            }),
+            className: 'table table-condensed no-margin table-hover'
+        });
+
+        parentElement.html(pageableGrid.render().$el);
+    }
+    function createBackgridCompare(collection, parentElement){
+        var columns = [{
+            name: "displayName",
+            label: "Item",
+            editable : false,
+            // The cell type can be a reference of a Backgrid.Cell subclass, any Backgrid.Cell subclass instances like *id* above, or a string
+            cell: "string" // This is converted to "StringCell" and a corresponding class in the Backgrid package namespace is looked up
+        }, {
+            name: "subtype",
+            label: "Sub Type",
+            editable : false,
+            cell: "string" // An integer cell is a number cell that displays humanized integers
+        }]
+
+        var pageableGrid = new Backgrid.Grid({
+            columns: columns,
+            row : ClickableRowCompare,
+            collection: collection,
+            footer: Backgrid.Extension.Paginator.extend({
+                //okendoken. rewrite template to add pagination class to container
+                template: _.template('<tr><td class="pagination" colspan="<%= colspan %>"><ul><% _.each(handles, function (handle) { %><li <% if (handle.className) { %>class="<%= handle.className %>"<% } %>><a href="#" <% if (handle.title) {%> title="<%= handle.title %>"<% } %>><%= handle.label %></a></li><% }); %></ul></td></tr>')
+            }),
+            className: 'table table-condensed no-margin table-hover'
+        });
+
+        parentElement.html(pageableGrid.render().$el);
+    }
+
+    var tableResize;
+
+    $(window).resize(function(e) {
+        clearTimeout(tableResize);
+        tableResize = setTimeout(function(){
+            createBackgrid(pageableAvionics, $("#table-dynamic-avionics"));
+            createBackgridCompare(pageableAvionicsCompare, $("#table-dynamic-avionics-compare"));
+            createBackgrid(pageableBatteries, $("#table-dynamic-batteries"));
+            createBackgridCompare(pageableBatteriesCompare, $("#table-dynamic-batteries-compare"));
+            createBackgrid(pageableCargo, $("#table-dynamic-cargo"));
+            createBackgridCompare(pageableCargoCompare, $("#table-dynamic-cargo-compare"));
+            createBackgrid(pageableCooler, $("#table-dynamic-cooler"));
+            createBackgridCompare(pageableCoolerCompare, $("#table-dynamic-cooler-compare"));
+            createBackgrid(pageableDisplays, $("#table-dynamic-displays"));
+            createBackgridCompare(pageableDisplaysCompare, $("#table-dynamic-displays-compare"));
+            createBackgrid(pageableRadars, $("#table-dynamic-radar"));
+            createBackgridCompare(pageableRadarsCompare, $("#table-dynamic-radar-compare"));
+            createBackgrid(pageablePowerplants, $("#table-dynamic-powerplants"));
+            createBackgridCompare(pageablePowerplantsCompare, $("#table-dynamic-powerplants-compare"));
+            createBackgrid(pageableWeapons, $("#table-dynamic-weapons"));
+            createBackgridCompare(pageableWeaponsCompare, $("#table-dynamic-weapons-compare"));
+            createBackgrid(pageableThrusters, $("#table-dynamic-thrusters"));
+            createBackgridCompare(pageableThrustersCompare, $("#table-dynamic-thrusters-compare"));
+        }, 200);
+    });
+
+    createBackgrid(pageableAvionics, $("#table-dynamic-avionics"));
+    createBackgridCompare(pageableAvionicsCompare, $("#table-dynamic-avionics-compare"));
+    createBackgrid(pageableBatteries, $("#table-dynamic-batteries"));
+    createBackgridCompare(pageableBatteriesCompare, $("#table-dynamic-batteries-compare"));
+    createBackgrid(pageableCargo, $("#table-dynamic-cargo"));
+    createBackgridCompare(pageableCargoCompare, $("#table-dynamic-cargo-compare"));
+    createBackgrid(pageableCooler, $("#table-dynamic-coolers"));
+    createBackgridCompare(pageableCoolerCompare, $("#table-dynamic-coolers-compare"));
+    createBackgrid(pageableDisplays, $("#table-dynamic-displays"));
+    createBackgridCompare(pageableDisplaysCompare, $("#table-dynamic-displays-compare"));
+    createBackgrid(pageableRadars, $("#table-dynamic-radars"));
+    createBackgridCompare(pageableRadarsCompare, $("#table-dynamic-radars-compare"));
+    createBackgrid(pageablePowerplants, $("#table-dynamic-powerplants"));
+    createBackgridCompare(pageablePowerplantsCompare, $("#table-dynamic-powerplants-compare"));
+    createBackgrid(pageableWeapons, $("#table-dynamic-weapons"));
+    createBackgridCompare(pageableWeaponsCompare, $("#table-dynamic-weapons-compare"));
+    createBackgrid(pageableThrusters, $("#table-dynamic-thrusters"));
+    createBackgridCompare(pageableThrustersCompare, $("#table-dynamic-thrusters-compare"));
+
+    // $("#search").change(function(){
+
+    //     var $that = $(this),
+    //         filteredCollection = initialWeapons.fullCollection.filter(function(el){
+    //         return ~el.get('displayName').toUpperCase().indexOf($that.val().toUpperCase());
+    //     });
+    //     createBackgrid(new PageableWeapons(filteredCollection, {
+    //         state: {
+    //             firstPage: 1,
+    //             currentPage: 1
+    //         }
+    //     }));
+    // });
+
+
+    pageableAvionics.fetch();
+    pageableAvionicsCompare.fetch();
+    pageableBatteries.fetch();
+    pageableBatteriesCompare.fetch();
+    pageableCargo.fetch();
+    pageableCargoCompare.fetch();
+    pageableCooler.fetch();
+    pageableCoolerCompare.fetch();
+    pageableDisplays.fetch();
+    pageableDisplaysCompare.fetch();
+    pageableRadars.fetch();
+    pageableRadarsCompare.fetch();
+    pageablePowerplants.fetch();
+    pageablePowerplantsCompare.fetch();
+    pageableWeapons.fetch();
+    pageableWeaponsCompare.fetch();
+    pageableThrusters.fetch();
+    pageableThrustersCompare.fetch();
+
+        console.log("Done");
+
+    });
+</script>
+
+<script>
+</script>
+
+</body>
