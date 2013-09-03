@@ -924,6 +924,15 @@ def itemDetails(request, itemName):
     # !!!!!!!!!!!!!
     return render_to_response('bootstrap/light-blue/itemDetail.html', renderContext, context_instance=RequestContext(request))
 
+def itemdata(request):
+    renderContext = {
+    }
+
+    # The bit here about context_instance=RequestContext(request) is ABSOLUTELY VITAL 
+    # as it is what enables the resulting rendered view to contain the CSRF token!
+    # !!!!!!!!!!!!!
+    return render_to_response('bootstrap/light-blue/itemdata.html', renderContext, context_instance=RequestContext(request))
+
 def itemList(request, itemTypeName):
     # Get the item type
     itemTypes = VehicleItemType.objects.all().filter(typeName__iexact=itemTypeName)
@@ -942,24 +951,61 @@ def itemList(request, itemTypeName):
     # as it is what enables the resulting rendered view to contain the CSRF token!
     # !!!!!!!!!!!!!
     return render_to_response('bootstrap/light-blue/itemList.html', renderContext, context_instance=RequestContext(request))
-def extrapolateStateValues(state, duration=30, stacking=False):
+def extrapolateStateValues(state, duration=30, metric=0, stacking=False):
+    # Metrics:
+    # 0 - Value per Second at Time
+    # 1 - Total Value at Time
     # This method takes in a VehicleItem* state object with one or more values
     # and extrapolates those values to the specified duration in seconds
+
+    # If values are negative we make them positive due to a bug in NVD3 charting
+
     if not state:
         return []
 
     stateValue = state.value
+    print stateValue
     values = []
     if "," in stateValue:
-        pass
+        # The value is packed to store varying values at different times
+        # So we ened to build it out over the duration
+        chunks = stateValue.split(",")
+        stateValues = {}
+        for chunk in chunks:
+            stateValues[int(chunk.split(":")[0])] = int(chunk.split(":")[1])
+        print stateValues
+        if not stacking:
+            currentVPS = 0
+            for i in range(0, duration + 1, 1):
+                if i in stateValues:
+                    currentVPS = stateValues[i]
+                values.append(currentVPS)
+        else:
+            currentVPS = 0
+            for i in range(0, duration + 1, 1):
+                if i in stateValues:
+                    currentVPS = currentVPS + stateValues[i]
+                values.append(currentVPS)
+
     else:
         # Simple case, a single value
-        if stacking:
-            pass
-        else:
+        stateValue = int(stateValue)
+        if stateValue < 0:
+            stateValue = stateValue# * -1
+        if metric == 0:
             # Simplest of all cases, we just hold the value from 0-duration
             for i in range(0, duration + 1, 1):
                 values.append(stateValue)
+        else:
+            if stacking:
+                # This is a single value, but since it stacks we need to 
+                # increase at a steady rate over time
+                for i in range(0, duration + 1, 1):
+                    values.append(stateValue * i)
+            else:
+                # Simplest of all cases, we just hold the value from 0-duration
+                for i in range(0, duration + 1, 1):
+                    values.append(stateValue)
 
     return values
 
@@ -981,6 +1027,87 @@ def getGraphColorForState(stateName):
     else:
         return "#AAAAAA"
 
+def getBackgridItemList(request, itemTypeName):
+    # JSON callable function to retrive a list of
+    # items in Backgrid table format
+    if request.is_ajax():
+
+        # Find all items that match the given ItemType
+        try:
+            itemType = VehicleItemType.objects.get(typeName__iexact=itemTypeName)
+        except:
+            print "Unable to find itemType"
+            response_data = [{}]
+            return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
+
+        try:
+            items = VehicleItem.objects.all().filter(itemType__exact=itemType).order_by('name')
+        except:
+            print "Unable to find any items"
+            response_data = [{}]
+            return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
+
+        response_data = []
+        print "Returning items for %s" % (itemTypeName)
+        for item in items:
+            row = {}
+            row['subtype'] = item.itemSubType.subTypeName
+            if item.displayName:
+                row['displayName'] = item.displayName
+            else:
+                row['displayName'] = item.name
+            row['name'] = item.name
+            response_data.append(row)
+        return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
+
+    assert False        
+def getItemDetails(request):
+    '''
+    Responds to an AJAX call with item details on a specified item
+    '''
+    if request.is_ajax():
+        try:
+            requestData = simplejson.loads(request.body)
+            print "JSON Data:"
+            print requestData
+        except:
+            print "json parse failed"
+            response_data = {
+            'success' : False,
+            'response' : 'Unable to parse JSON object.',
+            }
+            return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
+
+        # Find the given item
+        try:
+            item = VehicleItem.objects.get(name__iexact=requestData['itemName'])
+        except:
+            print "Unable to find the specified item"
+            response_data = {
+            'success' : False,
+            'response' : 'Unable to find item.',
+            }
+            return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
+
+        response_data = {}
+        # Basic details
+        print item
+        if item.displayName:
+            response_data['itemname'] = item.displayName
+        else:
+            response_data['itemname'] = item.name
+        response_data['itemclass'] = item.itemClass
+        response_data['itemsize'] = item.itemSize
+        response_data['itemtype'] = item.itemType.typeName
+        response_data['itemsubtype'] = item.itemSubType.subTypeName
+        # VehicleItemStats
+        allStats = item.itemStats.all()
+        response_data['itemstats'] = []
+        for stat in allStats:
+            response_data['itemstats'].append( {'name' : stat.name, 'value' : stat.value} )
+        return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
+
+    assert False        
 
 def getPipeGraph(request):
     # JSON callable function to retrive the graph data
@@ -1086,7 +1213,7 @@ def getPipeGraph(request):
         if len(requestedStates) == 0:
             response_data = {
             'success' : False,
-            'response' : 'No vaid states found.',
+            'response' : 'No valid states found.',
             'data' : [{"values":[]}]
             }
             print response_data
@@ -1099,8 +1226,11 @@ def getPipeGraph(request):
 
         data = []
         for state in requestedStates:
-            stateValues = extrapolateStateValues(state, 30, stacking)
-            print stateValues
+            if "-" in state.value:
+                negativeValues = True
+            else:
+                negativeValues = False
+            stateValues = extrapolateStateValues(state, 30, metric=requestData['metric'], stacking=stacking)
             stateData = {   'key'    : state.state,
                             'color'  : getGraphColorForState(state.state),
                             'values' : []
@@ -1114,6 +1244,7 @@ def getPipeGraph(request):
         response_data = {
         'success' : True,
         'response' : 'Blah',
+        'negative'  : negativeValues,
         'data' : data
         }
         print response_data
@@ -1123,6 +1254,28 @@ def getPipeGraph(request):
         # This should never be anything but an AJAX call, so
         # someone is doing somethign fishy!
         assert False
+
+def exampleTerritories(request):
+    response_data = [
+        {"id" : 1,
+        "name" : "USA",
+        "url" : "bla",
+        "pop" : 100,
+        "date" : "2013-08-01",
+        "percentage" : 0.5,
+        },
+        {"id" : 2,
+        "name" : "Canada",
+        "url" : "bla",
+        "pop" : 1000,
+        "date" : "2013-08-01",
+        "percentage" : 0.2,
+        }
+    ]
+    print "Returning collection"
+    print response_data
+    return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
+
 
 def graphData(request):
     # This is just a test view
