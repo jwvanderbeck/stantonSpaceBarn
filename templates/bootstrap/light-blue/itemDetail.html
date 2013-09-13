@@ -35,9 +35,11 @@
 </div>
 <nav id="sidebar" class="sidebar nav-collapse collapse">
     <ul id="side-nav" class="side-nav">
+        {% if user.is_authenticated %}
         <li >
             <a href="/hangar/"><i class="icon-home"></i> <span class="name">My Hangar</span></a>
         </li>
+        {% endif %}
         <li class="accordion-group">
             <a class="accordion-toggle collapsed" data-toggle="collapse"
                data-parent="#side-nav" href="#barn-collapse"><i class="icon-fighter-jet"></i> <span class="name">The Barn</span></a>
@@ -48,29 +50,15 @@
         </li>
         <li class="accordion-group">
             <a class="accordion-toggle" data-toggle="collapse"
-               data-parent="#side-nav" href="#items-collapse"><i class="icon-book"></i> <span class="name">Item Browser</span></a>
+               data-parent="#side-nav" href="#items-collapse"><i class="icon-book"></i> <span class="name">DataBanks</span></a>
             <ul id="items-collapse" class="accordion-body collapse in">
-                <li><a href="/items/avionics">Avionics</a></li>
-                <li><a href="/items/battery">Batteries</a></li>
-                <li><a href="/items/container">Cargo</a></li>
-                <li><a href="/items/cooler">Coolers</a></li>
-                <li><a href="/items/display">Displays</a></li>
-                <li><a href="/items/powerplant">Power Plants</a></li>
-                <li><a href="/items/radar">Radars</a></li>
-                <li><a href="/items/thruster">Thrusters</a></li>
-                <li><a href="/items/weapon/">Weapons</a></li>
+                <li><a href="/items/">Items</a></li>
+                <li><a href="/vehicles/">Vehicles</a></li>
             </ul>
         </li>
     </ul>
-    <div id="sidebar-settings" class="settings">
-        <button type="button"
-                data-value="icons"
-                class="btn-icons btn btn-transparent btn-small">Icons</button>
-        <button type="button"
-                data-value="auto"
-                class="btn-auto btn btn-transparent btn-small">Auto</button>
-    </div>
 </nav>
+
 
 <div class="wrap">
     <header class="page-header">

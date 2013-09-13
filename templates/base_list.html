@@ -34,18 +34,18 @@
 	    // after that dynamically generated code.  Everything else should be in app.js
 	    $(window).load(function(){
 	        {% block head_script %}
-			function makeTall(){
-				jQuery(this).addClass('active').css('z-index','7').find('.bottom-bg .excerpt').animate({"height":200},200);
+			function makeActive(){
+				jQuery(this).addClass('active').css('z-index','7').find('.bottom-bg .excerpt');
 				jQuery('.entry').not(this).animate({opacity:0.3},200);
 			}
-			function makeShort(){
-				jQuery(this).css('z-index','1').find('.bottom-bg .excerpt').animate({"height":75},200);
+			function makeInactive(){
+				jQuery(this).css('z-index','1').find('.bottom-bg .excerpt');
 				jQuery('.entry').removeClass('active').animate({opacity:1},200);
 			}
 		    jQuery(".entry").hoverIntent({
-					over: makeTall,
+					over: makeActive,
 					timeout: 100,
-					out: makeShort
+					out: makeInactive
 				});
 	        {% endblock head_script %}
 	    });
@@ -61,6 +61,8 @@
 	                        <li class='current_page_item'><a href='/barn/'>Home</a></li>
 	                        <li class='cat-item cat-item-2'><a href='/ships/'>Ships</a></li>
 	                        <li class='cat-item cat-item-3'><a href='/variants/'>Variants</a></li>
+	                        <li class='cat-item cat-item-4'><a href='/items/'>DataBanks</a></li>
+	                        <li class='cat-item cat-item-5'><a href='/blog/'>Blog</a></li>
 	                        {% if user.is_authenticated %}
 	                        <li class='cat-item cat-item-myhangar'><a href='/hangar/'>My Hangar</a></li>
 	                        {% endif %}

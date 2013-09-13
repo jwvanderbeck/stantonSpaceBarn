@@ -935,24 +935,15 @@ def itemdata(request):
     # !!!!!!!!!!!!!
     return render_to_response('bootstrap/light-blue/itemdata.html', renderContext, context_instance=RequestContext(request))
 
-def itemList(request, itemTypeName):
-    # Get the item type
-    itemTypes = VehicleItemType.objects.all().filter(typeName__iexact=itemTypeName)
-    if len(itemTypes) == 0:
-        raise Http404()
-
-    itemType = itemTypes[0]
-    allItems = VehicleItem.objects.all().order_by('displayName')
-
+@ensure_csrf_cookie
+def vehicledata(request):
     renderContext = {
-        'itemType'      : itemTypeName,
-        'items'         : allItems
     }
 
-    # The bit here about context_instance=RequestContext(request) is ABSOLUTELY VITAL 
-    # as it is what enables the resulting rendered view to contain the CSRF token!
-    # !!!!!!!!!!!!!
-    return render_to_response('bootstrap/light-blue/itemList.html', renderContext, context_instance=RequestContext(request))
+    return render_to_response('bootstrap/light-blue/vehicledata.html', renderContext, context_instance=RequestContext(request))
+
+def itemList(request, itemTypeName):
+    return HttpResponseRedirect('/items/')
 def extrapolateStateValues(state, duration=30, metric=0, stacking=False):
     # Metrics:
     # 0 - Value per Second at Time
@@ -1064,6 +1055,243 @@ def getBackgridItemList(request, itemTypeName):
         return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
 
     assert False        
+
+def isItemCompatibleWithPort(itemData, portData):
+    # Ports with a parentImage of 0 are not shown and thus no item is compatible
+    # if portData.parentImage == 0:
+    #     return False
+    if itemData.itemSize < portData.minSize:
+        return False
+    if itemData.itemSize > portData.maxSize:
+        return False
+    if not itemData.itemType in portData.supportedTypes.all():
+        return False
+
+    if len(portData.supportedSubTypes.all()) == 0:
+        return True
+    else:
+        return itemData.itemSubType in portData.supportedSubTypes.all()
+
+@ensure_csrf_cookie
+def getVehicleItemList(request, itemTypeName=None, itemSubTypeName=None, vehicleName=None):
+    # JSON callable function to retrive a list of
+    # items in Backgrid table format based on the specified
+    # Parameters
+    if request.is_ajax():
+
+        if itemTypeName and itemSubTypeName:
+            try:
+                print "Looking for items of type %s, and subtype %s" % (itemTypeName, itemSubTypeName)
+                items = VehicleItem.objects.all().filter(itemType__exact=itemTypeName, itemSubType__iexact=itemSubTypeName)
+            except:
+                print "Unable to find items"
+                response_data = [{}]
+                return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
+        elif itemTypeName:
+            print "Looking for items of type %s" % (itemTypeName)
+            try:
+                items = VehicleItem.objects.all().filter(itemType__typeName__iexact=itemTypeName)
+            except Exception as e:
+                print "Unable to find items"
+                print e
+                response_data = [{}]
+                return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
+        else:
+            print "Looking for all items"
+            try:
+                items = VehicleItem.objects.all()
+            except:
+                print "Unable to find items"
+                response_data = [{}]
+                return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
+
+        vehicleData = None
+        if vehicleName:
+            print "Looking for items compatible with %s" % vehicleName
+            # Get the vehicle data
+            try:
+                vehicleData = Vehicle.objects.get(name__iexact=vehicleName)
+            except:
+                print "Unable to find Vehicle"
+                response_data = [{}]
+                return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
+
+        response_data = []
+        for item in items:
+            if vehicleData:
+                valid = False
+                for port in vehicleData.itemport_set.all():
+                    if isItemCompatibleWithPort(item, port):
+                        valid = True
+                        break
+                if not valid:
+                    continue
+            print item
+            row = {}
+            row['subtype'] = item.itemSubType.subTypeName
+            row['type'] = item.itemType.typeName
+            row['size'] = item.itemSize
+            if item.displayName:
+                row['displayName'] = item.displayName
+            else:
+                row['displayName'] = item.name
+            row['name'] = item.name
+            response_data.append(row)
+        return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
+
+    assert False        
+
+@ensure_csrf_cookie
+def getBackgridVehicleList(request):
+    # JSON callable function to retrive a list of
+    # vehicles in Backgrid table format
+    if request.is_ajax():
+
+        # Find all items that match the given ItemType
+        try:
+            vehicles = Vehicle.objects.all()
+        except:
+            print "Unable to find any vehicles"
+            response_data = [{}]
+            return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
+
+        response_data = []
+        for item in vehicles:
+            row = {}
+            if item.displayName:
+                row['displayName'] = item.displayName
+            else:
+                row['displayName'] = item.name
+            row['name'] = item.name
+            response_data.append(row)
+        return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
+
+    assert False 
+
+@ensure_csrf_cookie
+def getVehicleDetails(request):
+    '''
+    Responds to an AJAX call with details on a specified vehicle
+    '''
+    if request.is_ajax():
+        try:
+            requestData = simplejson.loads(request.body)
+            print "JSON Data:"
+            print requestData
+        except:
+            print "json parse failed"
+            response_data = {
+            'success' : False,
+            'response' : 'Unable to parse JSON object.',
+            }
+            return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
+
+        # Find the given vehicle
+        try:
+            vehicle = Vehicle.objects.get(name__iexact=requestData['name'])
+        except Exception as e:
+            print "Unable to find the specified vehicle"
+            print e
+            response_data = {
+            'success' : False,
+            'response' : 'Unable to find vehicle.',
+            }
+            return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
+
+        # Update number of views
+        vehicle.views = vehicle.views + 1
+        vehicle.save()
+
+        response_data = {}
+        # Basic details
+        if vehicle.displayName:
+            response_data['name'] = vehicle.displayName
+        else:
+            response_data['name'] = vehicle.name
+        response_data['vehicleclass'] = vehicle.vehicleClass
+        response_data['vehiclecategory'] = vehicle.category.name
+        response_data['ports'] = []
+        for port in vehicle.itemport_set.all():
+            name = port.displayName
+            if not name:
+                name = port.name
+            portData = {'name' : name}
+            portData['minsize'] = port.minSize
+            portData['maxsize'] = port.maxSize
+            portData['types'] = []
+            supported = []
+            # For each supported ItemType
+            for itemType in port.supportedTypes.all():
+                # Look for supported ItemSubType with that parent, and add those found
+                supportedSubTypes = port.supportedSubTypes.all().filter(parent__exact=itemType)
+                if len(supportedSubTypes) == 0:
+                    # if none found, add ALL itemSubType with that parent
+                    supportedSubTypes = VehicleItemSubType.objects.all().filter(parent__exact=itemType)
+                supported.extend(supportedSubTypes)
+            for subType in supported:
+                portData['types'].append(subType.subTypeName)
+            response_data['ports'].append(portData)
+
+        return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
+
+    assert False   
+
+@ensure_csrf_cookie
+def getItemPortDetails(request):
+    '''
+    Responds to an AJAX call with details on a specified ItemPort
+    '''
+    if request.is_ajax():
+        try:
+            requestData = simplejson.loads(request.body)
+            print "JSON Data:"
+            print requestData
+        except:
+            print "json parse failed"
+            response_data = {
+            'success' : False,
+            'response' : 'Unable to parse JSON object.',
+            }
+            return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
+
+        # Find the vehicle this belongs to
+        try:
+            vehicleData = Vehicle.objects.get(name__iexact = requestData["vehicleName"])
+        except:
+            print "Unable to find the specified vehicle"
+            response_data = {
+            'success' : False,
+            'response' : 'Unable to find vehicle.',
+            }
+            return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
+
+        try:
+            itemPortData = ItemPort.objects.get(name__iexact=requestData["portName"], parentVehicle=vehicleData)
+        except:
+            print "Unable to find the specified itemport"
+            response_data = {
+            'success' : False,
+            'response' : 'Unable to find itemport.',
+            }
+            return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
+
+        response_data = {}
+        # Basic details
+        print itemPortData
+        if itemPortData.displayName:
+            response_data['name'] = itemPortData.displayName
+        else:
+            response_data['name'] = itemPortData.name
+        response_data['minsize'] = itemPortData.minSize
+        response_data['maxsize'] = itemPortData.maxSize
+        response_data['subtypes'] = []
+        subTypes = itemPortData.supportedSubTypes.all()
+        for subType in subTypes:
+            response_data["subtypes"].append(subType.subTypeName)
+        return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
+
+    assert False   
+
 @ensure_csrf_cookie
 def getItemDetails(request):
     '''
@@ -1093,6 +1321,10 @@ def getItemDetails(request):
             }
             return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
 
+        # Update number of views
+        item.views = item.views + 1
+        item.save()
+
         response_data = {}
         # Basic details
         print item
@@ -1104,11 +1336,22 @@ def getItemDetails(request):
         response_data['itemsize'] = item.itemSize
         response_data['itemtype'] = item.itemType.typeName
         response_data['itemsubtype'] = item.itemSubType.subTypeName
+        response_data['description'] = item.description
         # VehicleItemStats
         allStats = item.itemStats.all()
         response_data['itemstats'] = []
         for stat in allStats:
             response_data['itemstats'].append( {'name' : stat.name, 'value' : stat.value} )
+        # Supported states
+        response_data['power'] = []
+        for state in item.power.all():
+            response_data['power'].append(state.state)
+        response_data['heat'] = []
+        for state in item.heat.all():
+            response_data['heat'].append(state.state)
+        response_data['avionics'] = []
+        for state in item.avionics.all():
+            response_data['avionics'].append(state.state)
         return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
 
     assert False   
@@ -1259,53 +1502,208 @@ def getPipeGraph(request):
         # This should never be anything but an AJAX call, so
         # someone is doing somethign fishy!
         assert False
-
-def exampleTerritories(request):
-    response_data = [
-        {"id" : 1,
-        "name" : "USA",
-        "url" : "bla",
-        "pop" : 100,
-        "date" : "2013-08-01",
-        "percentage" : 0.5,
-        },
-        {"id" : 2,
-        "name" : "Canada",
-        "url" : "bla",
-        "pop" : 1000,
-        "date" : "2013-08-01",
-        "percentage" : 0.2,
-        }
-    ]
-    print "Returning collection"
-    print response_data
-    return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
-
-
-def graphData(request):
-    # This is just a test view
-    # The idea is to take a JSON request for a certain item pipe state
-    # and return the data for the webpage to graph it
-    print "getTestData"
-    response_data = {
-    'success' : True,
-    'data' : [
-            {
-                "values" : [
-                        {'x':0,'y':0},
-                        {'x':1,'y':1},
-                        {'x':2,'y':2},
-                        {'x':3,'y':3},
-                        {'x':4,'y':4},
-                        {'x':5,'y':5},
-                    ],
-                "key" : "Test JSON Data",
-                "color" : "#aaaaaa"
+@ensure_csrf_cookie
+def getGraph(request, graphType):
+    # JSON callable function to retrive graph data
+    if request.is_ajax():
+        try:
+            requestData = simplejson.loads(request.body)
+            print "JSON Data:"
+            print requestData
+        except:
+            print "json parse failed"
+            response_data = {
+            'success' : False,
+            'response' : 'Unable to parse JSON object.',
+            'data' : [{"values":[]}]
             }
-        ]
-    }
-    return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
+            return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
 
+        if graphType == "available-power":
+            # Takes in a json list of dictionaries IE
+            # [ {"item1" : "state1"}, {"item2":"state2"}]
+            # and returns the totoal amount of power generated, and the total amount of power consumed
+            print "Computing graph data for available-power"
+            powerConsumed = 0.0
+            powerGenerated = 0.0
+            for entry in requestData["items"]:
+                itemName = entry["name"]
+                itemState = entry["state"]
+                try:
+                    item = VehicleItem.objects.get(name__iexact=itemName)
+                except:
+                    print "Failed to find item %s" % (itemName)
+                    continue
+                if item.itemType.typeName == "PowerPlant":
+                    try:
+                        powerData = item.power.get(state="Default")
+                        powerGenerated = powerGenerated + float(powerData.value)
+                    except:
+                        print "Failed to get Default state for PowerPlant %s" % (itemName)
+                else:
+                    try:
+                        powerData = item.power.get(state=itemState)
+                        powerConsumed = powerConsumed + float(powerData.value)
+                    except:
+                        print "Failed to get %s state for item %s" % (itemState, itemName)
+            response_data = {
+            'success' : True,
+            'response' : 'Power usage.',
+            'data' : {"powerConsumed" : powerConsumed,"maxPower" : powerGenerated}
+            }
+            return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
+        # else:
+        #     response_data = {
+        #     'success' : False,
+        #     'response' : 'Unknown graph type.',
+        #     'data' : [{"values":[]}]
+        #     }
+        #     return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
+
+        # # Retrieve the specified item
+        # try:
+        #     print "Looking for %s" % (requestData['itemName'])
+        #     items = VehicleItem.objects.all().filter(name__iexact=requestData['itemName'])
+        #     item = items[0]
+        # except Exception as e:
+        #     response_data = {
+        #     'success' : False,
+        #     'response' : 'Unable to find specified item.',
+        #     'data' : [{"values":[]}]
+        #     }
+        #     print response_data
+        #     print e
+        #     return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
+
+        # # Get the proper pipe
+        # stacking = False
+        # try:
+        #     if requestData['pipe'].lower() == "power":
+        #         pipe = item.power
+        #     elif requestData['pipe'].lower() == "heat":
+        #         stacking = True # Heat stacks over time
+        #         pipe = item.heat
+        #     elif requestData['pipe'].lower() == "avionics":
+        #         pipe = item.avionics
+        #     else:
+        #         response_data = {
+        #         'success' : False,
+        #         'response' : 'Invalid pipe requested.',
+        #         'data' : [{"values":[]}]
+        #         }
+        #         print response_data
+        #         return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
+        # except:
+        #         response_data = {
+        #         'success' : False,
+        #         'response' : 'Failed to load pipe data.',
+        #         'data' : [{"values":[]}]
+        #         }
+        #         print response_data
+        #         return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
+
+
+        # if not pipe:
+        #     response_data = {
+        #     'success' : False,
+        #     'response' : 'Unable to find specified pipe.',
+        #     'data' : [{"values":[]}]
+        #     }
+        #     print response_data
+        #     return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
+
+        # if not "state" in requestData:
+        #     response_data = {
+        #     'success' : False,
+        #     'response' : 'No state requested.',
+        #     'data' : [{"values":[]}]
+        #     }
+        #     print response_data
+        #     return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
+
+        # requestedState = requestData['state']
+        # requestedStates = []
+        # if "," in requestedState:
+        #     for stateName in requestedState.split(','):
+        #         try:
+        #             state = pipe.get(state=stateName)
+        #         except: 
+        #             print "Unable to find state %s.  Ignoring" % stateName
+        #             state = None
+        #         if state:
+        #             requestedStates.append(state)
+        # elif requestedState.lower() == "all":
+        #     requestedStates = pipe.all()
+        # else:
+        #     try:
+        #         state = pipe.get(state=requestedState)
+        #     except: 
+        #         print "Unable to find state %s.  Ignoring" % requestedState
+        #         state = None
+        #     if state:
+        #         requestedStates.append(state)
+
+        # if len(requestedStates) == 0:
+        #     response_data = {
+        #     'success' : False,
+        #     'response' : 'No valid states found.',
+        #     'data' : [{"values":[]}]
+        #     }
+        #     print response_data
+        #     return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
+
+        # # At this point we should have a list of all pipe states
+        # # requested that we were able to find.
+        # # We extrapolate the data out to a 30 second period
+        # # for the chart
+
+        # data = []
+        # for state in requestedStates:
+        #     if "-" in state.value:
+        #         negativeValues = True
+        #     else:
+        #         negativeValues = False
+        #     stateValues = extrapolateStateValues(state, 30, metric=requestData['metric'], stacking=stacking)
+        #     stateData = {   'key'    : state.state,
+        #                     'color'  : getGraphColorForState(state.state),
+        #                     'values' : []
+        #                 }
+        #     for second in range(0,31,1):
+        #         value = stateValues[second]
+        #         stateData['values'].append( {'x' : second, 'y' : value} )
+
+        #     data.append(stateData)
+
+        # response_data = {
+        # 'success' : True,
+        # 'response' : 'Blah',
+        # 'negative'  : negativeValues,
+        # 'data' : data
+        # }
+        # print response_data
+        # return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
+
+    else:
+        # This should never be anything but an AJAX call, so
+        # someone is doing somethign fishy!
+        assert False
+@ensure_csrf_cookie
+def shipLayout(request, shipName):
+    shipData = Vehicle.objects.get(name__iexact=shipName)
+
+    renderContext = {
+        'shipData'      : shipData
+    }
+
+    return render_to_response('bootstrap/light-blue/shipMain.html', renderContext, context_instance=RequestContext(request))
+def phase2(request):
+    renderContext = {
+    }
+
+    # The bit here about context_instance=RequestContext(request) is ABSOLUTELY VITAL 
+    # as it is what enables the resulting rendered view to contain the CSRF token!
+    # !!!!!!!!!!!!!
+    return render_to_response('bootstrap/light-blue/phase2.html', renderContext, context_instance=RequestContext(request))
 def testView(request):
     shipName = '300i'  
     # Get all hardpoints
@@ -1333,4 +1731,4 @@ def testView(request):
     # The bit here about context_instance=RequestContext(request) is ABSOLUTELY VITAL 
     # as it is what enables the resulting rendered view to contain the CSRF token!
     # !!!!!!!!!!!!!
-    return render_to_response('bootstrap/light-blue/grid.html', renderContext, context_instance=RequestContext(request))
+    return render_to_response('bootstrap/light-blue/base.html', renderContext, context_instance=RequestContext(request))

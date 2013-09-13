@@ -81,7 +81,9 @@ $(function(){
     });
 
     //class-switch for button-groups
-    $(".btn-group > .btn[data-toggle-class]").click(function(){
+//    $(".btn-group > .btn[data-toggle-class]").click(function(){
+    $(document).on("click", ".btn-group > .btn[data-toggle-class]", function(){
+        console.log("In button toggle class");
         var $this = $(this),
             $parent = $this.parent();
 

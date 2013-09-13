@@ -35,9 +35,11 @@
 </div>
 <nav id="sidebar" class="sidebar nav-collapse collapse">
     <ul id="side-nav" class="side-nav">
+        {% if user.is_authenticated %}
         <li >
             <a href="/hangar/"><i class="icon-home"></i> <span class="name">My Hangar</span></a>
         </li>
+        {% endif %}
         <li class="accordion-group">
             <a class="accordion-toggle collapsed" data-toggle="collapse"
                data-parent="#side-nav" href="#barn-collapse"><i class="icon-fighter-jet"></i> <span class="name">The Barn</span></a>
@@ -48,21 +50,15 @@
         </li>
         <li class="accordion-group">
             <a class="accordion-toggle" data-toggle="collapse"
-               data-parent="#side-nav" href="#items-collapse"><i class="icon-book"></i> <span class="name">Item Browser</span></a>
+               data-parent="#side-nav" href="#items-collapse"><i class="icon-book"></i> <span class="name">DataBanks</span></a>
             <ul id="items-collapse" class="accordion-body collapse in">
-                <li><a href="/items/avionics">Avionics</a></li>
-                <li><a href="/items/battery">Batteries</a></li>
-                <li><a href="/items/container">Cargo</a></li>
-                <li><a href="/items/cooler">Coolers</a></li>
-                <li><a href="/items/display">Displays</a></li>
-                <li><a href="/items/powerplant">Power Plants</a></li>
-                <li><a href="/items/radar">Radars</a></li>
-                <li><a href="/items/thruster">Thrusters</a></li>
-                <li><a href="/items/weapon/">Weapons</a></li>
+                <li><a href="/items/">Items</a></li>
+                <li><a href="/vehicles/">Vehicles</a></li>
             </ul>
         </li>
     </ul>
 </nav>
+
 
 <div class="wrap">
     <header class="page-header">
@@ -216,19 +212,14 @@
                                 <td id="item-details-itemclass"></td>
                                 <td>Size</td>
                                 <td id="item-details-itemsize"></td>
-                                <td></td>
-                                <td id="item-details-itemunkown"></td>
-                            </tr>
-                            <tr>
-                                <td>Item Type</td>
-                                <td id="item-details-itemtype"></td>
-                            </tr>
-                            <tr>
-                                <td>Item SubType</td>
-                                <td id="item-details-itemsubtype"></td>
                             </tr>
                             </tbody>
                         </table>
+                        <div>
+                        <span id="item-details-itemtype"></span><span>: </span><span id="item-details-itemsubtype"></span>
+                        </div>
+                        <div id="item-details-description">
+                        </div>
                         <div id="item-details-weaponbars">
                         </div>
                         <div id="item-details-misc">
@@ -273,19 +264,12 @@
                                 <td id="item-details-itemclass-compare"></td>
                                 <td>Size</td>
                                 <td id="item-details-itemsize-compare"></td>
-                                <td></td>
-                                <td id="item-details-itemunkown-compare"></td>
-                            </tr>
-                            <tr>
-                                <td>Item Type</td>
-                                <td id="item-details-itemtype-compare"></td>
-                            </tr>
-                            <tr>
-                                <td>Item SubType</td>
-                                <td id="item-details-itemsubtype-compare"></td>
                             </tr>
                             </tbody>
                         </table>
+                        <span id="item-details-itemtype-compare"></span><span>: </span><span id="item-details-itemsubtype-compare"></span>
+                        <div id="item-details-description-compare">
+                        </div>
                         <div id="item-details-weaponbars-compare">
                         </div>
                         <div id="item-details-misc-compare">
@@ -435,6 +419,7 @@
                     $("#item-details-itemsize").text(data['itemsize']);
                     $("#item-details-itemtype").text(data['itemtype']);
                     $("#item-details-itemsubtype").text(data['itemsubtype']);
+                    $("#item-details-description").text(data['description']);
                     // clear the sub divs so we;re starting fresh
                     var weaponbars = $("#item-details-weaponbars");
                     weaponbars.empty();
@@ -565,6 +550,7 @@
                     $("#item-details-itemsize-compare").text(data['itemsize']);
                     $("#item-details-itemtype-compare").text(data['itemtype']);
                     $("#item-details-itemsubtype-compare").text(data['itemsubtype']);
+                    $("#item-details-description-compare").text(data['description']);
                     // clear the sub divs so we;re starting fresh
                     var weaponbars = $("#item-details-weaponbars-compare");
                     weaponbars.empty();

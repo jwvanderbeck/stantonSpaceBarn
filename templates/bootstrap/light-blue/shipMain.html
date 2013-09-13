@@ -1,0 +1,1530 @@
+{% load static %}
+<link rel="stylesheet" type="text/css" href='{% static "css/ssb/jquery-ui-1.10.3.custom.css" %}'>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{%block title%}Stanton Space Barn{%endblock title%}</title>
+    <link href='{% static "theme/light-blue/css/application.css" %}' rel="stylesheet">
+    <link rel="shortcut icon" href='{% static "theme/light-blue/img/favicon.png" %}'>
+    <script src='{% static "js/jquery-1.9.1.js" %}'> </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <meta charset="utf-8">
+    <script type="text/javascript">
+
+      var _gaq = _gaq || [];
+      var pluginUrl = '//www.google-analytics.com/plugins/ga/inpage_linkid.js';
+      _gaq.push(['_require', 'inpage_linkid', pluginUrl]);
+      _gaq.push(['_setAccount', 'UA-278263-23']);
+      _gaq.push(['_trackPageview']);
+
+      (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
+
+    </script>
+
+    <style type='text/css'>
+    .icon-large {
+        -webkit-transform: scale(1.3);
+        -moz-transform:    scale(1.3);
+        -ms-transform:     scale(1.3);
+        -o-transform:      scale(1.3);
+        transform:         scale(1.3);
+    }
+    .over {
+        -webkit-transform: scale(1);
+        -moz-transform:    scale(1);
+        -ms-transform:     scale(1);
+        -o-transform:      scale(1);
+        transform:         scale(1);
+        opacity:1.0 !important;    
+    } 
+    .highlight {
+        -webkit-transform: scale(2);
+        -moz-transform:    scale(2);
+        -ms-transform:     scale(2);
+        -o-transform:      scale(2);
+        transform:         scale(2);
+        opacity:1.0 !important;    
+    } 
+    .drop-target-valid {
+        background-color: #56bc76 !important;    
+    }
+    .item-port {
+        border-radius:50%;
+        border-color: #000000;
+        border-width: 100%;
+        border-style: solid;
+        display:block;
+        position:absolute;
+        opacity:0.8;
+        background-color: #eac85e;
+        width:2.5%;
+        height:6%;
+        min-width:10px;
+        min-height:10px;
+        max-width:20px;
+        max-height:20px;
+    }
+    .filled {
+        opacity:0.3 !important;
+    }
+    .string-cell {
+        cursor: pointer;
+    }
+    </style>
+</head>
+<body class="background-dark">
+<div class="logo">
+    <h4><a href="/">Stanton <strong>Space Barn</strong></a></h4>
+</div>
+<nav id="sidebar" class="sidebar nav-collapse collapse">
+    <ul id="side-nav" class="side-nav">
+        {% if user.is_authenticated %}
+        <li >
+            <a href="/hangar/"><i class="icon-home"></i> <span class="name">My Hangar</span></a>
+        </li>
+        {% endif %}
+        <li class="accordion-group">
+            <a class="accordion-toggle collapsed" data-toggle="collapse"
+               data-parent="#side-nav" href="#barn-collapse"><i class="icon-fighter-jet"></i> <span class="name">The Barn</span></a>
+            <ul id="barn-collapse" class="accordion-body collapse">
+                <li><a href="/ships/">Ships</a></li>
+                <li><a href="/variants/">Variants</a></li>
+            </ul>
+        </li>
+        <li class="accordion-group">
+            <a class="accordion-toggle" data-toggle="collapse"
+               data-parent="#side-nav" href="#items-collapse"><i class="icon-book"></i> <span class="name">DataBanks</span></a>
+            <ul id="items-collapse" class="accordion-body collapse in">
+                <li><a href="/items/">Items</a></li>
+                <li><a href="/vehicles/">Vehicles</a></li>
+            </ul>
+        </li>
+        <li >
+            <a href="/blog/"><i class="icon-home"></i> <span class="name">Blog</span></a>
+        </li>
+    </ul>
+</nav>
+
+<div id="item-details-modal" class="modal hide fade" tabindex="-1" role="dialog">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" >×</button>
+        <h4 id="item-details-itemname">Item Name</h4>
+    </div>
+    <div class="modal-body">
+        <div id="item-details-body">
+            <table class="table" id="item-details-basics">
+                <tbody>
+                <tr class="label-inverse">
+                    <td>Class</td>
+                    <td id="item-details-itemclass"></td>
+                    <td>Size</td>
+                    <td id="item-details-itemsize"></td>
+                </tr>
+                </tbody>
+            </table>
+            <div>
+            <span id="item-details-itemtype"></span><span>: </span><span id="item-details-itemsubtype"></span>
+            </div>
+            <div id="item-details-description">
+            </div>
+            <div id="item-details-weaponbars">
+            </div>
+            <div id="item-details-misc">
+            </div>
+        </div>
+        <div>
+            <header>
+                <h4 id="power-chart-header">Power</h4>
+            </header>
+            <div id="power-chart-line" class="body chart">
+                <svg></svg>
+            </div>
+        </div>
+        <div>
+            <header>
+                <h4 id="heat-chart-header">Heat</h4>
+            </header>
+            <div id="heat-chart-line" class="body chart">
+                <svg></svg>
+            </div>
+        </div>
+        <div>
+            <header>
+                <h4 id="avionics-chart-header">Avionics</h4>
+            </header>
+            <div id="avionics-chart-line" class="body chart">
+                <svg></svg>
+            </div>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button class="btn btn-primary" data-dismiss="modal" aria-hidden="true">Close</button>
+    </div>
+</div>
+<div id="itemport-details-modal" class="modal hide fade" tabindex="-1" role="dialog">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" >×</button>
+        <h4 id="itemport-details-name">Itemport Name</h4>
+    </div>
+    <div class="modal-body">
+        <div id="itemport-details-body">
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button class="btn btn-primary" data-dismiss="modal" aria-hidden="true">Close</button>
+    </div>
+</div>
+
+<div class="wrap">
+    <header class="page-header">
+    <h1 class="offset5">{% block page-header %}Workshop{% endblock page-header %}</h1>
+    </header>
+    <div class="content container-fluid">
+        <div class="row-fluid">
+            <div class="span8" id="ship-images">
+                <section class="widget">
+                    <header>
+                        <h2 class="page-title">{% block page-title %}{{shipData.displayName}}{% endblock page-title %}</h2>
+                    </header>
+                    <div class="body">
+                        <div class="tabbable tabs-top">
+                            <ul id="layout-images" class="nav nav-tabs">
+                                <li class="active"><a href="#image-topright" data-toggle="tab">Top Right</a></li>
+                                <li><a href="#image-topleft" data-toggle="tab">Top Left</a></li>
+                                <li><a href="#image-bottomright" data-toggle="tab">Bottom Right</a></li>
+                                <li><a href="#image-bottomleft" data-toggle="tab">Bottom Left</a></li>
+                                <li><a href="#hardpoints-overview" data-toggle="tab">Systems Overview</a></li>
+                            </ul>
+                            <div id="layout-images-content" class="tab-content" >
+                                <div class="tab-pane fade in active" id="image-topright">
+                                    <div style="position:relative">
+                                        <image src="{{shipData.layoutImageTopRight}}"></image>
+                                        {% for port in shipData.itemport_set.all %}
+                                            {% if port.parentImage == 1%}
+                                            <div class="item-port {%for type in port.supportedTypes.all%}{{type.typeName}} {%endfor%}" style="left:{{port.tagLocationX}}%;top:{{port.tagLocationY}}%;" data-types="{%for type in port.supportedTypes.all%}{{type.typeName}}{%if not forloop.last %},{%endif%}{%endfor%}" data-subtypes="{%for type in port.supportedSubTypes.all%}{{type.subTypeName}}{%if not forloop.last %},{%endif%}{%endfor%}" data-min-size={{port.minSize}} data-max-size={{port.maxSize}} id="{{port.name}}" data-parent={{port.parentImage}}></div>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                <div class="tab-pane fade" id="image-topleft">
+                                    <div style="position:relative">
+                                        <image src="{{shipData.layoutImageTopLeft}}"></image>
+                                        {% for port in shipData.itemport_set.all %}
+                                            {% if port.parentImage == 2%}
+                                            <div class="item-port {%for type in port.supportedTypes.all%}{{type.typeName}} {%endfor%}" style="left:{{port.tagLocationX}}%;top:{{port.tagLocationY}}%;" data-types="{%for type in port.supportedTypes.all%}{{type.typeName}}{%if not forloop.last %},{%endif%}{%endfor%}" data-subtypes="{%for type in port.supportedSubTypes.all%}{{type.subTypeName}}{%if not forloop.last %},{%endif%}{%endfor%}" data-min-size={{port.minSize}} data-max-size={{port.maxSize}} id="{{port.name}}" data-parent={{port.parentImage}}></div>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                <div class="tab-pane fade" id="image-bottomright">
+                                    <div style="position:relative">
+                                        <image src="{{shipData.layoutImageBottomRight}}"></image>
+                                        {% for port in shipData.itemport_set.all %}
+                                            {% if port.parentImage == 3%}
+                                            <div class="item-port {%for type in port.supportedTypes.all%}{{type.typeName}} {%endfor%}" style="left:{{port.tagLocationX}}%;top:{{port.tagLocationY}}%;" data-types="{%for type in port.supportedTypes.all%}{{type.typeName}}{%if not forloop.last %},{%endif%}{%endfor%}" data-subtypes="{%for type in port.supportedSubTypes.all%}{{type.subTypeName}}{%if not forloop.last %},{%endif%}{%endfor%}" data-min-size={{port.minSize}} data-max-size={{port.maxSize}} id="{{port.name}}" data-parent={{port.parentImage}}></div>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                <div class="tab-pane fade" id="image-bottomleft">
+                                    <div style="position:relative">
+                                        <image src="{{shipData.layoutImageBottomLeft}}"></image>
+                                        {% for port in shipData.itemport_set.all %}
+                                            {% if port.parentImage == 4%}
+                                            <div class="item-port {%for type in port.supportedTypes.all%}{{type.typeName}} {%endfor%}" style="left:{{port.tagLocationX}}%;top:{{port.tagLocationY}}%;" data-types="{%for type in port.supportedTypes.all%}{{type.typeName}}{%if not forloop.last %},{%endif%}{%endfor%}" data-subtypes="{%for type in port.supportedSubTypes.all%}{{type.subTypeName}}{%if not forloop.last %},{%endif%}{%endfor%}" data-min-size={{port.minSize}} data-max-size={{port.maxSize}} id="{{port.name}}" data-parent={{port.parentImage}}></div>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                <div class="tab-pane fade" id="hardpoints-overview">
+                                    <section>
+                                    {% for itemPort in shipData.itemport_set.all %}
+                                        {% if forloop.counter0|divisibleby:3 %}</section><section>{% endif %}
+                                        <div class="span4">
+                                            <div class="well item-port-datablock" data-port-name="{{itemPort.name}}" data-parent={{itemPort.parentImage}} data-min-size={{itemPort.minSize}} data-max-size={{itemPort.maxSize}} data-subtypes="{%for type in itemPort.supportedSubTypes.all%}{{type.subTypeName}}{%if not forloop.last %},{%endif%}{%endfor%}">
+                                                <p class="label label-inverse">{% firstof itemPort.displayName itemPort.name %}</p><i class="icon-remove pull-right icon-large"></i>
+                                                <br>
+                                                
+                                                <div class="item-port-datablock-statebuttons">
+                                                    <input id="item-powerstate-{{itemPort.name}}-input" type="hidden" name="item-powerstate" value="Default">
+                                                    <div class="btn-group" id="port-powerstate-{{itemPort.name}}" data-toggle="buttons-radio" data-target="item-powerstate-{{itemPort.name}}-input">
+                                                        <button class="btn btn-mini btn-info active" data-toggle-class="btn-info" data-toggle-passive-class="btn-inverse" type="button" value="Default">Default</button>
+                                                    </div>
+                                                </div>
+                                                <br><span class="item-name">Nothing Loaded</span>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                    </section>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                <section class="widget">
+                    <header>
+                        <h4>Systems Monitor & Calibration</h4>
+                    </header>
+                    <div class="body">
+                        <div class="tabbable tabs-below">
+                            <div id="systems-monitor-content" class="tab-content">
+                                <div id="systems-overview" class="tab-pane fade in active">
+                                    <h4>Systems Snapshot provides a snapshot of vehicle resources</h4>
+                                    <p>The systems snapshot provides a quick look at vehicle resource usage based on all modules running in the default or active state.  For more detailed diagnostics turn to the LiveStats Diagnostic System</p>
+                                    <h5>Power Consumption: <strong><span id="stats-available-power-label">0</span></strong></h5>
+                                    <p id="stats-warning-missingpowerplant"><span class="label label-important">Warning No Powerplant equipped</span></p>
+                                    <div class="progress progress-small progress-success" id="stats-available-power-container">
+                                        <div class="bar" style="width:0%;" id="stats-available-power-bar">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="systems-livestats" class="tab-pane fade">
+                                    <h4>MobiGlas's patented LiveStats Diagnostic System (LDS) provides detailed statistics on vehicle resource usage</h4>
+                                    <p>Designed to operate in conjunction with the Systems Overview panel, LDS can give you down to the second reporting on resource usage based on individual hardpoint states.  As you change hardpoint states in the Systems Overview, LDS will update in realtime.  Never be caught off guard with MobiGlas LDS.</p>
+                                    <h5>Power Consumption: <strong><span id="stats-lds-available-power-label">0</span></strong></h5>
+                                    <p id="stats-lds-warning-missingpowerplant"><span class="label label-important">Warning No Powerplant equipped</span></p>
+                                    <div class="progress progress-small progress-success" id="stats-lds-available-power-container">
+                                        <div class="bar" style="width:0%;" id="stats-lds-available-power-bar">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <ul id="systems-monitor" class="nav nav-tabs">
+                                <li class="active"><a href="#systems-overview" data-toggle="tab">Snapshot</a></li>
+                                <li><a href="#systems-livestats" data-toggle="tab">LiveStats</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+            </div>
+            <div class="span4">
+                <section class="widget">
+                    <header>
+                        <h4>Compatible Items</h4>
+                        <p class="label-important">Drag items to hardpoints on ship image</p>
+                    </header>
+                    <div class="body">
+                        <div class="tabbable tabs-right">
+                            <ul id="items-list" class="nav nav-tabs">
+                                <li class="active"><a class="type-select" href="#hardpoints-Weapon" data-toggle="tab">Weapons</a></li>
+                                <li><a class="type-select" href="#hardpoints-Thruster" data-toggle="tab">Thrusters</a></li>
+                                <li><a class="type-select" href="#hardpoints-PowerPlant" data-toggle="tab">Powerplant</a></li>
+                                <li><a class="type-select" href="#hardpoints-Container" data-toggle="tab">Cargo</a></li>
+                                <li><a class="type-select" href="#hardpoints-Avionics" data-toggle="tab">Avionics</a></li>
+                                <li><a class="type-select" href="#hardpoints-Battery" data-toggle="tab">Batteries</a></li>
+                                <li><a class="type-select" href="#hardpoints-Cooler" data-toggle="tab">Coolers</a></li>
+                                <li><a class="type-select" href="#hardpoints-Display" data-toggle="tab">Displays</a></li>
+                                <li><a class="type-select" href="#hardpoints-Radar" data-toggle="tab">Radars</a></li>
+                            </ul>
+                            <div id="items-list-content" class="tab-content">
+                                <div id="hardpoints-Weapon" class="tab-pane fade in active">
+                                    <div id="table-dynamic-weapons"></div>
+                                    <div></div>
+                                    <h4>Hardpoints</h4>
+                                    <p><span class="label-important">Mouse over a hardpoint to identify it</span></p>
+                                    {% for itemPort in shipData.itemport_set.all %}
+                                        {% if itemPort.parentImage > 0 %}
+                                            {% for itemType in itemPort.supportedTypes.all %}
+                                                {% if itemType.typeName == "Weapon" %}
+                                                    <div class="well item-port-label" data-port-name="{{itemPort.name}}" data-parent={{itemPort.parentImage}} data-min-size={{itemPort.minSize}} data-max-size={{itemPort.maxSize}} data-subtypes="{%for type in itemPort.supportedSubTypes.all%}{{type.subTypeName}}{%if not forloop.last %},{%endif%}{%endfor%}"><span class="label label-inverse" data-item-port="{{itemPort.name}}">{% firstof itemPort.displayName itemPort.name %}</span><i class="icon-remove pull-right icon-large"></i><br><span class="item-name">Nothing Loaded</div>
+                                                {% endif %}
+                                            {% endfor %}
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                                <div id="hardpoints-Thruster" class="tab-pane fade">
+                                    <div id="table-dynamic-thrusters"></div>
+                                    <div></div>
+                                    <h4>Hardpoints</h4>
+                                    {% for itemPort in shipData.itemport_set.all %}
+                                        {% if itemPort.parentImage > 0 %}
+                                            {% for itemType in itemPort.supportedTypes.all %}
+                                                {% if itemType.typeName == "Thruster" %}
+                                                    <div class="well item-port-label" data-port-name="{{itemPort.name}}" data-parent={{itemPort.parentImage}} data-min-size={{itemPort.minSize}} data-max-size={{itemPort.maxSize}} data-subtypes="{%for type in itemPort.supportedSubTypes.all%}{{type.subTypeName}}{%if not forloop.last %},{%endif%}{%endfor%}"><span class="label label-inverse" data-item-port="{{itemPort.name}}">{% firstof itemPort.displayName itemPort.name %}</span><i class="icon-remove pull-right icon-large"></i><br><span class="item-name">Nothing Loaded</div>
+                                                {% endif %}
+                                            {% endfor %}
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                                <div id="hardpoints-PowerPlant" class="tab-pane fade">
+                                    <div id="table-dynamic-powerplants"></div>
+                                    <div></div>
+                                    <h4>Hardpoints</h4>
+                                    {% for itemPort in shipData.itemport_set.all %}
+                                        {% if itemPort.parentImage > 0 %}
+                                            {% for itemType in itemPort.supportedTypes.all %}
+                                                {% if itemType.typeName == "PowerPlant" %}
+                                                    <div class="well item-port-label" data-port-name="{{itemPort.name}}" data-parent={{itemPort.parentImage}} data-min-size={{itemPort.minSize}} data-max-size={{itemPort.maxSize}} data-subtypes="{%for type in itemPort.supportedSubTypes.all%}{{type.subTypeName}}{%if not forloop.last %},{%endif%}{%endfor%}"><span class="label label-inverse" data-item-port="{{itemPort.name}}">{% firstof itemPort.displayName itemPort.name %}</span><i class="icon-remove pull-right icon-large"></i><br><span class="item-name">Nothing Loaded</div>
+                                                {% endif %}
+                                            {% endfor %}
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                                <div id="hardpoints-Container" class="tab-pane fade">
+                                    <div id="table-dynamic-cargo"></div>
+                                    <div></div>
+                                    <h4>Hardpoints</h4>
+                                    {% for itemPort in shipData.itemport_set.all %}
+                                        {% if itemPort.parentImage > 0 %}
+                                            {% for itemType in itemPort.supportedTypes.all %}
+                                                {% if itemType.typeName == "Container" %}
+                                                    <div class="well item-port-label" data-port-name="{{itemPort.name}}" data-parent={{itemPort.parentImage}} data-min-size={{itemPort.minSize}} data-max-size={{itemPort.maxSize}} data-subtypes="{%for type in itemPort.supportedSubTypes.all%}{{type.subTypeName}}{%if not forloop.last %},{%endif%}{%endfor%}"><span class="label label-inverse" data-item-port="{{itemPort.name}}">{% firstof itemPort.displayName itemPort.name %}</span><i class="icon-remove pull-right icon-large"></i><br><span class="item-name">Nothing Loaded</div>
+                                                {% endif %}
+                                            {% endfor %}
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                                <div id="hardpoints-Avionics" class="tab-pane fade">
+                                    <div id="table-dynamic-avionics"></div>
+                                    <div></div>
+                                    <h4>Hardpoints</h4>
+                                    {% for itemPort in shipData.itemport_set.all %}
+                                        {% if itemPort.parentImage > 0 %}
+                                            {% for itemType in itemPort.supportedTypes.all %}
+                                                {% if itemType.typeName == "Avionics" %}
+                                                    <div class="well item-port-label" data-port-name="{{itemPort.name}}" data-parent={{itemPort.parentImage}} data-min-size={{itemPort.minSize}} data-max-size={{itemPort.maxSize}} data-subtypes="{%for type in itemPort.supportedSubTypes.all%}{{type.subTypeName}}{%if not forloop.last %},{%endif%}{%endfor%}"><span class="label label-inverse" data-item-port="{{itemPort.name}}">{% firstof itemPort.displayName itemPort.name %}</span><i class="icon-remove pull-right icon-large"></i><br><span class="item-name">Nothing Loaded</div>
+                                                {% endif %}
+                                            {% endfor %}
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                                <div id="hardpoints-Battery" class="tab-pane fade">
+                                    <div id="table-dynamic-batteries"></div>
+                                    <div></div>
+                                    <h4>Hardpoints</h4>
+                                    {% for itemPort in shipData.itemport_set.all %}
+                                        {% if itemPort.parentImage > 0 %}
+                                            {% for itemType in itemPort.supportedTypes.all %}
+                                                {% if itemType.typeName == "Battery" %}
+                                                    <div class="well item-port-label" data-port-name="{{itemPort.name}}" data-parent={{itemPort.parentImage}} data-min-size={{itemPort.minSize}} data-max-size={{itemPort.maxSize}} data-subtypes="{%for type in itemPort.supportedSubTypes.all%}{{type.subTypeName}}{%if not forloop.last %},{%endif%}{%endfor%}"><span class="label label-inverse" data-item-port="{{itemPort.name}}">{% firstof itemPort.displayName itemPort.name %}</span><i class="icon-remove pull-right icon-large"></i><br><span class="item-name">Nothing Loaded</div>
+                                                {% endif %}
+                                            {% endfor %}
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                                <div id="hardpoints-Cooler" class="tab-pane fade">
+                                    <div id="table-dynamic-coolers"></div>
+                                    <div></div>
+                                    <h4>Hardpoints</h4>
+                                    {% for itemPort in shipData.itemport_set.all %}
+                                        {% if itemPort.parentImage > 0 %}
+                                            {% for itemType in itemPort.supportedTypes.all %}
+                                                {% if itemType.typeName == "Cooler" %}
+                                                    <div class="well item-port-label" data-port-name="{{itemPort.name}}" data-parent={{itemPort.parentImage}} data-min-size={{itemPort.minSize}} data-max-size={{itemPort.maxSize}} data-subtypes="{%for type in itemPort.supportedSubTypes.all%}{{type.subTypeName}}{%if not forloop.last %},{%endif%}{%endfor%}"><span class="label label-inverse" data-item-port="{{itemPort.name}}">{% firstof itemPort.displayName itemPort.name %}</span><i class="icon-remove pull-right icon-large"></i><br><span class="item-name">Nothing Loaded</div>
+                                                {% endif %}
+                                            {% endfor %}
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                                <div id="hardpoints-Display" class="tab-pane fade">
+                                    <div id="table-dynamic-displays"></div>
+                                    <div></div>
+                                    <h4>Hardpoints</h4>
+                                    {% for itemPort in shipData.itemport_set.all %}
+                                        {% if itemPort.parentImage > 0 %}
+                                            {% for itemType in itemPort.supportedTypes.all %}
+                                                {% if itemType.typeName == "Display" %}
+                                                    <div class="well item-port-label" data-port-name="{{itemPort.name}}" data-parent={{itemPort.parentImage}} data-min-size={{itemPort.minSize}} data-max-size={{itemPort.maxSize}} data-subtypes="{%for type in itemPort.supportedSubTypes.all%}{{type.subTypeName}}{%if not forloop.last %},{%endif%}{%endfor%}"><span class="label label-inverse" data-item-port="{{itemPort.name}}">{% firstof itemPort.displayName itemPort.name %}</span><i class="icon-remove pull-right icon-large"></i><br><span class="item-name">Nothing Loaded</div>
+                                                {% endif %}
+                                            {% endfor %}
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                                <div id="hardpoints-Radar" class="tab-pane fade">
+                                    <div id="table-dynamic-radar"></div>
+                                    <div></div>
+                                    <h4>Hardpoints</h4>
+                                    {% for itemPort in shipData.itemport_set.all %}
+                                        {% if itemPort.parentImage > 0 %}
+                                            {% for itemType in itemPort.supportedTypes.all %}
+                                                {% if itemType.typeName == "Radar" %}
+                                                    <div class="well item-port-label" data-port-name="{{itemPort.name}}" data-parent={{itemPort.parentImage}} data-min-size={{itemPort.minSize}} data-max-size={{itemPort.maxSize}} data-subtypes="{%for type in itemPort.supportedSubTypes.all%}{{type.subTypeName}}{%if not forloop.last %},{%endif%}{%endfor%}"><span class="label label-inverse" data-item-port="{{itemPort.name}}">{% firstof itemPort.displayName itemPort.name %}</span><i class="icon-remove pull-right icon-large"></i><br><span class="item-name">Nothing Loaded</div>
+                                                {% endif %}
+                                            {% endfor %}
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+        <div class="row-fluid">
+        </div>
+    </div>
+</div>
+
+<!-- jquery and friends -->
+<script src='{% static "js/jquery-1.9.1.js" %}'> </script>
+<script src='{% static "theme/light-blue/lib/jquery/jquery-migrate-1.1.0.min.js" %}'> </script>
+
+<!-- jquery plugins -->
+<script src='{% static "theme/light-blue/lib/jquery-maskedinput/jquery.maskedinput.js" %}'></script>
+<script src='{% static "theme/light-blue/lib/parsley/parsley.js" %}'> </script>
+<script src='{% static "theme/light-blue/lib/icheck.js/jquery.icheck.js" %}'></script>
+<script src='{% static "theme/light-blue/lib/select2.js" %}'></script>
+<script type="text/javascript" src='{% static "js/jquery-ui-1.10.3.custom.min.js" %}'></script>
+<script type='text/javascript' src='{% static "js/app.js" %}'></script>
+<script type='text/javascript' src='{% static "js/jquery.form.min.js" %}'></script>
+<script type="text/javascript" src='{% static "js/jquery.hoverIntent.minified.js" %}'></script>
+
+<!-- d3, nvd3-->
+<script src='{% static "theme/light-blue/lib/nvd3/lib/d3.v2.js" %}'></script>
+<script src='{% static "theme/light-blue/lib/nvd3/nv.d3.custom.js" %}'></script>
+
+<!-- nvd3 models -->
+<script src='{% static "theme/light-blue/lib/nvd3/src/models/scatter.js" %}'></script>
+<script src='{% static "theme/light-blue/lib/nvd3/src/models/axis.js" %}'></script>
+<script src='{% static "theme/light-blue/lib/nvd3/src/models/legend.js" %}'></script>
+<script src='{% static "theme/light-blue/lib/nvd3/src/models/stackedArea.js" %}'></script>
+<script src='{% static "theme/light-blue/lib/nvd3/src/models/stackedAreaChart.js" %}'></script>
+<script src='{% static "theme/light-blue/lib/nvd3/src/models/line.js" %}'></script>
+<script src='{% static "theme/light-blue/lib/nvd3/src/models/pie.js" %}'></script>
+<script src='{% static "theme/light-blue/lib/nvd3/src/models/pieChartTotal.js" %}'></script>
+<script src='{% static "theme/light-blue/lib/nvd3/stream_layers.js" %}'></script>
+<script src='{% static "theme/light-blue/lib/nvd3/src/models/lineChart.js" %}'></script>
+<script src='{% static "theme/light-blue/lib/nvd3/src/models/multiBar.js" %}'></script>
+<script src='{% static "theme/light-blue/lib/nvd3/src/models/multiBarChart.js" %}'></script>
+`
+<!--backbone and friends -->
+<script src='{% static "theme/light-blue/lib/backbone/underscore-min.js" %}'></script>
+<script src='{% static "theme/light-blue/lib/backbone/backbone-min.js" %}'></script>
+<script src='{% static "theme/light-blue/lib/backbone/backbone-pageable.js" %}'></script>
+<script src='{% static "theme/light-blue/lib/backgrid/backgrid.js" %}'></script>
+<script src='{% static "theme/light-blue/lib/backgrid/backgrid-paginator.js" %}'></script>
+
+<!-- bootstrap default plugins -->
+<script src='{% static "theme/light-blue/js/bootstrap/bootstrap.js" %}'></script>
+<script src='{% static "theme/light-blue/js/bootstrap/bootstrap-transition.js" %}'></script>
+<script src='{% static "theme/light-blue/js/bootstrap/bootstrap-collapse.js" %}'></script>
+<script src='{% static "theme/light-blue/js/bootstrap/bootstrap-alert.js" %}'></script>
+<script src='{% static "theme/light-blue/js/bootstrap/bootstrap-tooltip.js" %}'></script>
+<script src='{% static "theme/light-blue/js/bootstrap/bootstrap-popover.js" %}'></script>
+<script src='{% static "theme/light-blue/js/bootstrap/bootstrap-button.js" %}'></script>
+<script src='{% static "theme/light-blue/js/bootstrap/bootstrap-dropdown.js" %}'></script>
+<script src='{% static "theme/light-blue/js/bootstrap/bootstrap-modal.js" %}'></script>
+<script src='{% static "theme/light-blue/js/bootstrap/bootstrap-tab.js" %}'> </script>
+
+<!-- basic application js-->
+<script src='{% static "theme/light-blue/js/app.js" %}'></script>
+<script src='{% static "theme/light-blue/js/settings.js" %}'></script>
+
+<script type='text/javascript'>
+    $(document).ready( function () {
+    function getCookie(name) {
+        var cookieValue = null;
+        if (document.cookie && document.cookie != '') {
+            var cookies = document.cookie.split(';');
+            for (var i = 0; i < cookies.length; i++) {
+                var cookie = jQuery.trim(cookies[i]);
+                // Does this cookie string begin with the name we want?
+                if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    var csrftoken = getCookie('csrftoken');
+    function csrfSafeMethod(method) {
+        // these HTTP methods do not require CSRF protection
+        return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+    }
+    $.ajaxSetup({
+        crossDomain: false, // obviates need for sameOrigin test
+        beforeSend: function(xhr, settings) {
+            if (!csrfSafeMethod(settings.type)) {
+                xhr.setRequestHeader("X-CSRFToken", csrftoken);
+            }
+        }
+    });
+    $.valHooks.textarea = {
+      get: function( elem ) {
+        return elem.value.replace( /\r?\n/g, "\r\n" );
+      }
+    };
+
+        $("a.type-select").on("click", function(e){
+            var anchor = $(this).attr("href");
+            var activeItemType = anchor.split("-")[1];
+            // activeItemType = activeItemType.charAt(0).toUpperCase() + activeItemType.slice(1);
+            // console.log(activeItemType);
+            toggleItemPorts(activeItemType);
+        });
+        function toggleItemPorts(activeItemType)
+        {
+            var ports = $(".item-port");
+            ports.each(function(){
+                if ($(this).hasClass(activeItemType))
+                    $(this).show(200);
+                else
+                    $(this).hide(200);
+            });
+        }
+        toggleItemPorts("Weapon");
+        computeStats();
+
+        // Remove item from hardpoint
+        $(".icon-remove").on("click", function(event){
+            event.stopPropagation();
+            var portWell = $(this).parent()
+            portWell.removeAttr("data-item-name");
+            portWell.find("span.item-name").text("Nothing Loaded");
+            var portName = portWell.attr("data-port-name");
+            var hardpointTag = $("#" + portName);
+            hardpointTag.removeClass("filled");
+            // remove item from systems overview as well
+            var portDatablock = $(".item-port-datablock[data-port-name='" + portName + "']");
+            console.log(portDatablock)
+            portDatablock.removeAttr("data-item-name");
+            portDatablock.find("span.item-name").text("Nothing Loaded");
+            if (portDatablock.hasClass("item-port-datablock"))
+            {
+                console.log("Resettign datablock states")
+                // reset state selection to default
+                parent = portDatablock.find(".item-port-datablock-statebuttons");
+                console.log(parent)
+                parent.empty();
+                $(document.createElement("input")).appendTo(parent).attr("id", "item-powerstate-" + portName + "-input").attr("type", "hidden").attr("name", "item-powerstate").attr("value","Default");
+                var parentDiv = $(document.createElement("div")).appendTo(parent).addClass("btn-group");
+                parentDiv.attr("id", "port-powerstate-" + portName);
+                parentDiv.attr("data-toggle", "buttons-radio").attr("data-target", "item-powerstate-" + portName + "-input")
+                var button = $(document.createElement("button")).appendTo(parentDiv)
+                    .addClass("btn btn-mini btn-info active")
+                    .attr("data-toggle-class","btn-info")
+                    .attr("data-toggle-passive-class", "btn-inverse")
+                    .attr("type", "button")
+                    .attr("name", "port-powerstate")
+                    .attr("value", "Default");
+                button.text("Default");
+                button.click(function(){
+                    $(this).parent().parent().find("input").val($(this).val());
+                    computeStats();
+                });
+            }
+            computeStats();
+        });
+
+        function enterPortLabel()
+        {
+            $(this).addClass("well-white");
+            var imageNumber = parseInt($(this).attr("data-parent"),10);
+            // ports wth image 0 are not displayed
+            if (imageNumber == 0)
+                return
+            // select the proper image tab
+            imageNumber = imageNumber - 1;
+            $('#layout-images li:eq(' + imageNumber + ') a').tab('show'); // Select third tab (0-indexed)
+            // find and highlight the port
+            var portName = $(this).attr("data-port-name")
+            $("#" + portName).addClass("highlight")
+        }
+
+        function leavePortLabel()
+        {
+            $(this).removeClass("well-white");
+            var portName = $(this).attr("data-port-name")
+            $("#" + portName).removeClass("highlight")
+        }
+        function enterPort()
+        {
+            var portWell = $(".item-port-label[data-port-name='" + $(this).attr("id") + "']");
+            portWell.addClass("well-white");
+            $(this).addClass("highlight")
+        }
+
+        function leavePort()
+        {
+            var portWell = $(".item-port-label[data-port-name='" + $(this).attr("id") + "']");
+            portWell.removeClass("well-white");
+            $(this).removeClass("highlight")
+        }
+
+        $(".item-port-label").hoverIntent({
+                over: enterPortLabel,
+                timeout: 100,
+                out: leavePortLabel
+            });
+        $(".item-port").hoverIntent({
+                over: enterPort,
+                timeout: 100,
+                out: leavePort
+            });
+
+        $(".item-port-label").on("click", function(){
+            $("#item-details-modal").modal("hide");
+            $("#itemport-details-modal").modal("show");
+            var portName = $(this).attr("data-port-name")
+            getItemPortDetails(portName);
+        });
+
+    var Items = Backbone.Model.extend({});
+
+    var PageableAvionics = Backbone.PageableCollection.extend({
+        model: Items,
+        url : '/items/get/type/avionics/compatible-with-vehicle/{{shipData.name}}/',
+        state: {
+            pageSize: 10
+        },
+        mode: "client" // page entirely on the client side
+    });
+    var PageableBatteries = Backbone.PageableCollection.extend({
+        model: Items,
+        url : '/items/get/type/battery/compatible-with-vehicle/{{shipData.name}}/',
+        state: {
+            pageSize: 10
+        },
+        mode: "client" // page entirely on the client side
+    });
+    var PageableCooler = Backbone.PageableCollection.extend({
+        model: Items,
+        url : '/items/get/type/cooler/compatible-with-vehicle/{{shipData.name}}/',
+        state: {
+            pageSize: 10
+        },
+        mode: "client" // page entirely on the client side
+    });
+    var PageableCargo = Backbone.PageableCollection.extend({
+        model: Items,
+        url : '/items/get/type/container/compatible-with-vehicle/{{shipData.name}}/',
+        state: {
+            pageSize: 10
+        },
+        mode: "client" // page entirely on the client side
+    });
+    var PageableDisplays = Backbone.PageableCollection.extend({
+        model: Items,
+        url : '/items/get/type/display/compatible-with-vehicle/{{shipData.name}}/',
+        state: {
+            pageSize: 10
+        },
+        mode: "client" // page entirely on the client side
+    });
+    var PageablePowerplants = Backbone.PageableCollection.extend({
+        model: Items,
+        url : '/items/get/type/powerplant/compatible-with-vehicle/{{shipData.name}}/',
+        state: {
+            pageSize: 10
+        },
+        mode: "client" // page entirely on the client side
+    });
+    var PageableRadars = Backbone.PageableCollection.extend({
+        model: Items,
+        url : '/items/get/type/radar/compatible-with-vehicle/{{shipData.name}}/',
+        state: {
+            pageSize: 10
+        },
+        mode: "client" // page entirely on the client side
+    });
+    var PageableWeapons = Backbone.PageableCollection.extend({
+        model: Items,
+        url : '/items/get/type/weapon/compatible-with-vehicle/{{shipData.name}}/',
+        state: {
+            pageSize: 10
+        },
+        mode: "client" // page entirely on the client side
+    });
+    var PageableThrusters = Backbone.PageableCollection.extend({
+        model: Items,
+        url : '/items/get/type/thruster/compatible-with-vehicle/{{shipData.name}}/',
+        state: {
+            pageSize: 10
+        },
+        mode: "client" // page entirely on the client side
+    });
+
+    var pageableAvionics = new PageableAvionics(),
+        initialAvionics = pageableAvionics;
+    var pageableAvionicsCompare = new PageableAvionics(),
+        initialAvionicsCompare = pageableAvionicsCompare;
+
+    var pageableBatteries = new PageableBatteries(),
+        initialBatteries = pageableBatteries;
+    var pageableBatteriesCompare = new PageableBatteries(),
+        initialBatteriesCompare = pageableBatteriesCompare;
+
+    var pageableCargo = new PageableCargo(),
+        initialCargo = pageableCargo;
+    var pageableCargoCompare = new PageableCargo(),
+        initialCargo = pageableCargoCompare;
+
+    var pageableCooler = new PageableCooler(),
+        initialCooler = pageableCooler;
+    var pageableCoolerCompare = new PageableCooler(),
+        initialCoolerCompare = pageableCoolerCompare;
+
+    var pageableDisplays = new PageableDisplays(),
+        initialDisplays = pageableDisplays;
+    var pageableDisplaysCompare = new PageableDisplays(),
+        initialDisplaysCompare = pageableDisplaysCompare;
+
+    var pageableRadars = new PageableRadars(),
+        initialRadars = pageableRadars;
+    var pageableRadarsCompare = new PageableRadars(),
+        initialRadarsCompare = pageableRadarsCompare;
+
+    var pageablePowerplants = new PageablePowerplants(),
+        initialPowerplants = pageablePowerplants;
+    var pageablePowerplantsCompare = new PageablePowerplants(),
+        initialPowerplantsCompare = pageablePowerplantsCompare;
+
+
+    var pageableWeapons = new PageableWeapons(),
+        initialWeapons = pageableWeapons;
+    var pageableWeaponsCompare = new PageableWeapons(),
+        initialWeaponsCompare = pageableWeaponsCompare;
+
+    var pageableThrusters = new PageableThrusters(),
+        initialThrusters = pageableThrusters;
+    var pageableThrustersCompare = new PageableThrusters(),
+        initialThrustersCompare = pageableThrustersCompare;
+
+    var ItemTypeCell = Backgrid.StringCell.extend({
+        className : "item-type-cell"
+    });
+    var ItemSubTypeCell = Backgrid.StringCell.extend({
+        className : "item-subtype-cell"
+    });
+    var ItemSizeCell = Backgrid.StringCell.extend({
+        className : "item-size-cell"
+    });
+    var ItemNameCell = Backgrid.StringCell.extend({
+        className : "item-name-cell"
+    });
+
+    var ClickableRow = Backgrid.Row.extend({
+      className:"vehicle-item-row",
+      events: {
+        "click": "onClick"
+      },
+      onClick: function () {
+        Backbone.trigger("rowclicked", this.model);
+      }
+    });
+    $('#item-details-modal').modal({
+      backdrop: false,
+      show: false
+    })
+    $('#itemport-details-modal').modal({
+      backdrop: false,
+      show: false
+    })
+    Backbone.on("rowclicked", function (model) {
+        // console.log(model.get("displayName"));
+        // console.log(model.get("type"));
+        // console.log(model.get("subtype"));
+        getItemDetails(model.get("name"));
+        chartPipe(model.get("name"), "Power", "All");
+        chartPipe(model.get("name"), "Heat", "All");
+        chartPipe(model.get("name"), "Avionics", "All");
+        $("#itemport-details-modal").modal("hide");
+        $("#item-details-modal").modal("show");
+    });        
+    function createBackgrid(collection, parentElement){
+        var columns = [{
+            name: "displayName",
+            label: "Item",
+            editable : false,
+            // The cell type can be a reference of a Backgrid.Cell subclass, any Backgrid.Cell subclass instances like *id* above, or a string
+            cell: "string" // This is converted to "StringCell" and a corresponding class in the Backgrid package namespace is looked up
+        },{
+            name: "type",
+            label: "type",
+            editable : false,
+            renderable: false,
+            // The cell type can be a reference of a Backgrid.Cell subclass, any Backgrid.Cell subclass instances like *id* above, or a string
+            cell: ItemTypeCell // This is converted to "StringCell" and a corresponding class in the Backgrid package namespace is looked up
+        },{
+            name: "subtype",
+            label: "subtype",
+            editable : false,
+            renderable: false,
+            // The cell type can be a reference of a Backgrid.Cell subclass, any Backgrid.Cell subclass instances like *id* above, or a string
+            cell: ItemSubTypeCell // This is converted to "StringCell" and a corresponding class in the Backgrid package namespace is looked up
+        },{
+            name: "size",
+            label: "size",
+            editable : false,
+            renderable: false,
+            // The cell type can be a reference of a Backgrid.Cell subclass, any Backgrid.Cell subclass instances like *id* above, or a string
+            cell: ItemSizeCell // This is converted to "StringCell" and a corresponding class in the Backgrid package namespace is looked up
+        },{
+            name: "name",
+            label: "name",
+            editable : false,
+            renderable: false,
+            // The cell type can be a reference of a Backgrid.Cell subclass, any Backgrid.Cell subclass instances like *id* above, or a string
+            cell: ItemNameCell // This is converted to "StringCell" and a corresponding class in the Backgrid package namespace is looked up
+        }
+        ]
+
+        var pageableGrid = new Backgrid.Grid({
+            columns: columns,
+            row : ClickableRow,
+            collection: collection,
+            footer: Backgrid.Extension.Paginator.extend({
+                //okendoken. rewrite template to add pagination class to container
+                template: _.template('<tr><td class="pagination" colspan="<%= colspan %>"><ul><% _.each(handles, function (handle) { %><li <% if (handle.className) { %>class="<%= handle.className %>"<% } %>><a href="#" <% if (handle.title) {%> title="<%= handle.title %>"<% } %>><%= handle.label %></a></li><% }); %></ul></td></tr>')
+            }),
+            className: 'table table-condensed no-margin table-hover'
+        });
+        parentElement.html(pageableGrid.render().$el);
+    }
+
+        var tableResize;
+        var lineResize;
+        function lineChartOperaHack(){
+            //lineChart is somehow not rendered correctly after updates. Need to reupdate
+            if ($.browser.opera){
+                clearTimeout(lineResize);
+                lineResize = setTimeout(lineChart.update, 300);
+            }
+        }
+
+    $(window).resize(function(e) {
+        clearTimeout(tableResize);
+        tableResize = setTimeout(function(){
+            createBackgrid(pageableAvionics, $("#table-dynamic-avionics"));
+            createBackgrid(pageableBatteries, $("#table-dynamic-batteries"));
+            createBackgrid(pageableCargo, $("#table-dynamic-cargo"));
+            createBackgrid(pageableCooler, $("#table-dynamic-cooler"));
+            createBackgrid(pageableDisplays, $("#table-dynamic-displays"));
+            createBackgrid(pageableRadars, $("#table-dynamic-radar"));
+            createBackgrid(pageablePowerplants, $("#table-dynamic-powerplants"));
+            createBackgrid(pageableWeapons, $("#table-dynamic-weapons"));
+            createBackgrid(pageableThrusters, $("#table-dynamic-thrusters"));
+        }, 200);
+    });
+
+    createBackgrid(pageableAvionics, $("#table-dynamic-avionics"));
+    createBackgrid(pageableBatteries, $("#table-dynamic-batteries"));
+    createBackgrid(pageableCargo, $("#table-dynamic-cargo"));
+    createBackgrid(pageableCooler, $("#table-dynamic-coolers"));
+    createBackgrid(pageableDisplays, $("#table-dynamic-displays"));
+    createBackgrid(pageableRadars, $("#table-dynamic-radar"));
+    createBackgrid(pageablePowerplants, $("#table-dynamic-powerplants"));
+    createBackgrid(pageableWeapons, $("#table-dynamic-weapons"));
+    createBackgrid(pageableThrusters, $("#table-dynamic-thrusters"));
+    
+    // $("#search").change(function(){
+
+    //     var $that = $(this),
+    //         filteredCollection = initialWeapons.fullCollection.filter(function(el){
+    //         return ~el.get('displayName').toUpperCase().indexOf($that.val().toUpperCase());
+    //     });
+    //     createBackgrid(new PageableWeapons(filteredCollection, {
+    //         state: {
+    //             firstPage: 1,
+    //             currentPage: 1
+    //         }
+    //     }));
+    // });
+
+
+    pageableAvionics.fetch();
+    pageableBatteries.fetch();
+    pageableCargo.fetch();
+    pageableCooler.fetch();
+    pageableDisplays.fetch();
+    pageableRadars.fetch();
+    pageablePowerplants.fetch();
+    pageableWeapons.fetch();
+    pageableThrusters.fetch();
+
+    $(document).on("mouseenter", "tr.vehicle-item-row", function(){
+        $(this).draggable({
+          revert: "invalid", // when not dropped, the item will revert back to its initial position
+          containment: "document",
+          helper: "clone",
+          cursor: "move",
+          delay: 100,
+          distance: 5
+        })
+    });
+
+        function getItemDetails(itemName) {
+            jsonData = {
+                "itemName"  : itemName,
+            }
+            var jsonData = JSON.stringify(jsonData);
+            // console.log(jsonData);
+            $.ajaxSetup({
+              async: false
+            });
+            $.post('/items/details/', jsonData).done(function(data) {
+                if (data['success'] == false)
+                {
+                    $("#item-details").hide();
+                    console.log("Error occured getting item details")
+                    console.log(data)
+                }
+                else
+                {
+                    $("#item-details").show();
+                    var section = $("#item-details");
+                    $("#item-details-itemname").text(data['itemname']);
+                    $("#item-details-itemclass").text(data['itemclass']);
+                    $("#item-details-itemsize").text(data['itemsize']);
+                    $("#item-details-itemtype").text(data['itemtype']);
+                    $("#item-details-itemsubtype").text(data['itemsubtype']);
+                    $("#item-details-description").text(data['description']);
+                    // clear the sub divs so we;re starting fresh
+                    var weaponbars = $("#item-details-weaponbars");
+                    weaponbars.empty();
+                    var misc = $("#item-details-misc");
+                    misc.empty();
+                    if (data['itemtype'] == "Weapon")
+                    {
+                        var stats = data['itemstats']
+                        for (var index = 0; index < stats.length; index++)
+                        {
+                            var h = $(document.createElement('h5')).appendTo(weaponbars).text(stats[index]['name']);
+                            var progress = $(document.createElement('div')).appendTo(weaponbars).addClass("progress");
+                            var bar = $(document.createElement('div')).appendTo(progress).addClass("bar").text(stats[index]['value'])
+                            .css("width",stats[index]['value'] + "%");
+                        }
+                    }
+                    else
+                    {
+                        var stats = data['itemstats']
+                        var table = $(document.createElement('table')).appendTo(misc).addClass("table");
+                        var tableBody = $(document.createElement('tbody')).appendTo(table);
+                        for (var index = 0; index < stats.length; index++)
+                        {
+                            var tableRow = $(document.createElement('tr')).appendTo(tableBody).addClass("label-inverse");
+                            $(document.createElement('td')).appendTo(tableRow).text(stats[index]['name']);
+                            $(document.createElement('td')).appendTo(tableRow).text(stats[index]['value']);
+                        }
+                    }
+                }
+            });
+        }
+
+        function chartPipe(itemName, pipe, state) {
+            jsonData = {
+                "itemName"  : itemName,
+                "pipe"      : pipe,
+                "state"     : state,
+                "metric"    : 0
+            }
+            var jsonData = JSON.stringify(jsonData);
+            // console.log(jsonData);
+            $.ajaxSetup({
+              async: false
+            });
+            $.post('/items/pipegraph/', jsonData).done(function(data) {
+                if (data['success'] == false)
+                {
+                    console.log("chartPipe failed:", data['response']);
+                    $("#" + pipe.toLowerCase() + "-chart-line").parent().hide()
+                }
+                else
+                {
+                    // console.log(data['data']);
+                    $("#" + pipe.toLowerCase() + "-chart-line").parent().show()
+                    var chartID = "#" + pipe.toLowerCase() + "-chart-line svg" 
+                    // console.log($(chartID));
+                    if (pipe == "Power")
+                    {
+                        if (data['negative'])
+                            $("#power-chart-header").text("Power Consumption (per second)")
+                        else
+                            $("#power-chart-header").text("Power Generation (per second)")
+                    }
+                    else if (pipe == "Heat")
+                    {
+                        if (data['negative'])
+                            $("#heat-chart-header").text("Heat Dissipation (per second)")
+                        else
+                            $("#heat-chart-header").text("Heat Generation (per second)")
+                    }
+                    else if (pipe == "Avionics")
+                    {
+                        if (data['negative'])
+                            $("#avionics-chart-header").text("Avionics Offloading (per second)")
+                        else
+                            $("#avionics-chart-header").text("Avionics Consumption (per second)")
+                    }
+
+                    nv.addGraph(function() {
+                        var chart = nv.models.lineChart()
+                            .showLegend(true)
+
+                        chart.yAxis
+                            .axisLabel(pipe)
+                            .showMaxMin(true)
+                            .tickFormat(d3.format(',.f'));
+
+                        chart.xAxis
+                            .axisLabel('Seconds')
+                            .showMaxMin(true)
+                            .tickFormat(d3.format(',.f'));
+
+                        d3.select(chartID)
+                            .datum(data['data'])
+                            .transition().duration(0)
+                            .call(chart);
+
+                        nv.utils.windowResize(chart.update);
+                        lineChart = chart;
+
+                        lineChartOperaHack();
+
+                        return chart;
+                    });
+                }
+            });
+        } 
+        function getItemPortDetails(itemPortName) {
+            jsonData = {
+                "portName"  : itemPortName,
+                "vehicleName" : "{{shipData.name}}"
+            }
+            var jsonData = JSON.stringify(jsonData);
+            // console.log(jsonData);
+            $.ajaxSetup({
+              async: false
+            });
+            $.post('/itemports/details/', jsonData).done(function(data) {
+                if (data['success'] == false)
+                {
+                    console.log("getItemPortDetails failed. ", data)
+                }
+                else
+                {
+                    $("#itemport-details").show();
+                    // console.log(data)
+                    // clear the sub divs so we're starting fresh
+                    $("#itemport-details-name").text(data['name']);
+                    var hardpointsDiv = $("#itemport-details-body");
+                    // console.log(hardpointsDiv);
+                    hardpointsDiv.empty()
+                    $(document.createElement("p")).appendTo(hardpointsDiv).text("Size " + data["minsize"] + " - " + data["maxsize"]);
+                    
+                    $(document.createElement('p')).appendTo(hardpointsDiv).text("Supported Items");
+                    var types = data['subtypes'];
+                    for (var i = 0; i < types.length; i++)
+                    {
+                        $(document.createElement('p')).appendTo(hardpointsDiv).text(types[i]).addClass("offset1");
+                    }
+                }
+            });
+        }
+        function dropItem(ele, event, ui) {
+            // console.log("Dropped!");
+            var portWell = undefined;
+            var portDatablock = undefined;
+            var portTag = undefined;
+            if ($(ele).hasClass("item-port-label"))
+            {
+                // hard datablock in hardpoints list
+                portWell = $(ele);
+                var portName = $(ele).attr("data-port-name");
+                portDatablock = $('.item-port-datablock[data-port-name="' + portName + '"]'); 
+                portTag = $("#" + portName);
+                // we re-grab the portwell to make sure we have all of them in the case of multiple wells for the same slot
+                portWell = $('.item-port-label[data-port-name="' + portName + '"]');
+
+            }
+            else if ($(ele).hasClass("item-port-datablock"))
+            {
+                portDatablock = $(ele);
+                var portName = $(ele).attr("data-port-name");
+                portWell = $('.item-port-label[data-port-name="' + portName + '"]');
+                portTag = $("#" + portName);
+            }
+            else
+            {
+                // hardpoint on ship image
+                var portName = $(ele).attr("id");
+                portWell = $('.item-port-label[data-port-name="' + portName + '"]');
+                portDatablock = $('.item-port-datablock[data-port-name="' + portName + '"]');
+                portTag = $(ele);
+            }
+            var itemDisplayName = ui.draggable.find("td.string-cell").text();
+            var itemName = ui.draggable.find("td.item-name-cell").text();
+            portWell.find("span.item-name").text(itemDisplayName);
+            portWell.attr("data-item-name", itemName)
+            portDatablock.find("span.item-name").text(itemDisplayName);
+            portDatablock.attr("data-item-name", itemName)
+            portTag.addClass("filled");
+            // add state buttons for this item to port-datablock
+            jsonData = {
+                "itemName"  : itemName,
+            }
+            var jsonData = JSON.stringify(jsonData);
+            // console.log(jsonData);
+            $.ajaxSetup({
+              async: false
+            });
+            $.post('/items/details/', jsonData).done(function(data) {
+                if (data['success'] == false)
+                {
+                    console.log("Error occured getting item details")
+                    console.log(data)
+                }
+                else
+                {
+                    // create buttons for the power and avionis states
+                    // for now we are assuming power/heat have same states
+                    console.log("Parent:", portDatablock);
+                    if (data["power"].length > 0)
+                    {
+                        var parent = portDatablock.find(".item-port-datablock-statebuttons");
+                        parent.empty();
+                        $(document.createElement("input")).appendTo(parent).attr("id", "item-powerstate-" + portName + "-input").attr("type", "hidden").attr("name", "item-powerstate").attr("value",data["power"][0]);
+                        var parentDiv = $(document.createElement("div")).appendTo(parent).addClass("btn-group");
+                        parentDiv.attr("id", "port-powerstate-" + portName);
+                        parentDiv.attr("data-toggle", "buttons-radio").attr("data-target", "item-powerstate-" + portName + "-input")
+                        for (var i=0; i < data["power"].length; i++)
+                        {
+                            var button = $(document.createElement("button")).appendTo(parentDiv)
+                                .addClass("btn btn-mini")
+                                .attr("data-toggle-class","btn-info")
+                                .attr("data-toggle-passive-class", "btn-inverse")
+                                .attr("type", "button")
+                                .attr("name", "port-powerstate")
+                                .attr("value", data["power"][i]);
+                            if (i == 0)
+                                button.addClass("btn-info active");
+                            else
+                                button.addClass("btn-inverse");
+                            button.text(data["power"][i]);
+                            button.click(function(){
+                                $(this).parent().parent().find("input").val($(this).val());
+                                computeStats();
+                            });
+                        }
+                    }
+                }
+            });
+            computeStats();
+        }
+        var hardpoints = $(".item-port");
+        var hardpointWells = $(".item-port-label");
+        var hardpointDatablocks = $(".item-port-datablock");
+
+        hardpointDatablocks.droppable({
+            activeClass: "label-success",
+            tolerance : "pointer",
+            drop : function(event, ui) {
+                $(this).removeClass("over");
+                dropItem(this, event, ui);
+            },
+            deactivate : function(event, ui) {
+                $(this).removeClass("over");
+            },
+            activate : function(event, ui) {
+                // console.log("Activate drag")
+                $("#item-details-modal").modal("hide");
+                $("#itemport-details-modal").modal("hide");
+            },
+            over : function(event, ui) {
+                $(this).addClass("over");
+                // console.log("Over")
+            },
+            out : function(event, ui) {
+                $(this).removeClass("over");
+                // console.log("out")
+            },
+            accept: function(draggable) {
+                var row = draggable;
+                var itemSubType = row.find("td.item-subtype-cell").text();
+                var itemSize = parseInt(row.find("td.item-size-cell").text(), 10);
+                var supportedSubTypes = $(this).attr("data-subtypes");
+                var minSize = $(this).attr("data-min-size");
+                var maxSize = $(this).attr("data-max-size");
+                var label = $(this).find(".label")
+                // console.log("Item Sub Type:", itemSubType)
+                // console.log("Supported Sub Types:", supportedSubTypes);
+                // console.log("Item Size:", itemSize);
+                // console.log("Supported Size:", minSize, "-", maxSize);
+                if (supportedSubTypes.indexOf(itemSubType) > -1 && itemSize >= minSize && itemSize <= maxSize)
+                {
+                    // console.log("Item Supported!")
+                    return true;
+                }
+                return false;
+        }});       
+
+        hardpointWells.droppable({
+            activeClass: "label-success",
+            tolerance : "pointer",
+            drop : function(event, ui) {
+                $(this).removeClass("over");
+                dropItem(this, event, ui);
+            },
+            deactivate : function(event, ui) {
+                $(this).removeClass("over");
+            },
+            activate : function(event, ui) {
+                // console.log("Activate drag")
+                $("#item-details-modal").modal("hide");
+                $("#itemport-details-modal").modal("hide");
+            },
+            over : function(event, ui) {
+                $(this).addClass("over");
+                // console.log("Over")
+            },
+            out : function(event, ui) {
+                $(this).removeClass("over");
+                // console.log("out")
+            },
+            accept: function(draggable) {
+                var row = draggable;
+                var itemSubType = row.find("td.item-subtype-cell").text();
+                var itemSize = parseInt(row.find("td.item-size-cell").text(), 10);
+                var supportedSubTypes = $(this).attr("data-subtypes");
+                var minSize = $(this).attr("data-min-size");
+                var maxSize = $(this).attr("data-max-size");
+                var label = $(this).find(".label")
+                // console.log("Item Sub Type:", itemSubType)
+                // console.log("Supported Sub Types:", supportedSubTypes);
+                // console.log("Item Size:", itemSize);
+                // console.log("Supported Size:", minSize, "-", maxSize);
+                if (supportedSubTypes.indexOf(itemSubType) > -1 && itemSize >= minSize && itemSize <= maxSize)
+                {
+                    // console.log("Item Supported!")
+                    return true;
+                }
+                return false;
+        }});       
+
+        hardpoints.droppable({
+            activeClass: "drop-target-valid",
+            tolerance : "pointer",
+            drop : function(event, ui) {
+                $(this).removeClass("over");
+                dropItem(this, event, ui);
+            },
+            deactivate : function(event, ui) {
+                $(this).removeClass("over");
+            },
+            activate : function(event, ui) {
+                // console.log("Activate drag")
+                $("#item-details-modal").modal("hide");
+                $("#itemport-details-modal").modal("hide");
+            },
+            over : function(event, ui) {
+                $(this).addClass("over");
+                // console.log("Over")
+            },
+            out : function(event, ui) {
+                $(this).removeClass("over");
+                // console.log("out")
+            },
+            accept: function(draggable) {
+                var row = draggable;
+                var itemSubType = row.find("td.item-subtype-cell").text();
+                var itemSize = parseInt(row.find("td.item-size-cell").text(), 10);
+                var supportedSubTypes = $(this).attr("data-subtypes");
+                var minSize = $(this).attr("data-min-size");
+                var maxSize = $(this).attr("data-max-size");
+                // console.log("Item Sub Type:", itemSubType)
+                // console.log("Supported Sub Types:", supportedSubTypes);
+                // console.log("Item Size:", itemSize);
+                // console.log("Supported Size:", minSize, "-", maxSize);
+                if (supportedSubTypes.indexOf(itemSubType) > -1 && itemSize >= minSize && itemSize <= maxSize)
+                {
+                    // console.log("Item Supported!")
+                    return true;
+                }
+                return false;
+        }});       
+
+        var indexOf = function(needle) {
+            if(typeof Array.prototype.indexOf === 'function') {
+                indexOf = Array.prototype.indexOf;
+            } else {
+                indexOf = function(needle) {
+                    var i = -1, index = -1;
+
+                    for(i = 0; i < this.length; i++) {
+                        if(this[i] === needle) {
+                            index = i;
+                            break;
+                        }
+                    }
+
+                    return index;
+                };
+            }
+
+            return indexOf.call(this, needle);
+        };
+        function computeStats()
+        {
+            // computes stats based on items equipped
+            console.log("Computing current stats")
+            // get all items equipped
+            var ports = $('.item-port-datablock');
+            var scannedPorts = [];
+            var scannedItems = [];
+            var LDS = []
+            ports.each(function() {
+                var itemName = $(this).attr("data-item-name");
+                if (itemName != undefined)
+                {
+                    var itemState = $(this).find("input").val()
+                    // console.log(itemName, itemState);
+                    LDS.push( {"name" : itemName, "state" : itemState} );
+                }
+            });
+            var data = {}
+            data["items"] = []
+            for (var i=0; i < LDS.length; i++)
+            {
+                data["items"].push(LDS[i]);
+            }
+            // console.log(data);
+            var jsonData = JSON.stringify(data);
+            // console.log(jsonData);
+            $.ajaxSetup({
+              async: false
+            });
+            $.post('/graphs/get/available-power/', jsonData).done(function(data) {
+                if (data['success'] == false)
+                {
+                    console.log("Failed to retrieve power usage data:", data['response']);
+                }
+                else
+                {
+                    // console.log("Available Power data");
+                    // console.log(data);
+                    var powerConsumed = data['data']['powerConsumed'];
+                    if (powerConsumed < 0)
+                        powerConsumed = powerConsumed * -1;
+                    var maxPower = data['data']['maxPower'];
+                    var percentMaxPower = 0.0;
+                    // console.log( powerConsumed, maxPower );
+                    if (maxPower > 0)
+                    {
+                        $("#stats-lds-warning-missingpowerplant").hide();
+                        percentMaxPower = (powerConsumed / maxPower) * 100;
+                        $("#stats-lds-available-power-label").text(powerConsumed + "/" + maxPower);
+                        $("#stats-lds-available-power-container").removeClass("progress-success").removeClass("progress-warning").removeClass("progress-error");
+                        if (percentMaxPower <= 50.0)
+                        {
+                            $("#stats-lds-available-power-container").addClass("progress-success");
+                        }
+                        else if (percentMaxPower >= 50.0 && percentMaxPower <= 75.0)
+                        {
+                            $("#stats-lds-available-power-container").addClass("progress-warning");
+                        }
+                        else if (percentMaxPower >= 75 && percentMaxPower <= 100.0)
+                        {
+                            $("#stats-lds-available-power-container").addClass("progress-danger");
+                        }
+                        else
+                        {
+                            $("#stats-lds-available-power-container").addClass("progress-danger");
+                            percentMaxPower = 100.0;
+                        }
+                        $("#stats-lds-available-power-bar").css({width: percentMaxPower + "%"})
+                    }
+                    else
+                    {
+                        console.log($("#stats-lds-available-power-bar"));
+                        $("#stats-lds-warning-missingpowerplant").show();
+                        $("#stats-lds-available-power-label").text(powerConsumed + "/0");
+                        $("#stats-lds-available-power-container").removeClass("progress-success").removeClass("progress-warning").removeClass("progress-error");
+                        $("#stats-lds-available-power-container").addClass("progress-danger");
+                        $("#stats-lds-available-power-bar").css({width:"100%"})
+                    }
+                }
+                });
+                ports.each(function(){
+                var itemName = $(this).attr("data-item-name");
+                var portName = $(this).attr("data-port-name");
+                if (itemName != undefined && portName != undefined)
+                {
+                    if (scannedPorts.indexOf(portName) == -1)
+                    {
+                        console.log("Found equipped item:", itemName)
+                        scannedPorts.push(portName)
+                        scannedItems.push(itemName)
+                    }
+                }
+            });
+            // console.log(scannedItems);
+            var data = {};
+            data['state'] = "Active";
+            data['items'] = []
+            for (var index=0; index < scannedItems.length; index++)
+            {
+                var entry = {
+                    "name" : scannedItems[index],
+                    "state" : "Active"
+                };
+                data['items'].push( entry );
+            }
+            // console.log(data);
+            var jsonData = JSON.stringify(data);
+            // console.log(jsonData);
+            $.ajaxSetup({
+              async: false
+            });
+            $.post('/graphs/get/available-power/', jsonData).done(function(data) {
+                if (data['success'] == false)
+                {
+                    console.log("Failed to retrieve power usage data:", data['response']);
+                }
+                else
+                {
+                    // console.log("Available Power data");
+                    // console.log(data);
+                    var powerConsumed = data['data']['powerConsumed'];
+                    if (powerConsumed < 0)
+                        powerConsumed = powerConsumed * -1;
+                    var maxPower = data['data']['maxPower'];
+                    var percentMaxPower = 0.0;
+                    if (maxPower > 0)
+                    {
+                        $("#stats-warning-missingpowerplant").hide();
+                        percentMaxPower = (powerConsumed / maxPower) * 100;
+                        $("#stats-available-power-label").text(powerConsumed + "/" + maxPower);
+                        $("#stats-available-power-container").removeClass("progress-success").removeClass("progress-warning").removeClass("progress-error");
+                        if (percentMaxPower <= 50.0)
+                        {
+                            $("#stats-available-power-container").addClass("progress-success");
+                        }
+                        else if (percentMaxPower >= 50.0 && percentMaxPower <= 75.0)
+                        {
+                            $("#stats-available-power-container").addClass("progress-warning");
+                        }
+                        else if (percentMaxPower >= 75 && percentMaxPower <= 100.0)
+                        {
+                            $("#stats-available-power-container").addClass("progress-danger");
+                        }
+                        else
+                        {
+                            $("#stats-available-power-container").addClass("progress-danger");
+                            percentMaxPower = 100.0;
+                        }
+                        $("#stats-available-power-bar").css({width: percentMaxPower + "%"})
+                    }
+                    else
+                    {
+                        $("#stats-warning-missingpowerplant").show();
+                        $("#stats-available-power-label").text(powerConsumed + "/0");
+                        $("#stats-available-power-container").removeClass("progress-success").removeClass("progress-warning").removeClass("progress-error");
+                        $("#stats-available-power-container").addClass("progress-danger");
+                        $("#stats-available-power-bar").css({width:"100%"})
+                    }
+                }
+            });
+        }
+    // end ready function
+    });
+</script>
+
+
+</body>

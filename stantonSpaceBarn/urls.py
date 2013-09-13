@@ -31,12 +31,33 @@ urlpatterns = patterns('stantonSpaceBarn.views',
 	url(r'^submissions/weapon/', 'submissionFormData'),
 	url(r'^submissions/', 'submissionForms'),
 	url(r'^items/$', 'itemdata'),
+	url(r'^vehicles/$', 'vehicledata'),
 	url(r'^items/details/$', 'getItemDetails'),
 	url(r'^items/detail/([a-zA-Z0-9_-]+)/$', 'itemDetails'),
 	url(r'^items/pipegraph/$', 'getPipeGraph'),
 	url(r'^items/([a-zA-Z0-9_-]+)/$', 'itemList'),
-	url(r'^examples/territories/$', 'exampleTerritories'),
-	url(r'^items/list/([a-zA-Z0-9_-]+)$', 'getBackgridItemList')
+	url(r'^items/list/([a-zA-Z0-9_-]+)$', 'getBackgridItemList'),
+	url(r'^vehicles/list/$', 'getBackgridVehicleList'),
+	url(r'^vehicles/details/$', 'getVehicleDetails'),
+	url(r'^phase2/ship/([a-zA-Z0-9_-]+)', 'shipLayout'),
+	url(r'^phase2/$', 'phase2'),
+	url(r'^items/get/([a-zA-Z0-9_-]+)$', 'getVehicleItemList'),
+	
+	url(r'^graphs/get/(?P<graphType>[a-zA-Z0-9_-]+)/$', 'getGraph'),
+	url(r'^itemports/details/$', 'getItemPortDetails'),
+
+	# Get all VehicleItem entries
+	url(r'^items/get/$', 'getVehicleItemList'),
+	# Get VehicleItem entries of the specified VehicleItemType
+	url(r'^items/get/type/(?P<itemTypeName>[a-zA-Z0-9_-]+)/$', 'getVehicleItemList'),
+	# Get VehicleItem entries of the specified VehicleItemType and VehicleItemSubType
+	url(r'^items/get/type/(?P<itemTypeName>[a-zA-Z0-9_-]+)/subtype/(?P<itemSubTypeName>[a-zA-Z0-9_-]+)/$', 'getVehicleItemList'),
+	# Get VehicleItem entries of the specified VehicleItemType and VehicleItemSubType that are compatible with the specified Vehicle
+	url(r'^items/get/type/(?P<itemTypeName>[a-zA-Z0-9_-]+)/subtype/(?P<itemSubTypeName>[a-zA-Z0-9_-]+)/compatible-with-vehicle/(?P<vehicleName>[a-zA-Z0-9_-]+)/$', 'getVehicleItemList'),
+	# Get VehicleItem entries of the specified VehicleItemType that are compatible with the specified Vehicle
+	url(r'^items/get/type/(?P<itemTypeName>[a-zA-Z0-9_-]+)/compatible-with-vehicle/(?P<vehicleName>[a-zA-Z0-9_-]+)/$', 'getVehicleItemList'),
+	# Get all VehicleItem entries that are compatible with the specified Vehicle
+	url(r'^items/get/compatible-with-vehicle/(?P<vehicleName>[a-zA-Z0-9_-]+)/$', 'getVehicleItemList'),
 )
 
 

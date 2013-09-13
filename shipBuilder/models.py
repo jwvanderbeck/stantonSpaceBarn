@@ -331,8 +331,6 @@ class Build(models.Model):
         return "%s %s variant:%s" % (self.ship.name, self.role, self.name)
 
 
-
-
 ######################################################
 ## Phase 2
 ## New models based on actual game data rather than
@@ -398,45 +396,78 @@ class VehicleItem(models.Model):
     power = models.ManyToManyField('VehicleItemPower', blank = True, null = True)
     heat = models.ManyToManyField('VehicleItemHeat', blank = True, null = True)
     avionics = models.ManyToManyField('VehicleItemAvionics', blank = True, null = True)
+    # Additional fields required for The Barn
+    views = models.PositiveIntegerField(default = 0)
 
     def __unicode__(self):
         return u"%s" % (self.name)
 
 ### Vehicles
+class VehicleImage(models.Model):
+    url = models.URLField(default = '')
+    name = models.CharField(max_length = 255, default = '')
+    ship = models.ForeignKey('Vehicle')
+    
+    def __unicode__(self):
+        return self.name
 
 class ItemPort(models.Model):
     # Basic fields as required by game model
-    displayName = models.CharField(max_length = 255, blank = True)
+    displayName = models.CharField(max_length = 255, blank = True, null = True)
     name = models.CharField(max_length = 255)
     flags = models.CharField(max_length = 512, blank = True)
     maxSize = models.PositiveIntegerField(default = 1)
     minSize = models.PositiveIntegerField(default = 0)
-    supportedTypes = models.ManyToManyField('VehicleItemType') 
-    supportedSubTypes = models.ManyToManyField('VehicleItemSubType')
-    parentVehicle = models.ForeignKey('Vehicle')
+    supportedTypes = models.ManyToManyField('VehicleItemType', blank = True, null = True) 
+    supportedSubTypes = models.ManyToManyField('VehicleItemSubType', blank = True, null = True)
+    parentVehicle = models.ForeignKey('Vehicle', blank = True, null = True)
     # Added just in case the game starts using it
     portClass = models.PositiveIntegerField(default = 0)
     # Additional fields required for The Barn
-    image = models.ForeignKey('Image', default=0, null=True, blank=True)
-    tagLocationX = models.IntegerField(default = 0)
-    tagLocationY = models.IntegerField(default = 0)
+        # 1 = TopLeft, 2 = TopRight, 3 = BottomLeft, 4 = BottomRight
+    parentImage = models.PositiveIntegerField(default = 0)
+    image = models.ForeignKey('Image', null = True, blank = True)
+    tagLocationX = models.FloatField(default = 0.0)
+    tagLocationY = models.FloatField(default = 0.0)
+
+    def __unicode__(self):
+        if self.displayName and self.displayName != "":
+            name = self.displayName
+        else:
+            name = self.name
+        return u"%s: %s (%d-%d) %s" % (self.parentVehicle, name, self.minSize, self.maxSize, self.supportedTypes.all())
 
 class VehicleCategory(models.Model):
     name = models.CharField(max_length = 255)
+
+    def __unicode__(self):
+        return self.name
 
 class Vehicle(models.Model):
     # Basic fields as required by game model
     vehicleClass = models.PositiveIntegerField(default = 1)
     category = models.ForeignKey('VehicleCategory')
-    displayName = models.CharField(max_length = 255)
+    displayName = models.CharField(max_length = 255, blank = True, null = True)
     name = models.CharField(max_length = 255)
     # Additional fields required for The Barn
+    views = models.PositiveIntegerField(default = 0)
     upgradeSlots = models.PositiveIntegerField(default = 0)
-    maximum_crew = models.PositiveIntegerField(default=1)
-    empty_mass = models.BigIntegerField(default=0)
-    length = models.FloatField(default=0)
-    width = models.FloatField(default=0)
-    height = models.FloatField(default=0)
-    thumbnail = models.URLField(default='')
-    available = models.BooleanField(default=False)
+    maximum_crew = models.PositiveIntegerField(default = 1)
+    empty_mass = models.BigIntegerField(default = 0)
+    length = models.FloatField(default = 0)
+    width = models.FloatField(default = 0)
+    height = models.FloatField(default = 0)
+    thumbnail = models.URLField(default='', blank = True, null = True)
+    available = models.BooleanField(default = False)
+    manufacturer = models.ForeignKey('Manufacturer', blank = True, null = True)
+    layoutImageTopRight = models.URLField(blank = True, null = True)
+    layoutImageTopLeft = models.URLField(blank = True, null = True)
+    layoutImageBottomRight = models.URLField(blank = True, null = True)
+    layoutImageBottomLeft = models.URLField(blank = True, null = True)
 
+    def __unicode__(self):
+        if self.displayName and self.displayName != "":
+            name = self.displayName
+        else:
+            name = self.name
+        return u"%s Class %d %s" % (name, self.vehicleClass, self.category)

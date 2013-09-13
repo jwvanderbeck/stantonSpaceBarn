@@ -1,0 +1,427 @@
+{% load static %}
+<link rel="stylesheet" type="text/css" href='{% static "css/ssb/jquery-ui-1.10.3.custom.css" %}'>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Stanton Space Barn - Data Submission</title>
+    <link href='{% static "theme/light-blue/css/application.css" %}' rel="stylesheet">
+    <link rel="shortcut icon" href='{% static "theme/light-blue/img/favicon.png" %}'>
+    <script src='{% static "theme/light-blue/lib/jquery/jquery.1.9.0.min.js" %}'> </script>
+    <script type='text/javascript' src='{% static "js/app.js" %}'></script>
+    <script type='text/javascript' src='{% static "js/jquery.form.min.js" %}'></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <meta charset="utf-8">
+    <script type="text/javascript">
+
+      var _gaq = _gaq || [];
+      var pluginUrl = '//www.google-analytics.com/plugins/ga/inpage_linkid.js';
+      _gaq.push(['_require', 'inpage_linkid', pluginUrl]);
+      _gaq.push(['_setAccount', 'UA-278263-23']);
+      _gaq.push(['_trackPageview']);
+
+      (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
+
+    </script>
+</head>
+<body class="background-dark">
+<div class="logo">
+    <h4><a href="/ships/">Stanton <strong>Space Barn</strong></a></h4>
+</div>
+<nav id="sidebar" class="sidebar nav-collapse collapse">
+    <ul id="side-nav" class="side-nav">
+        {% if user.is_authenticated %}
+        <li >
+            <a href="/hangar/"><i class="icon-home"></i> <span class="name">My Hangar</span></a>
+        </li>
+        {% endif %}
+        <li class="accordion-group">
+            <a class="accordion-toggle collapsed" data-toggle="collapse"
+               data-parent="#side-nav" href="#barn-collapse"><i class="icon-fighter-jet"></i> <span class="name">The Barn</span></a>
+            <ul id="barn-collapse" class="accordion-body collapse">
+                <li><a href="/ships/">Ships</a></li>
+                <li><a href="/variants/">Variants</a></li>
+            </ul>
+        </li>
+        <li class="accordion-group">
+            <a class="accordion-toggle" data-toggle="collapse"
+               data-parent="#side-nav" href="#items-collapse"><i class="icon-book"></i> <span class="name">DataBanks</span></a>
+            <ul id="items-collapse" class="accordion-body collapse in">
+                <li><a href="/items/">Items</a></li>
+                <li><a href="/vehicles/">Vehicles</a></li>
+            </ul>
+        </li>
+    </ul>
+</nav>
+
+<div class="wrap">
+    <header class="page-header">
+        
+    </header>
+    <div class="content container-fluid">
+        <div class="row-fluid">
+            <div class="span12">
+                <h2 class="page-title">Stanton Space Barn: DataBanks</h2>
+            </div>
+        </div>
+        <div class="row-fluid">
+            <div class="span6">
+                <section class="widget">
+                    <header>
+                    <h4>Vehicles</h4>
+                        <div class="actions">
+                            <input id="search" type="search" placeholder="Filter">
+                        </div>
+                    </header>
+                    <div class="body">
+                        <div id="table-dynamic-vehicles">
+                        </div>
+                    </div>
+                </section>
+            </div>
+            <div class="span6">
+                <section class="widget" id="vehicle-details" style="display:none;">
+                    <header>
+                        <h4 id="vehicle-details-vehiclename">Vehicle Name</h4>
+                    </header>
+                    <div class="body" id="vehicle-details-body">
+                        <p id="vehicle-details-subtitle"></p>
+                        <div id="vehicle-details-description">
+                        </div>
+                    </div>
+                </section>
+                <div id="vehicle-details-hardoints">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- jquery and friends -->
+<script src='{% static "theme/light-blue/lib/jquery/jquery-migrate-1.1.0.min.js" %}'> </script>
+
+<!-- jquery plugins -->
+<script src='{% static "theme/light-blue/lib/jquery-maskedinput/jquery.maskedinput.js" %}'></script>
+<script src='{% static "theme/light-blue/lib/parsley/parsley.js" %}'> </script>
+<script src='{% static "theme/light-blue/lib/icheck.js/jquery.icheck.js" %}'></script>
+<script src='{% static "theme/light-blue/lib/select2.js" %}'></script>
+
+<!-- d3, nvd3-->
+<script src='{% static "theme/light-blue/lib/nvd3/lib/d3.v2.js" %}'></script>
+<script src='{% static "theme/light-blue/lib/nvd3/nv.d3.custom.js" %}'></script>
+
+<!-- nvd3 models -->
+<script src='{% static "theme/light-blue/lib/nvd3/src/models/scatter.js" %}'></script>
+<script src='{% static "theme/light-blue/lib/nvd3/src/models/axis.js" %}'></script>
+<script src='{% static "theme/light-blue/lib/nvd3/src/models/legend.js" %}'></script>
+<script src='{% static "theme/light-blue/lib/nvd3/src/models/stackedArea.js" %}'></script>
+<script src='{% static "theme/light-blue/lib/nvd3/src/models/stackedAreaChart.js" %}'></script>
+<script src='{% static "theme/light-blue/lib/nvd3/src/models/line.js" %}'></script>
+<script src='{% static "theme/light-blue/lib/nvd3/src/models/pie.js" %}'></script>
+<script src='{% static "theme/light-blue/lib/nvd3/src/models/pieChartTotal.js" %}'></script>
+<script src='{% static "theme/light-blue/lib/nvd3/stream_layers.js" %}'></script>
+<script src='{% static "theme/light-blue/lib/nvd3/src/models/lineChart.js" %}'></script>
+<script src='{% static "theme/light-blue/lib/nvd3/src/models/multiBar.js" %}'></script>
+<script src='{% static "theme/light-blue/lib/nvd3/src/models/multiBarChart.js" %}'></script>
+
+<!--backbone and friends -->
+<script src='{% static "theme/light-blue/lib/backbone/underscore-min.js" %}'></script>
+<script src='{% static "theme/light-blue/lib/backbone/backbone-min.js" %}'></script>
+<script src='{% static "theme/light-blue/lib/backbone/backbone-pageable.js" %}'></script>
+<script src='{% static "theme/light-blue/lib/backgrid/backgrid.js" %}'></script>
+<script src='{% static "theme/light-blue/lib/backgrid/backgrid-paginator.js" %}'></script>
+
+<!-- bootstrap default plugins -->
+<script src='{% static "theme/light-blue/js/bootstrap/bootstrap-transition.js" %}'></script>
+<script src='{% static "theme/light-blue/js/bootstrap/bootstrap-collapse.js" %}'></script>
+<script src='{% static "theme/light-blue/js/bootstrap/bootstrap-alert.js" %}'></script>
+<script src='{% static "theme/light-blue/js/bootstrap/bootstrap-tooltip.js" %}'></script>
+<script src='{% static "theme/light-blue/js/bootstrap/bootstrap-popover.js" %}'></script>
+<script src='{% static "theme/light-blue/js/bootstrap/bootstrap-button.js" %}'></script>
+<script src='{% static "theme/light-blue/js/bootstrap/bootstrap-dropdown.js" %}'></script>
+<script src='{% static "theme/light-blue/js/bootstrap/bootstrap-modal.js" %}'></script>
+<script src='{% static "theme/light-blue/js/bootstrap/bootstrap-tab.js" %}'> </script>
+
+<!-- basic application js-->
+<script src='{% static "theme/light-blue/js/app.js" %}'></script>
+<script src='{% static "theme/light-blue/js/settings.js" %}'></script>
+
+
+<script type="text/template" id="sidebar-settings-template">
+        <% auto = sidebarState == 'auto'%>
+        <% if (auto) {%>
+            <button type="button"
+                    data-value="icons"
+                    class="btn-icons btn btn-transparent btn-small">Icons</button>
+    <button type="button"
+            data-value="auto"
+            class="btn-auto btn btn-transparent btn-small">Auto</button>
+        <%} else {%>
+            <button type="button"
+                    data-value="auto"
+                    class="btn btn-transparent btn-small">Auto</button>
+        <% } %>
+</script>
+
+<script type='text/javascript'>
+    $(document).ready( function () {
+        // var frm = $('#ship-submission');
+        // frm.submit(function (event) {
+        //     var jsonData = JSON.stringify(frm.serializeArray());
+        //     console.log(jsonData);
+        //     $.post(frm.attr('action'), jsonData).done(function(data) {
+        //         if (data['success'] == false)
+        //         {
+        //             console.log(data['response']);
+        //         }
+        //         else
+        //         {
+        //         }
+        //     });  
+        //     event.preventDefault();
+        // });
+
+        $(".item-select").on("click", function(event) {
+            event.preventDefault();
+            chartPipe($(this).attr("href"), "Power", "All")
+            chartPipe($(this).attr("href"), "Heat", "All")
+            chartPipe($(this).attr("href"), "Avionics", "All")
+        });
+        function getVehicleDetails(itemName) {
+            jsonData = {
+                "name"  : itemName,
+            }
+            var jsonData = JSON.stringify(jsonData);
+            console.log(jsonData);
+            $.ajaxSetup({
+              async: false
+            });
+            $.post('/vehicles/details/', jsonData).done(function(data) {
+                if (data['success'] == false)
+                {
+                    console.log("GetVehicleDetails failed. ", data)
+                    $("#vehicle-details").hide();
+                }
+                else
+                {
+                    console.log(data)
+                    $("#vehicle-details").show();
+                    $("#vehicle-details-subtitle").text("Class " + data['vehicleclass'] + " " + data["vehiclecategory"]);
+                    $("#vehicle-details-vehiclename").text(data['name']);
+                    // clear the sub divs so we;re starting fresh
+                    var hardpointsDiv = $("#vehicle-details-hardoints");
+                    console.log(hardpointsDiv);
+                    hardpointsDiv.empty()
+                    var ports = data['ports']
+                    for (var index = 0; index < ports.length; index++)
+                    {
+                        var section = $(document.createElement('section')).appendTo(hardpointsDiv).addClass("widget");
+                        var header = $(document.createElement('header')).appendTo(section);
+                        $(document.createElement('h5')).appendTo(header).text("Hardpoint: " + ports[index]["name"]);
+                        var body = $(document.createElement('div')).appendTo(section).addClass("body");
+                        $(document.createElement("p")).appendTo(body).text("Size " + ports[index]["minsize"] + " - " + ports[index]["maxsize"]);
+                        
+                        $(document.createElement('p')).appendTo(body).text("Supported Items");
+                        var types = ports[index]['types'];
+                        for (var i = 0; i < types.length; i++)
+                        {
+                            $(document.createElement('p')).appendTo(body).text(types[i]).addClass("offset1");
+                        }
+                    }
+                }
+            });
+        }
+
+        function chartPipe(itemName, pipe, state) {
+            jsonData = {
+                "itemName"  : itemName,
+                "pipe"      : pipe,
+                "state"     : state,
+                "metric"    : 0
+            }
+            var jsonData = JSON.stringify(jsonData);
+            console.log(jsonData);
+            $.ajaxSetup({
+              async: false
+            });
+            $.post('/items/pipegraph/', jsonData).done(function(data) {
+                if (data['success'] == false)
+                {
+                    console.log(data['response']);
+                    $("#" + pipe.toLowerCase() + "-chart-line").parent().hide(0)
+                }
+                else
+                {
+                    console.log(data['data']);
+                    $("#" + pipe.toLowerCase() + "-chart-line").parent().show()
+                    var chartID = "#" + pipe.toLowerCase() + "-chart-line svg" 
+                    console.log($(chartID));
+                    if (pipe == "Power")
+                    {
+                        if (data['negative'])
+                            $("#power-chart-header").text("Power Consumption (per second)")
+                        else
+                            $("#power-chart-header").text("Power Generation (per second)")
+                    }
+                    else if (pipe == "Heat")
+                    {
+                        if (data['negative'])
+                            $("#heat-chart-header").text("Heat Dissipation (per second)")
+                        else
+                            $("#heat-chart-header").text("Heat Generation (per second)")
+                    }
+                    else if (pipe == "Avionics")
+                    {
+                        if (data['negative'])
+                            $("#avionics-chart-header").text("Avionics Offloading (per second)")
+                        else
+                            $("#avionics-chart-header").text("Avionics Consumption (per second)")
+                    }
+
+                    nv.addGraph(function() {
+                        var chart = nv.models.lineChart()
+                            .showLegend(true)
+
+                        chart.yAxis
+                            .axisLabel(pipe)
+                            .showMaxMin(true)
+                            .tickFormat(d3.format(',.f'));
+
+                        chart.xAxis
+                            .axisLabel('Seconds')
+                            .showMaxMin(true)
+                            .tickFormat(d3.format(',.f'));
+
+                        d3.select(chartID)
+                            .datum(data['data'])
+                            .transition().duration(0)
+                            .call(chart);
+
+                        nv.utils.windowResize(chart.update);
+                        lineChart = chart;
+
+                        lineChartOperaHack();
+
+                        return chart;
+                    });
+                }
+            });
+        }
+
+        var lineResize;
+        function lineChartOperaHack(){
+            //lineChart is somehow not rendered correctly after updates. Need to reupdate
+            if ($.browser.opera){
+                clearTimeout(lineResize);
+                lineResize = setTimeout(lineChart.update, 300);
+            }
+        }
+        console.log("Setting up Backbone");
+    //Backgrid part
+
+    var Vehicles = Backbone.Model.extend({});
+
+    var PageableVehicles = Backbone.PageableCollection.extend({
+        model: Vehicles,
+        url: '/vehicles/list/',
+        state: {
+            pageSize: 20
+        },
+        mode: "client" // page entirely on the client side
+    });
+
+
+
+    var pageableVehicles = new PageableVehicles(),
+        initialVehicles = pageableVehicles;
+
+    var ClickableRow = Backgrid.Row.extend({
+      events: {
+        "click": "onClick"
+        // "mouseenter" : "onMouseEnter",
+        // "mouseleave" : "onMouseLeave",
+      },
+      onClick: function () {
+        Backbone.trigger("rowclicked", this.model);
+      }
+    });
+
+    Backbone.on("rowclicked", function (model) {
+        console.log(model.get("displayName"));
+        getVehicleDetails(model.get("name"));
+        // chartPipe(model.get("name"), "Power", "All")
+        // chartPipe(model.get("name"), "Heat", "All")
+        // chartPipe(model.get("name"), "Avionics", "All")
+    });        
+    function createBackgrid(collection, parentElement){
+        var columns = [{
+            name: "displayName",
+            label: "Item",
+            editable : false,
+            // The cell type can be a reference of a Backgrid.Cell subclass, any Backgrid.Cell subclass instances like *id* above, or a string
+            cell: "string" // This is converted to "StringCell" and a corresponding class in the Backgrid package namespace is looked up
+        }]
+
+        var pageableGrid = new Backgrid.Grid({
+            columns: columns,
+            row : ClickableRow,
+            collection: collection,
+            footer: Backgrid.Extension.Paginator.extend({
+                //okendoken. rewrite template to add pagination class to container
+                template: _.template('<tr><td class="pagination" colspan="<%= colspan %>"><ul><% _.each(handles, function (handle) { %><li <% if (handle.className) { %>class="<%= handle.className %>"<% } %>><a href="#" <% if (handle.title) {%> title="<%= handle.title %>"<% } %>><%= handle.label %></a></li><% }); %></ul></td></tr>')
+            }),
+            className: 'table table-condensed no-margin table-hover'
+        });
+
+        parentElement.html(pageableGrid.render().$el);
+    }
+
+    var tableResize;
+
+    $(window).resize(function(e) {
+        clearTimeout(tableResize);
+        tableResize = setTimeout(function(){
+            createBackgrid(pageableVehicles, $("#table-dynamic-vehicles"));
+        }, 200);
+    });
+
+    createBackgrid(pageableVehicles, $("#table-dynamic-vehicles"));
+
+    // $("#search").change(function(){
+
+    //     var $that = $(this),
+    //         filteredCollection = initialWeapons.fullCollection.filter(function(el){
+    //         return ~el.get('displayName').toUpperCase().indexOf($that.val().toUpperCase());
+    //     });
+    //     createBackgrid(new PageableWeapons(filteredCollection, {
+    //         state: {
+    //             firstPage: 1,
+    //             currentPage: 1
+    //         }
+    //     }));
+    // });
+
+
+    pageableVehicles.fetch();
+
+    console.log("Done");
+
+    {% if vehicleData %}
+        getItemDetails("{{itemData.name}}");
+        chartPipe("{{itemData.name}}", "Power", "All")
+        chartPipe("{{itemData.name}}", "Heat", "All")
+        chartPipe("{{itemData.name}}", "Avionics", "All")
+    {% endif %}
+
+    });
+</script>
+
+<script>
+</script>
+
+</body>

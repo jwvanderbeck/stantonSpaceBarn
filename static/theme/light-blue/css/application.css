@@ -2744,8 +2744,8 @@ table th[class*="span"],
 /* line 7, D:/projects/admin/sass/bootstrap-original/_wells.scss */
 .well {
   min-height: 20px;
-  padding: 19px;
-  margin-bottom: 20px;
+  padding: 5px;
+  margin-bottom: 5px;
   background-color: whitesmoke;
   border: 1px solid #e3e3e3;
   -webkit-border-radius: 1px;
@@ -3736,8 +3736,8 @@ input[type="submit"].btn.btn-mini {
 /* line 102, D:/projects/admin/sass/bootstrap-original/_navs.scss */
 .nav-tabs > li > a,
 .nav-pills > li > a {
-  padding-right: 12px;
-  padding-left: 12px;
+  padding-right: 5px;
+  padding-left: 5px;
   margin-right: 2px;
   line-height: 14px;
 }
@@ -4980,10 +4980,10 @@ input[type="submit"].btn.btn-mini {
   z-index: 1050;
   width: 560px;
   margin-left: -280px;
-  background-color: white;
-  border: 1px solid #999;
+  background-color: rgba(51,51,51,0.8);
+  border: 1px solid black;
   border: 1px solid rgba(0, 0, 0, 0.3);
-  *border: 1px solid #999;
+  *border: 1px solid black;
   /* IE6-7 */
   -webkit-border-radius: 6px;
   -moz-border-radius: 6px;
@@ -5012,7 +5012,7 @@ input[type="submit"].btn.btn-mini {
 /* line 47, D:/projects/admin/sass/bootstrap-original/_modals.scss */
 .modal-header {
   padding: 9px 15px;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid black;
 }
 /* line 51, D:/projects/admin/sass/bootstrap-original/_modals.scss */
 .modal-header .close {
@@ -5042,14 +5042,14 @@ input[type="submit"].btn.btn-mini {
   padding: 14px 15px 15px;
   margin-bottom: 0;
   text-align: right;
-  background-color: #f5f5f5;
-  border-top: 1px solid #ddd;
+  background-color: rgba(51,51,51,0.8);;
+  border-top: 1px solid black;
   -webkit-border-radius: 0 0 6px 6px;
   -moz-border-radius: 0 0 6px 6px;
   border-radius: 0 0 6px 6px;
-  -webkit-box-shadow: inset 0 1px 0 white;
-  -moz-box-shadow: inset 0 1px 0 white;
-  box-shadow: inset 0 1px 0 white;
+  -webkit-box-shadow: inset 0 1px 0 black;
+  -moz-box-shadow: inset 0 1px 0 black;
+  box-shadow: inset 0 1px 0 black;
   *zoom: 1;
 }
 /* line 15, D:/projects/admin/sass/bootstrap-original/_mixins.scss */
@@ -7799,7 +7799,7 @@ textarea + .help-block,
 /***************************/
 /* line 178, D:/projects/admin/sass/_bootstrap-override.scss */
 .well {
-  background-color: rgba(51, 51, 51, 0.25);
+  background-color: rgba(51, 51, 51, 0.5);
   border: none;
 }
 
@@ -8053,14 +8053,14 @@ textarea + .help-block,
 
 /* line 382, D:/projects/admin/sass/_bootstrap-override.scss */
 .modal {
-  color: #555555;
+  color: white;
   -webkit-border-radius: 1px;
   -moz-border-radius: 1px;
   border-radius: 1px;
 }
 /* line 386, D:/projects/admin/sass/_bootstrap-override.scss */
 .modal h1, .modal h2, .modal h3, .modal h4, .modal h5, .modal h6 {
-  color: #555555;
+  color: white;
 }
 
 /***************************/
