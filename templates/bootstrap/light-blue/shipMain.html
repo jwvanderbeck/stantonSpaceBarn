@@ -171,7 +171,7 @@
                                         {% if forloop.counter0|divisibleby:3 %}</section><section>{% endif %}
                                         <div class="span4">
                                             <div class="well item-port-datablock" data-port-name="{{itemPort.name}}" data-parent={{itemPort.parentImage}} data-min-size={{itemPort.minSize}} data-max-size={{itemPort.maxSize}} data-subtypes="{%for type in itemPort.supportedSubTypes.all%}{{type.subTypeName}}{%if not forloop.last %},{%endif%}{%endfor%}">
-                                                <p class="label label-inverse">{% firstof itemPort.displayName itemPort.name %}</p><i class="icon-remove pull-right icon-large"></i>
+                                                <p class="label label-inverse">{% firstof itemPort.displayName itemPort.name %}</p><i class="icon-remove pull-right icon-large"></i><i class="icon-filter pull-right icon-large"></i>
                                                 <br>
                                                 
                                                 <div class="item-port-datablock-statebuttons">
@@ -543,49 +543,31 @@ mode: "client" // page entirely on the client side
 
 var pageableAvionics = new PageableAvionics(),
 initialAvionics = pageableAvionics;
-var pageableAvionicsCompare = new PageableAvionics(),
-initialAvionicsCompare = pageableAvionicsCompare;
 
 var pageableBatteries = new PageableBatteries(),
 initialBatteries = pageableBatteries;
-var pageableBatteriesCompare = new PageableBatteries(),
-initialBatteriesCompare = pageableBatteriesCompare;
 
 var pageableCargo = new PageableCargo(),
 initialCargo = pageableCargo;
-var pageableCargoCompare = new PageableCargo(),
-initialCargo = pageableCargoCompare;
 
 var pageableCooler = new PageableCooler(),
 initialCooler = pageableCooler;
-var pageableCoolerCompare = new PageableCooler(),
-initialCoolerCompare = pageableCoolerCompare;
 
 var pageableDisplays = new PageableDisplays(),
 initialDisplays = pageableDisplays;
-var pageableDisplaysCompare = new PageableDisplays(),
-initialDisplaysCompare = pageableDisplaysCompare;
 
 var pageableRadars = new PageableRadars(),
 initialRadars = pageableRadars;
-var pageableRadarsCompare = new PageableRadars(),
-initialRadarsCompare = pageableRadarsCompare;
 
 var pageablePowerplants = new PageablePowerplants(),
 initialPowerplants = pageablePowerplants;
-var pageablePowerplantsCompare = new PageablePowerplants(),
-initialPowerplantsCompare = pageablePowerplantsCompare;
 
 
 var pageableWeapons = new PageableWeapons(),
 initialWeapons = pageableWeapons;
-var pageableWeaponsCompare = new PageableWeapons(),
-initialWeaponsCompare = pageableWeaponsCompare;
 
 var pageableThrusters = new PageableThrusters(),
 initialThrusters = pageableThrusters;
-var pageableThrustersCompare = new PageableThrusters(),
-initialThrustersCompare = pageableThrustersCompare;
 
 var ItemTypeCell = Backgrid.StringCell.extend({
     className : "item-type-cell"
@@ -761,11 +743,17 @@ $(".item-port-label").hoverIntent({
         timeout: 100,
         out: leavePortLabel
     });
+
 $(".item-port").hoverIntent({
         over: enterPort,
         timeout: 100,
         out: leavePort
     });
+
+$(".item-port").on("click", function(event){
+    var portName = $(this).attr("id");
+    filterByItemPort(portName);
+});
 
 $(".item-port-label").on("click", function(){
     $("#item-details-modal").modal("hide");
@@ -802,6 +790,146 @@ $("#user-action-newuser").on("click", function(event) {
 /******************************************************************************
 // Event Handlers
 ******************************************************************************/
+
+function clearAllPortFilters()
+{
+    var tags = $(".item-port.filtered")
+    tags.each(function(){
+        $(this).removeClass("filtered")
+    })
+    filteredCollection = initialWeapons.fullCollection.filter( function(ele){
+        return true;
+    });
+    createBackgrid(new PageableWeapons(filteredCollection, {
+        state: {
+            firstPage: 1,
+            currentPage: 1
+        }
+    }), $("#table-dynamic-weapons"));
+}
+
+function filterByItemPort(itemPortName)
+{
+    var portTag = $("#" + itemPortName);
+    if (portTag.hasClass("filtered"))
+    {
+        createBackgrid(pageableAvionics, $("#table-dynamic-avionics"));
+        createBackgrid(pageableBatteries, $("#table-dynamic-batteries"));
+        createBackgrid(pageableCargo, $("#table-dynamic-cargo"));
+        createBackgrid(pageableCooler, $("#table-dynamic-coolers"));
+        createBackgrid(pageableDisplays, $("#table-dynamic-displays"));
+        createBackgrid(pageableRadars, $("#table-dynamic-radars"));
+        createBackgrid(pageablePowerplants, $("#table-dynamic-powerplants"));
+        createBackgrid(pageableWeapons, $("#table-dynamic-weapons"));
+        createBackgrid(pageableThrusters, $("#table-dynamic-thrusters"));
+        portTag.removeClass("filtered");
+    }
+    else
+    {
+        clearAllPortFilters();
+        // Filter Weapons
+        console.log("Filtering Weapons");
+        filteredCollection = initialWeapons.fullCollection.filter( function(ele){
+            return isItemCompatibleWithPort(ele, portTag)
+        });
+        createBackgrid(new PageableWeapons(filteredCollection, {
+            state: {
+                firstPage: 1,
+                currentPage: 1
+            }
+        }), $("#table-dynamic-weapons"));
+        // Filter Thrusters
+        console.log("Filtering Thrusters");
+        filteredCollection = initialThrusters.fullCollection.filter( function(ele){
+            return isItemCompatibleWithPort(ele, portTag)
+        });
+        createBackgrid(new PageableThrusters(filteredCollection, {
+            state: {
+                firstPage: 1,
+                currentPage: 1
+            }
+        }), $("#table-dynamic-thrusters"));
+        // Filter Powerplant
+        console.log("Filtering Powerplants");
+        filteredCollection = initialPowerplants.fullCollection.filter( function(ele){
+            return isItemCompatibleWithPort(ele, portTag)
+        });
+        createBackgrid(new PageablePowerplants(filteredCollection, {
+            state: {
+                firstPage: 1,
+                currentPage: 1
+            }
+        }), $("#table-dynamic-powerplants"));
+        // Filter Cargo
+        console.log("Filtering Cargo");
+        filteredCollection = initialCargo.fullCollection.filter( function(ele){
+            return isItemCompatibleWithPort(ele, portTag)
+        });
+        createBackgrid(new PageableCargo(filteredCollection, {
+            state: {
+                firstPage: 1,
+                currentPage: 1
+            }
+        }), $("#table-dynamic-cargo"));
+        // Filter Avionics
+        console.log("Filtering Avionics");
+        filteredCollection = initialAvionics.fullCollection.filter( function(ele){
+            return isItemCompatibleWithPort(ele, portTag)
+        });
+        createBackgrid(new PageableAvionics(filteredCollection, {
+            state: {
+                firstPage: 1,
+                currentPage: 1
+            }
+        }), $("#table-dynamic-avionics"));
+        // Filter Batteries
+        console.log("Filtering Batteries");
+        filteredCollection = initialBatteries.fullCollection.filter( function(ele){
+            return isItemCompatibleWithPort(ele, portTag)
+        });
+        createBackgrid(new PageableBatteries(filteredCollection, {
+            state: {
+                firstPage: 1,
+                currentPage: 1
+            }
+        }), $("#table-dynamic-batteries"));
+        // Filter Coolers
+        console.log("Filtering Coolers");
+        filteredCollection = initialCooler.fullCollection.filter( function(ele){
+            return isItemCompatibleWithPort(ele, portTag)
+        });
+        createBackgrid(new PageableCooler(filteredCollection, {
+            state: {
+                firstPage: 1,
+                currentPage: 1
+            }
+        }), $("#table-dynamic-coolers"));
+        // Filter Displays
+        console.log("Filtering Displays");
+        filteredCollection = initialDisplays.fullCollection.filter( function(ele){
+            return isItemCompatibleWithPort(ele, portTag)
+        });
+        createBackgrid(new PageableDisplays(filteredCollection, {
+            state: {
+                firstPage: 1,
+                currentPage: 1
+            }
+        }), $("#table-dynamic-displays"));
+        // Filter Radars
+        console.log("Filtering Radars");
+        filteredCollection = initialRadars.fullCollection.filter( function(ele){
+            return isItemCompatibleWithPort(ele, portTag)
+        });
+        createBackgrid(new PageableRadars(filteredCollection, {
+            state: {
+                firstPage: 1,
+                currentPage: 1
+            }
+        }), $("#table-dynamic-radar"));
+        portTag.addClass("filtered");
+    }
+}
+
 
 function toggleItemPorts(activeItemType)
 {
@@ -906,6 +1034,26 @@ function lineChartOperaHack(){
     }
 }
 
+function isItemCompatibleWithPort(item, port)
+{
+    var portType = port.attr("data-types");
+    var portSubType = port.attr("data-subtypes");
+    var portMinSize = parseInt(port.attr("data-min-size"), 10);
+    var portMaxSize = parseInt(port.attr("data-max-size"), 10);
+    var itemType = item.get("type");
+    var itemSubType = item.get("subtype");
+    var itemSize = parseInt(item.get("size"), 10);
+    console.log(itemType, "in", portType);
+    if (portType.indexOf(itemType) == -1 )
+        return false;
+    console.log(itemSubType, "in", portSubType);
+    if (portSubType.indexOf(itemSubType) == -1 )
+        return false;
+    console.log(itemSize, "between", portMinSize, "and", portMaxSize);
+    if ( itemSize < portMinSize || itemSize > portMaxSize)
+        return false;
+    return true;   
+}
 
 function getItemDetails(itemName) {
     jsonData = {

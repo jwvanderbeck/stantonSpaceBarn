@@ -46,3 +46,6 @@
 .string-cell {
     cursor: pointer;
 }
+.filtered {
+    border-color: green;
+}
