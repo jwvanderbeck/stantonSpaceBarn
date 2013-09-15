@@ -755,6 +755,13 @@ $(".item-port").on("click", function(event){
     filterByItemPort(portName);
 });
 
+$(".icon-filter").on("click", function(event){
+    event.stopPropagation();
+    var portWell = $(this).parent()
+    var portName = portWell.attr("data-port-name");
+    filterByItemPort(portName);
+});
+
 $(".item-port-label").on("click", function(){
     $("#item-details-modal").modal("hide");
     $("#itemport-details-modal").modal("show");
@@ -811,6 +818,7 @@ function clearAllPortFilters()
 function filterByItemPort(itemPortName)
 {
     var portTag = $("#" + itemPortName);
+    var portDatablock = $(".item-port-datablock[data-port-name='" + itemPortName + "']");
     if (portTag.hasClass("filtered"))
     {
         createBackgrid(pageableAvionics, $("#table-dynamic-avionics"));
@@ -823,6 +831,7 @@ function filterByItemPort(itemPortName)
         createBackgrid(pageableWeapons, $("#table-dynamic-weapons"));
         createBackgrid(pageableThrusters, $("#table-dynamic-thrusters"));
         portTag.removeClass("filtered");
+        portDatablock.find(".icon-filter").removeClass("icon-active");
     }
     else
     {
@@ -927,6 +936,7 @@ function filterByItemPort(itemPortName)
             }
         }), $("#table-dynamic-radar"));
         portTag.addClass("filtered");
+        portDatablock.find(".icon-filter").addClass("icon-active");
     }
 }
 
