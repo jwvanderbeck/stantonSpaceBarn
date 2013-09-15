@@ -655,26 +655,6 @@
             else
             {
                 setUserState(true, data['username']);
-                // update the pieces of the page that change when logged in
-                // <p>Welcome to the Barn, {{ user.username }}. Thanks for visting.</p>
-                // <p>All of our facilities are avilable for your use.  Enjoy your stay and see you in the 'verse.</p>
-                // <ul>
-                //     <li><a href='#' class='user-actions-logout'>Logout</a></li>
-                // </ul>
-                // var userWidget = $('#user');
-                // userWidget.html("<p>Welcome to the Barn, " + data['username'] + ".  Thanks for visting.</p><p>All of our facilities are avilable for your use.  Enjoy your stay and see you in the 'verse.</p><ul><li><a href='#' class='user-actions-logout'>Logout</a></li></ul>");
-                // $('.global-actions-create').off();
-                // $('.global-actions-create').click(function(){ $('.save-build-details').dialog('open'); });
-                // $('.user-actions-logout').off();
-                // $('.user-actions-logout').click(function(e){ e.preventDefault(); submitUserLogout(); });
-                // var myHangarLink = $('.cat-item-myhangar');
-                // console.log(myHangarLink)
-                // if (myHangarLink.length == 0)
-                // {
-                //     var primaryNav = $('#primary');
-                //     var li = $(document.createElement('li')).appendTo(primaryNav).addClass('cat-item').addClass('cat-item-myhangar');
-                //     var anchor = $(document.createElement('a')).appendTo(li).attr('href', '/hangar/').text('My Hangar');
-                // }
             }
         });            
     }
@@ -693,12 +673,6 @@
             else
             {
                 setUserState(true, data['username']);
-                // var userWidget = $('#user');
-                // userWidget.html("<p>Welcome to the Barn, " + data['username'] + ".  Thanks for visting.</p><p>All of our facilities are avilable for your use.  Enjoy your stay and see you in the 'verse.</p><ul><li><a href='#' class='user-actions-logout'>Logout</a></li></ul>");
-                // $('.global-actions-create').off();
-                // $('.global-actions-create').click(function(){ $('.save-build-details').dialog('open'); });
-                // $('.user-actions-logout').off();
-                // $('.user-actions-logout').click(function(e){ e.preventDefault(); submitUserLogout(); });
             }
         });            
     }
@@ -716,25 +690,6 @@
             else
             {
                 setUserState(false, '');
-                // <p>Welcome to the Barn, pilot.</p>
-                // <p>You are not currently checked in.  Feel free to use the barn's facilities as an anonymous pilot.</p>
-                // <p>You can create custom variants, and get QuickVariant links to bookmark or share at any time.</p>
-                // <p>For the security of all pilots however, you will be unable to save or modify variants in our records without checking in.</p>
-                // <ul>
-                //     <li><a href='#' class='user-actions-login'>Login</a>
-                //     <li><a href='#' class='user-actions-create'>Create Account</a>
-                // </ul>
-                // var userWidget = $('#user');
-                // userWidget.html("<p>Welcome to the Barn, pilot.</p><p>You are not currently checked in.  Feel free to use the barn's facilities as an anonymous pilot.</p><p>You can create custom variants, and get QuickVariant links to bookmark or share at any time.</p><p>For the security of all pilots however, you will be unable to save or modify variants in our records without checking in.</p><ul><li><a href='#' class='user-actions-login'>Login</a><li><a href='#' class='user-actions-create'>Create Account</a></ul>");
-                // $('.global-actions-create').off();
-                // $('.global-actions-create').click(function(){ $('.not-logged-in').dialog('open'); });
-                // $('.user-actions-login').off();
-                // $('.user-actions-login').click(function(e){ e.preventDefault(); $('.login-form').dialog('open'); });
-                // $('.user-actions-create').off();
-                // $('.user-actions-create').click(function(e){ e.preventDefault(); $('.newuser-form').dialog('open'); });
-                // console.log($('.cat-item-myhangar'))
-                // $('.cat-item-myhangar').remove();
-                // console.log($('.cat-item-myhangar'))
             }
         });            
     }
