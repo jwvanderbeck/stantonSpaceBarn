@@ -769,6 +769,13 @@ $(".item-port-label").on("click", function(){
     getItemPortDetails(portName);
 });
 
+$(".item-port-datablock").on("click", function(){
+    $("#item-details-modal").modal("hide");
+    $("#itemport-details-modal").modal("show");
+    var portName = $(this).attr("data-port-name")
+    getItemPortDetails(portName);
+});
+
 $(document).on("mouseenter", "tr.vehicle-item-row", function(){
     $(this).draggable({
       revert: "invalid",
