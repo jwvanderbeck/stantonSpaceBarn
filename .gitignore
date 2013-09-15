@@ -20,3 +20,5 @@ scripts/data.py
 scripts/new_data.py
 
 stantonSpaceBarn/settings.py
+
+*.jpg
