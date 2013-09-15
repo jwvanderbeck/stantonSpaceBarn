@@ -5560,6 +5560,11 @@ a.label:hover, a.label:focus, a.badge:hover, a.badge:focus {
 .label-inverse {
   background-color: #555555;
 }
+.label-highlight {
+  background-color: #555555;
+  color: #eac85e;
+  font-weight: bold;
+}
 
 /* line 67, D:/projects/admin/sass/bootstrap-original/_labels-badges.scss */
 .label-inverse[href] {
@@ -8182,6 +8187,7 @@ a.thumbnail:focus {
 .label-important {
   background-color: rgb(154,29,13);
   color: #ffffff;
+  font-weight: bold;
   /*background-color: #e5603b;*/
 }
 

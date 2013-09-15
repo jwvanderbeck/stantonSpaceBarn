@@ -253,7 +253,7 @@
                 <section class="widget">
                     <header>
                         <h4>Compatible Items</h4>
-                        <p class="label-inverse">Drag items to hardpoints to equip them<br/>
+                        <p class="label-highlight">Drag items to hardpoints to equip them<br/>
                         Click on items to see details</p>
                     </header>
                     <div class="body">
@@ -274,7 +274,7 @@
                                     <div id="table-dynamic-weapons"></div>
                                     <div></div>
                                     <h4>Hardpoints</h4>
-                                    <p><span class="label-inverse">Use Systems Overview to see all hardpoints at once</span></p>
+                                    <p><span class="label-highlight">Use Systems Overview to see all hardpoints at once</span></p>
                                     {% for itemPort in shipData.itemport_set.all %}
                                         {% if itemPort.parentImage > 0 %}
                                             {% for itemType in itemPort.supportedTypes.all %}
