@@ -4980,10 +4980,33 @@ input[type="submit"].btn.btn-mini {
   z-index: 1050;
   width: 560px;
   margin-left: -280px;
-  background-color: rgba(51,51,51,0.8);
-  border: 1px solid black;
+  background-color: white;
+  border: 1px solid #999;
   border: 1px solid rgba(0, 0, 0, 0.3);
-  *border: 1px solid black;
+  *border: 1px solid #999;
+  /* IE6-7 */
+  -webkit-border-radius: 6px;
+  -moz-border-radius: 6px;
+  border-radius: 6px;
+  -webkit-box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3);
+  -moz-box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3);
+  -webkit-background-clip: padding-box;
+  -moz-background-clip: padding-box;
+  background-clip: padding-box;
+  outline: none;
+}
+.modal.dark{
+  position: fixed;
+  top: 10%;
+  left: 50%;
+  z-index: 1050;
+  width: 560px;
+  margin-left: -280px;
+  background-color: rgba(50,50,50,0.9);
+  border: 1px solid #999;
+  border: 1px solid rgba(0, 0, 0, 0.3);
+  *border: 1px solid #999;
   /* IE6-7 */
   -webkit-border-radius: 6px;
   -moz-border-radius: 6px;
@@ -5012,11 +5035,12 @@ input[type="submit"].btn.btn-mini {
 /* line 47, D:/projects/admin/sass/bootstrap-original/_modals.scss */
 .modal-header {
   padding: 9px 15px;
-  border-bottom: 1px solid black;
+  border-bottom: 1px solid #eee;
 }
 /* line 51, D:/projects/admin/sass/bootstrap-original/_modals.scss */
-.modal-header .close {
+.modal.dark .modal-header .close {
   margin-top: 2px;
+  color: white;
 }
 /* line 53, D:/projects/admin/sass/bootstrap-original/_modals.scss */
 .modal-header h3 {
@@ -5042,14 +5066,28 @@ input[type="submit"].btn.btn-mini {
   padding: 14px 15px 15px;
   margin-bottom: 0;
   text-align: right;
-  background-color: rgba(51,51,51,0.8);;
-  border-top: 1px solid black;
+  background-color: #f5f5f5;
+  border-top: 1px solid #ddd;
   -webkit-border-radius: 0 0 6px 6px;
   -moz-border-radius: 0 0 6px 6px;
   border-radius: 0 0 6px 6px;
-  -webkit-box-shadow: inset 0 1px 0 black;
-  -moz-box-shadow: inset 0 1px 0 black;
-  box-shadow: inset 0 1px 0 black;
+  -webkit-box-shadow: inset 0 1px 0 white;
+  -moz-box-shadow: inset 0 1px 0 white;
+  box-shadow: inset 0 1px 0 white;
+  *zoom: 1;
+}
+.modal.dark .modal-footer {
+  padding: 14px 15px 15px;
+  margin-bottom: 0;
+  text-align: right;
+  background-color: rgba(50,50,50,1.0);
+  border-top: 1px solid #ddd;
+  -webkit-border-radius: 0 0 6px 6px;
+  -moz-border-radius: 0 0 6px 6px;
+  border-radius: 0 0 6px 6px;
+  -webkit-box-shadow: inset 0 1px 0 white;
+  -moz-box-shadow: inset 0 1px 0 white;
+  box-shadow: inset 0 1px 0 white;
   *zoom: 1;
 }
 /* line 15, D:/projects/admin/sass/bootstrap-original/_mixins.scss */
@@ -8053,14 +8091,23 @@ textarea + .help-block,
 
 /* line 382, D:/projects/admin/sass/_bootstrap-override.scss */
 .modal {
+  color: #555555;
+  -webkit-border-radius: 1px;
+  -moz-border-radius: 1px;
+  border-radius: 1px;
+}
+.modal.dark {
   color: white;
   -webkit-border-radius: 1px;
   -moz-border-radius: 1px;
   border-radius: 1px;
 }
 /* line 386, D:/projects/admin/sass/_bootstrap-override.scss */
-.modal h1, .modal h2, .modal h3, .modal h4, .modal h5, .modal h6 {
+.modal.dark h1, .modal.dark h2, .modal.dark h3, .modal.dark h4, .modal.dark h5, .modal.dark h6 {
   color: white;
+}
+.modal h1, .modal h2, .modal h3, .modal h4, .modal h5, .modal h6 {
+  color: #555555;
 }
 
 /***************************/
@@ -8133,7 +8180,9 @@ a.thumbnail:focus {
 
 /* line 450, D:/projects/admin/sass/_bootstrap-override.scss */
 .label-important {
-  background-color: #e5603b;
+  background-color: rgb(154,29,13);
+  color: #ffffff;
+  /*background-color: #e5603b;*/
 }
 
 /* line 451, D:/projects/admin/sass/_bootstrap-override.scss */
@@ -8266,14 +8315,14 @@ a.thumbnail:focus {
 
 /* line 487, D:/projects/admin/sass/_bootstrap-override.scss */
 .progress-danger .bar, .progress .bar-danger {
-  background-color: #e5603b;
-  background-image: -moz-linear-gradient(top, #e5603b, #e5603b);
-  background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#e5603b), to(#e5603b));
-  background-image: -webkit-linear-gradient(top, #e5603b, #e5603b);
-  background-image: -o-linear-gradient(top, #e5603b, #e5603b);
-  background-image: linear-gradient(to bottom, #e5603b, #e5603b);
+  background-color: rgb(159,29,13);
+  background-image: -moz-linear-gradient(top, rgb(159,29,13), rgb(159,29,13));
+  background-image: -webkit-gradient(linear, 0 0, 0 100%, from(rgb(159,29,13)), to(rgb(159,29,13)));
+  background-image: -webkit-linear-gradient(top, rgb(159,29,13), rgb(159,29,13));
+  background-image: -o-linear-gradient(top, rgb(159,29,13), rgb(159,29,13));
+  background-image: linear-gradient(to bottom, rgb(159,29,13), rgb(159,29,13));
   background-repeat: repeat-x;
-  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#FFE5603B', endColorstr='#FFE5603B', GradientType=0);
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#9a1d0d', endColorstr='#9a1d0d', GradientType=0);
 }
 
 /* line 490, D:/projects/admin/sass/_bootstrap-override.scss */
@@ -12170,14 +12219,14 @@ body {
 */}
 /* line 50, D:/projects/admin/sass/_general.scss */
 body.background-dark {
-background: #39424c;
-background: -moz-linear-gradient(left,  #39424c 0%, #7c92a5 30%, #7c92a5 70%, #39424c 100%);
-background: -webkit-gradient(linear, left top, right top, color-stop(0%,#39424c), color-stop(30%,#7c92a5), color-stop(70%,#7c92a5), color-stop(100%,#39424c));
-background: -webkit-linear-gradient(left,  #39424c 0%,#7c92a5 30%,#7c92a5 70%,#39424c 100%);
-background: -o-linear-gradient(left,  #39424c 0%,#7c92a5 30%,#7c92a5 70%,#39424c 100%);
-background: -ms-linear-gradient(left,  #39424c 0%,#7c92a5 30%,#7c92a5 70%,#39424c 100%);
-background: linear-gradient(to right,  #39424c 0%,#7c92a5 30%,#7c92a5 70%,#39424c 100%);
-filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#39424c', endColorstr='#39424c',GradientType=1 );
+background: rgb(29,29,29); /* Old browsers */
+background: -moz-linear-gradient(left,  rgba(29,29,29,1) 0%, rgba(50,50,50,1) 30%, rgba(50,50,50,1) 70%, rgba(29,29,29,1) 100%); /* FF3.6+ */
+background: -webkit-gradient(linear, left top, right top, color-stop(0%,rgba(29,29,29,1)), color-stop(30%,rgba(50,50,50,1)), color-stop(70%,rgba(50,50,50,1)), color-stop(100%,rgba(29,29,29,1))); /* Chrome,Safari4+ */
+background: -webkit-linear-gradient(left,  rgba(29,29,29,1) 0%,rgba(50,50,50,1) 30%,rgba(50,50,50,1) 70%,rgba(29,29,29,1) 100%); /* Chrome10+,Safari5.1+ */
+background: -o-linear-gradient(left,  rgba(29,29,29,1) 0%,rgba(50,50,50,1) 30%,rgba(50,50,50,1) 70%,rgba(29,29,29,1) 100%); /* Opera 11.10+ */
+background: -ms-linear-gradient(left,  rgba(29,29,29,1) 0%,rgba(50,50,50,1) 30%,rgba(50,50,50,1) 70%,rgba(29,29,29,1) 100%); /* IE10+ */
+background: linear-gradient(to right,  rgba(29,29,29,1) 0%,rgba(50,50,50,1) 30%,rgba(50,50,50,1) 70%,rgba(29,29,29,1) 100%); /* W3C */
+filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#1d1d1d', endColorstr='#1d1d1d',GradientType=1 ); /* IE6-9 */
   /*background-image: url("data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4gPHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHJhZGlhbEdyYWRpZW50IGlkPSJncmFkIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgY3g9IjEwJSIgY3k9IjAiIHI9IjEwMCUiPjxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9InJnYmEoMTAyLCAxMDUsIDEwNCwgMC45MCkiLz48c3RvcCBvZmZzZXQ9IjUwJSIgc3RvcC1jb2xvcj0icmdiYSg5MywgMTEyLCAxMTksIDAuODkpIi8+PHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSJyZ2JhKDE2MCwgMTc0LCAxNTAsIDAuOTApIi8+PC9yYWRpYWxHcmFkaWVudD48L2RlZnM+PHJlY3QgeD0iMCIgeT0iMCIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNncmFkKSIgLz48L3N2Zz4="), url("../img/bgnoise_lg_dark.png");*/
   /*background-color: rgba(102, 115, 183, 0.9);*/
   /*background: radial-gradient(farthest-side ellipse at 10% 0, rgba(50,50,50, 0.9), rgba(102, 115, 183, 0.9), rgba(50, 50, 50, 0.9)), url("../img/bgnoise_lg_dark.png");*/
@@ -12649,16 +12698,12 @@ input.parsley-error {
 /**********************************/
 /* line 272, D:/projects/admin/sass/_base.scss */
 .widget {
-  -webkit-border-radius: 1px;
-  -moz-border-radius: 1px;
-  -ms-border-radius: 1px;
-  -o-border-radius: 1px;
-  border-radius: 1px;
   padding: 10px 12px;
   color: #f8f8f8;
-  background: rgba(51, 51, 51, 0.4);
+  background: rgba(10, 40, 255, 0.1);
   margin-bottom: 30px;
   position: relative;
+  border: 1px solid white;
 }
 /* line 281, D:/projects/admin/sass/_base.scss */
 .widget.normal {
@@ -12819,10 +12864,10 @@ input.parsley-error {
   font-weight: bold;
   margin-bottom: 5px;
 }
-
 /* line 435, D:/projects/admin/sass/_base.scss */
 .visits-chart {
   height: 200px;
+  font-color: black;
 }
 
 /* line 440, D:/projects/admin/sass/_base.scss */
