@@ -1690,9 +1690,13 @@ def getGraph(request, graphType):
 @ensure_csrf_cookie
 def shipLayout(request, shipName):
     shipData = Vehicle.objects.get(name__iexact=shipName)
+    loginForm = AuthenticationForm()
+    createUserForm = UserCreationForm()
 
     renderContext = {
-        'shipData'      : shipData
+        'shipData'      : shipData,
+        'loginForm'     : loginForm,
+        'createUserForm': createUserForm
     }
 
     return render_to_response('bootstrap/light-blue/shipMain.html', renderContext, context_instance=RequestContext(request))
