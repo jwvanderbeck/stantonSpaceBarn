@@ -37,7 +37,7 @@
     </div>
 </div>
 
-<div id="quick-variant" class="modal hide fade" tabindex="-1" role="dialog">
+<div id="quick-variant" class="modal hide fade wide" tabindex="-1" role="dialog">
     <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal">X</button>
         <h3>QuickVariant</h3>
@@ -48,7 +48,7 @@
         <div id="quickvariant-url"></div>        
     </div>
     <div class="modal-footer">
-        <button class="btn btn-primary" aria-hidden="true" onclick="submitUserLogin()">Submit</button>
+        <button class="btn btn-primary" aria-hidden="true" onclick="gotoQuickVariant()">Go To QuickVariant</button>
         <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
     </div>
 </div>
@@ -1110,7 +1110,14 @@ function getQuickVariant()
             var urlDiv = $("#quickvariant-url");
             var variantURL = data["url"];
             dialog.modal("show");
-            $(document.createElement('input')).appendTo(urlDiv).attr('type', 'text').attr('size', variantURL.length + 35).attr('value', 'https://www.stantonspacebarn.com' + variantURL);
+            urlDiv.empty();
+            $(document.createElement('input')).appendTo(urlDiv)
+                .attr('type', 'text')
+                .attr('size', variantURL.length + 35)
+                .attr('value', 'https://www.stantonspacebarn.com' + variantURL)
+                .addClass("span9")
+                .attr("name", "quickvariant-url-input");
+
         }
     });
 }

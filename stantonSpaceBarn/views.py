@@ -781,9 +781,13 @@ def quickVariant(request, shipName, variantURL = 0):
             except Exception as e:
                 print e
             variantData.append({"port" : portData, "item" : itemData})
+        loginForm = AuthenticationForm()
+        createUserForm = UserCreationForm()
         renderContext = {
             'shipData'          : vehicleData,
-            'variantData'       : variantData
+            'variantData'       : variantData,
+            'loginForm'         : loginForm,
+            'createUserForm'    : createUserForm
         }
         return render_to_response('bootstrap/light-blue/quickVariant.html', renderContext, context_instance=RequestContext(request))
     

@@ -139,6 +139,15 @@ function setDatablockDescription(source, destination)
 }
 
 /**********************************************************
+// Redirect to a quick variant URL
+**********************************************************/
+function gotoQuickVariant() 
+{
+    var url = $("#quickvariant-url").find("input").val();
+    window.location.href = url;
+}
+
+/**********************************************************
 // User Functionality
 **********************************************************/
 function setUserState(loggedIn)

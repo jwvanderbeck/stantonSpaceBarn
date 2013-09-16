@@ -5019,6 +5019,10 @@ input[type="submit"].btn.btn-mini {
   background-clip: padding-box;
   outline: none;
 }
+.modal.wide {
+  left: 40%;
+  width: 1024px;
+}
 /* line 41, D:/projects/admin/sass/bootstrap-original/_modals.scss */
 .modal.fade {
   -webkit-transition: opacity 0.3s linear, top 0.3s ease-out;
