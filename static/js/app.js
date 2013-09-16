@@ -584,7 +584,7 @@
             {
                 variantURL = data['url'];
                 var dialogDiv = $('.quick-variant-url');
-                $(document.createElement('input')).appendTo(dialogDiv).attr('type', 'text').attr('size', variantURL.length + 35).attr('value', 'http://www.stantonspacebarn.com' + variantURL);
+                $(document.createElement('input')).appendTo(dialogDiv).attr('type', 'text').attr('size', variantURL.length + 35).attr('value', 'https://www.stantonspacebarn.com' + variantURL);
                 $('.quick-variant-url').dialog( "option", "buttons", [ { text: "Go To Quick Variant", click: function() { window.location.href = variantURL; } }, { text : 'Ok', click: function() { $(this).dialog("close");}  } ] );
                 $('.quick-variant-url').dialog('open');
             }

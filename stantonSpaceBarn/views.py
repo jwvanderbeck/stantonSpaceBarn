@@ -518,6 +518,7 @@ def makeVariant(variantData, saveVariant = False, user = None):
 
 @ensure_csrf_cookie
 def quickVariant(request, shipName, variantURL = 0):
+    print "quickVariant", shipName, variantURL
     # If this is an AJAX request, then it means we need to build a quick variant URL rather than display one
     # v0 URL encoding:
     #   0-[00]*-[00][00][00]*-[00][00]*
@@ -535,7 +536,18 @@ def quickVariant(request, shipName, variantURL = 0):
     #       Second set of 2 is cargo mod
     #       0 or more sets of 2 after second is generic hull mods
     # http://www.stantonspacebarn.com/quick-variant/300i/0-0504040202-000e080h-09060g
+    #
+    # v1 URL encoding
+    # 1-00_00-00_00*
+    #   First digit is version
+    #   After the version, is a series of groups, each group is in two parts separated by an underscore
+    #   First part of the group is the port ID, the second part of the grou is the item ID
+    #   Each group is separated by a dash
+    # Incoming AJAX data should specify the requested version.  If data["version"] does not exist, or is blank
+    # then the version is assumed to be v0.  This functionality is present to allow both V0 and V1 to exist at the 
+    # same time for testing V1 while V0 is still being used.
     if request.is_ajax():
+        print "Received AJAX call"
         try:
             data = simplejson.loads(request.body)
         except:
@@ -545,154 +557,236 @@ def quickVariant(request, shipName, variantURL = 0):
             'response' : 'Unable to parse JSON object.'
             }
             return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
+        print data
+        if not "version" in data:
+            version = 0
 
-        shipName = None
-        hardpoints = None
-        engine_intake = None
-        powerplant = None
-        main_thruster = None
-        shield = None
-        cargo_mod = None
-        engine_mods = None
-        hull_mods = None
+        if "version" in data:
+            version = data["version"]
+        print "Building quick variant URL version %d" % version
+        if version == 0:
+            shipName = None
+            hardpoints = None
+            engine_intake = None
+            powerplant = None
+            main_thruster = None
+            shield = None
+            cargo_mod = None
+            engine_mods = None
+            hull_mods = None
 
-        if 'shipName' in data:
-            shipName = data['shipName']
-        if 'hardpoints' in data:
-            hardpoints = data['hardpoints']
-        if 'engine_intake' in data:
-            engine_intake = int(data['engine_intake'])
-        if 'powerplant' in data:
-            powerplant = int(data['powerplant'])
-        if 'main_thruster' in data:
-            main_thruster = int(data['main_thruster'])
-        if 'shield' in data:
-            shield = int(data['shield'])
-        if 'cargo_mod' in data:
-            cargo_mod = int(data['cargo_mod'])
-        if 'engine_mods' in data:
-            engine_mods = data['engine_mods']
-        if 'hull_mods' in data:
-            hull_mods = data['hull_mods']
+            if 'shipName' in data:
+                shipName = data['shipName']
+            if 'hardpoints' in data:
+                hardpoints = data['hardpoints']
+            if 'engine_intake' in data:
+                engine_intake = int(data['engine_intake'])
+            if 'powerplant' in data:
+                powerplant = int(data['powerplant'])
+            if 'main_thruster' in data:
+                main_thruster = int(data['main_thruster'])
+            if 'shield' in data:
+                shield = int(data['shield'])
+            if 'cargo_mod' in data:
+                cargo_mod = int(data['cargo_mod'])
+            if 'engine_mods' in data:
+                engine_mods = data['engine_mods']
+            if 'hull_mods' in data:
+                hull_mods = data['hull_mods']
 
-        if not shipName:
+            if not shipName:
+                response_data = {
+                'url' : 'Z',
+                'success' : False,
+                'response' : 'shipName not found.'
+                }
+                return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
+
+            if not hardpoints:
+                response_data = {
+                'url' : 'Z',
+                'success' : False,
+                'response' : 'No hardpoint data was found.'
+                }
+                return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
+
+            baseURL = reverse('stantonSpaceBarn.views.quickVariant', args=(shipName, ))
+
+            variantURL = '0-'
+            for hardpoint in hardpoints:
+                variantURL = variantURL + itemLuts.idToURL(hardpoint['item_id'], 0)
+
+            variantURL = variantURL + '-%s%s%s' % (itemLuts.idToURL(engine_intake, 0),itemLuts.idToURL(powerplant, 0),itemLuts.idToURL(main_thruster, 0))
+            for mod in engine_mods:
+                if mod:
+                    variantURL = variantURL + itemLuts.idToURL(int(mod), 0)
+
+            variantURL = variantURL + '-%s%s' % (itemLuts.idToURL(shield, 0),itemLuts.idToURL(cargo_mod, 0))
+            for mod in hull_mods:
+                if mod:
+                    variantURL = variantURL + itemLuts.idToURL(int(mod), 0)
+
             response_data = {
-            'url' : 'Z',
-            'success' : False,
-            'response' : 'shipName not found.'
+                'url' : baseURL + variantURL,
+                'success' : True,
+                'response' : 'ok'
+            }
+
+            return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
+        elif version == 1:
+            print "Version 1"
+            # What we need:
+            #   Name of ship
+            #   list of dicts, with name of hardpoint, and name of item
+            #   EG
+            #   data["shipName"] = "oj_350r"
+            #   data["ports"] = [ {"portName" : "nose_slot", "itemName" : "mass_driver"} ]
+
+            try:
+                vehicleData = Vehicle.objects.get(name__iexact=shipName)
+            except:
+                response_data = {
+                'url' : 'Z',
+                'success' : False,
+                'response' : 'Failed to load data for vehicle %s' % shipName
+                }
+                return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
+
+
+            baseURL = reverse('stantonSpaceBarn.views.quickVariant', args=(shipName, ))
+            variantURL = "1"
+
+            for port in data["ports"]:
+                portName = port["portName"]
+                itemName = port["itemName"]
+                try:
+                    portData = ItemPort.objects.get(name__iexact=portName, parentVehicle__exact=vehicleData)
+                    itemData = VehicleItem.objects.get(name__iexact=itemName)
+                except Exception as e:
+                    print "----------------"
+                    print e
+                    print "----------------"
+
+                    response_data = {
+                    'url' : 'Z',
+                    'success' : False,
+                    'response' : 'Failed to load data for port %s, item %s' % (portName, itemName)
+                    }
+                    return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
+                variantURL = variantURL + "-" + itemLuts.idToURL(portData.id, 0) + "_" + itemLuts.idToURL(itemData.id, 0)
+
+            response_data = {
+                'url' : baseURL + variantURL,
+                'success' : True,
+                'response' : 'ok'
             }
             return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
-
-        if not hardpoints:
-            response_data = {
-            'url' : 'Z',
-            'success' : False,
-            'response' : 'No hardpoint data was found.'
-            }
-            return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
-
-        baseURL = reverse('stantonSpaceBarn.views.quickVariant', args=(shipName, ))
-
-        variantURL = '0-'
-        for hardpoint in hardpoints:
-            variantURL = variantURL + itemLuts.idToURL(hardpoint['item_id'], 0)
-
-        variantURL = variantURL + '-%s%s%s' % (itemLuts.idToURL(engine_intake, 0),itemLuts.idToURL(powerplant, 0),itemLuts.idToURL(main_thruster, 0))
-        for mod in engine_mods:
-            if mod:
-                variantURL = variantURL + itemLuts.idToURL(int(mod), 0)
-
-        variantURL = variantURL + '-%s%s' % (itemLuts.idToURL(shield, 0),itemLuts.idToURL(cargo_mod, 0))
-        for mod in hull_mods:
-            if mod:
-                variantURL = variantURL + itemLuts.idToURL(int(mod), 0)
-
-        response_data = {
-            'url' : baseURL + variantURL,
-            'success' : True,
-            'response' : 'ok'
-        }
-
-        return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
 
     # Display a quick Variant
-
-    # Find the ship
-    ships = Ship.objects.filter(name__iexact=shipName)
-    try:
-        ship = ships[0]
-    except:
-        return HttpResponse("<h1>Unable to load Quick Variant</h1><p>Failed to find specified ship</p>")
-
-    images = Image.objects.filter(ship__id=ship.id)
-    if len(images) == 0:
-        raise Http404() 
-    hardpoints = Hardpoint.objects.filter(ship__name__iexact=shipName).order_by('id')
     variantDetails = variantURL.split('-')
     variantVersion = variantDetails[0]
 
-    if variantVersion.lower() == '0':
-        if len(variantDetails) < 4:
-            return HttpResponse("<h1>Unable to load Quick Variant</h1><p>Malformed URL</p>")
-        hardpointsURL = variantDetails[1]
-        engineModsURL = variantDetails[2]
-        if len(engineModsURL) < 6:
-            return HttpResponse("<h1>Unable to load Quick Variant</h1><p>Malformed URL</p>")
-        hullModsURL = variantDetails[3]
-        if len(hullModsURL) < 4:
-            return HttpResponse("<h1>Unable to load Quick Variant</h1><p>Malformed URL</p>")
-        variantData = {
-            'ship' : ship,
-            'role' : 'quick variant',
-            'name' : 'quick variant',
-            'manufacturer_variant' : False,
-            'engine_intake' : itemLuts.urlToID(engineModsURL[0:2]),
-            'powerplant' : itemLuts.urlToID(engineModsURL[2:4]),
-            'main_thruster' : itemLuts.urlToID(engineModsURL[4:6]),
-            'shield' : itemLuts.urlToID(hullModsURL[0:2]),
-            'cargo_mod' : itemLuts.urlToID(hullModsURL[2:4]),
+    if variantVersion == '0':
+    # Find the ship
+        ships = Ship.objects.filter(name__iexact=shipName)
+        try:
+            ship = ships[0]
+        except:
+            return HttpResponse("<h1>Unable to load Quick Variant</h1><p>Failed to find specified ship</p>")
+
+        images = Image.objects.filter(ship__id=ship.id)
+        if len(images) == 0:
+            raise Http404() 
+        hardpoints = Hardpoint.objects.filter(ship__name__iexact=shipName).order_by('id')
+
+        if variantVersion.lower() == '0':
+            if len(variantDetails) < 4:
+                return HttpResponse("<h1>Unable to load Quick Variant</h1><p>Malformed URL</p>")
+            hardpointsURL = variantDetails[1]
+            engineModsURL = variantDetails[2]
+            if len(engineModsURL) < 6:
+                return HttpResponse("<h1>Unable to load Quick Variant</h1><p>Malformed URL</p>")
+            hullModsURL = variantDetails[3]
+            if len(hullModsURL) < 4:
+                return HttpResponse("<h1>Unable to load Quick Variant</h1><p>Malformed URL</p>")
+            variantData = {
+                'ship' : ship,
+                'role' : 'quick variant',
+                'name' : 'quick variant',
+                'manufacturer_variant' : False,
+                'engine_intake' : itemLuts.urlToID(engineModsURL[0:2]),
+                'powerplant' : itemLuts.urlToID(engineModsURL[2:4]),
+                'main_thruster' : itemLuts.urlToID(engineModsURL[4:6]),
+                'shield' : itemLuts.urlToID(hullModsURL[0:2]),
+                'cargo_mod' : itemLuts.urlToID(hullModsURL[2:4]),
+            }
+            hardpoints = []
+            for i in range(0, len(hardpointsURL), 2):
+                hardpoints.append(itemLuts.urlToID(hardpointsURL[i:i+2]))
+            engine_mods = []
+            engineModsURL = engineModsURL[6:]
+            for i in range(0, len(engineModsURL), 2):
+                engine_mods.append(itemLuts.urlToID(engineModsURL[i:i+2]))
+            hull_mods = []
+            hullModsURL = hullModsURL[4:]
+            for i in range(0, len(hullModsURL), 2):
+                hull_mods.append(itemLuts.urlToID(hullModsURL[i:i+2]))
+            variantData['hardpoints'] = hardpoints
+            variantData['engine_mods'] = engine_mods
+            variantData['hull_mods'] = hull_mods
+            variant = makeVariant(variantData, saveVariant = False)
+        else:
+            raise Http404()
+
+        allItems = Item.objects.all()
+        submitBuildForm = SubmitBuildForm()
+        loginForm = AuthenticationForm()
+        createUserForm = UserCreationForm()
+        renderContext = {
+        'variantData_hardpoints'    : variant['build_hardpoints'],
+        'variantData_engine_mods'   : variant['build_engine_mods'],
+        'variantData_hull_mods'     : variant['build_hull_mods'],
+        'variantData_build'         : variant['build'],
+        'item_list'                 : allItems,
+        'image_list'                : images,
+        'shipname'                  : ship.name,
+        'ship'                      : ship,
+        'saveVariantForm'           : submitBuildForm,
+        'loginForm'                 : loginForm,
+        'createUserForm'            : createUserForm
         }
-        hardpoints = []
-        for i in range(0, len(hardpointsURL), 2):
-            hardpoints.append(itemLuts.urlToID(hardpointsURL[i:i+2]))
-        engine_mods = []
-        engineModsURL = engineModsURL[6:]
-        for i in range(0, len(engineModsURL), 2):
-            engine_mods.append(itemLuts.urlToID(engineModsURL[i:i+2]))
-        hull_mods = []
-        hullModsURL = hullModsURL[4:]
-        for i in range(0, len(hullModsURL), 2):
-            hull_mods.append(itemLuts.urlToID(hullModsURL[i:i+2]))
-        variantData['hardpoints'] = hardpoints
-        variantData['engine_mods'] = engine_mods
-        variantData['hull_mods'] = hull_mods
-        variant = makeVariant(variantData, saveVariant = False)
-    else:
-        raise Http404()
 
-    allItems = Item.objects.all()
-    submitBuildForm = SubmitBuildForm()
-    loginForm = AuthenticationForm()
-    createUserForm = UserCreationForm()
-    renderContext = {
-    'variantData_hardpoints'    : variant['build_hardpoints'],
-    'variantData_engine_mods'   : variant['build_engine_mods'],
-    'variantData_hull_mods'     : variant['build_hull_mods'],
-    'variantData_build'         : variant['build'],
-    'item_list'                 : allItems,
-    'image_list'                : images,
-    'shipname'                  : ship.name,
-    'ship'                      : ship,
-    'saveVariantForm'           : submitBuildForm,
-    'loginForm'                 : loginForm,
-    'createUserForm'            : createUserForm
-    }
+        # The bit here about context_instance=RequestContext(request) is ABSOLUTELY VITAL 
+        # as it is what enables the resulting rendered view to contain the CSRF token!
+        # !!!!!!!!!!!!!
+        return render_to_response('quick_variant.html', renderContext, context_instance=RequestContext(request))
+    elif variantVersion == '1':
+        try:
+            vehicleData = Vehicle.objects.get(name__iexact=shipName)
+        except:
+            return HttpResponse("<h1>Unable to load Quick Variant</h1><p>Failed to find specified ship</p>")
 
-    # The bit here about context_instance=RequestContext(request) is ABSOLUTELY VITAL 
-    # as it is what enables the resulting rendered view to contain the CSRF token!
-    # !!!!!!!!!!!!!
-    return render_to_response('quick_variant.html', renderContext, context_instance=RequestContext(request))
-
+        itemGroups = variantDetails[1:]
+        print itemGroups
+        ports = []
+        items = []
+        variantData = []
+        for itemGroup in itemGroups:
+            portID = itemLuts.urlToID(itemGroup.split("_")[0])
+            itemID = itemLuts.urlToID(itemGroup.split("_")[1])
+            print portID, itemID
+            try:
+                portData = ItemPort.objects.get(pk=portID)
+                itemData = VehicleItem.objects.get(pk=itemID)
+            except Exception as e:
+                print e
+            variantData.append({"port" : portData, "item" : itemData})
+        renderContext = {
+            'shipData'          : vehicleData,
+            'variantData'       : variantData
+        }
+        return render_to_response('bootstrap/light-blue/quickVariant.html', renderContext, context_instance=RequestContext(request))
+    
 @ensure_csrf_cookie
 def variantDetail(request, buildID):
 
