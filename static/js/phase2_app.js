@@ -218,3 +218,876 @@ function submitUserLogout() {
     });            
 }
 
+/******************************************************************************
+// Event Handlers
+******************************************************************************/
+
+function clearAllPortFilters()
+{
+    var tags = $(".item-port.filtered")
+    tags.each(function(){
+        $(this).removeClass("filtered")
+    })
+    filteredCollection = initialWeapons.fullCollection.filter( function(ele){
+        return true;
+    });
+    createBackgrid(new PageableWeapons(filteredCollection, {
+        state: {
+            firstPage: 1,
+            currentPage: 1
+        }
+    }), $("#table-dynamic-weapons"));
+}
+
+function filterByItemPort(itemPortName)
+{
+    var portTag = $("#" + itemPortName);
+    var portDatablock = $(".item-port-datablock[data-port-name='" + itemPortName + "']");
+    if (portTag.hasClass("filtered"))
+    {
+        createBackgrid(pageableAvionics, $("#table-dynamic-avionics"));
+        createBackgrid(pageableBatteries, $("#table-dynamic-batteries"));
+        createBackgrid(pageableCargo, $("#table-dynamic-cargo"));
+        createBackgrid(pageableCooler, $("#table-dynamic-coolers"));
+        createBackgrid(pageableDisplays, $("#table-dynamic-displays"));
+        createBackgrid(pageableRadars, $("#table-dynamic-radars"));
+        createBackgrid(pageablePowerplants, $("#table-dynamic-powerplants"));
+        createBackgrid(pageableWeapons, $("#table-dynamic-weapons"));
+        createBackgrid(pageableThrusters, $("#table-dynamic-thrusters"));
+        portTag.removeClass("filtered");
+        portDatablock.find(".icon-filter").removeClass("icon-active");
+    }
+    else
+    {
+        clearAllPortFilters();
+        // Filter Weapons
+        console.log("Filtering Weapons");
+        filteredCollection = initialWeapons.fullCollection.filter( function(ele){
+            return isItemCompatibleWithPort(ele, portTag)
+        });
+        createBackgrid(new PageableWeapons(filteredCollection, {
+            state: {
+                firstPage: 1,
+                currentPage: 1
+            }
+        }), $("#table-dynamic-weapons"));
+        // Filter Thrusters
+        console.log("Filtering Thrusters");
+        filteredCollection = initialThrusters.fullCollection.filter( function(ele){
+            return isItemCompatibleWithPort(ele, portTag)
+        });
+        createBackgrid(new PageableThrusters(filteredCollection, {
+            state: {
+                firstPage: 1,
+                currentPage: 1
+            }
+        }), $("#table-dynamic-thrusters"));
+        // Filter Powerplant
+        console.log("Filtering Powerplants");
+        filteredCollection = initialPowerplants.fullCollection.filter( function(ele){
+            return isItemCompatibleWithPort(ele, portTag)
+        });
+        createBackgrid(new PageablePowerplants(filteredCollection, {
+            state: {
+                firstPage: 1,
+                currentPage: 1
+            }
+        }), $("#table-dynamic-powerplants"));
+        // Filter Cargo
+        console.log("Filtering Cargo");
+        filteredCollection = initialCargo.fullCollection.filter( function(ele){
+            return isItemCompatibleWithPort(ele, portTag)
+        });
+        createBackgrid(new PageableCargo(filteredCollection, {
+            state: {
+                firstPage: 1,
+                currentPage: 1
+            }
+        }), $("#table-dynamic-cargo"));
+        // Filter Avionics
+        console.log("Filtering Avionics");
+        filteredCollection = initialAvionics.fullCollection.filter( function(ele){
+            return isItemCompatibleWithPort(ele, portTag)
+        });
+        createBackgrid(new PageableAvionics(filteredCollection, {
+            state: {
+                firstPage: 1,
+                currentPage: 1
+            }
+        }), $("#table-dynamic-avionics"));
+        // Filter Batteries
+        console.log("Filtering Batteries");
+        filteredCollection = initialBatteries.fullCollection.filter( function(ele){
+            return isItemCompatibleWithPort(ele, portTag)
+        });
+        createBackgrid(new PageableBatteries(filteredCollection, {
+            state: {
+                firstPage: 1,
+                currentPage: 1
+            }
+        }), $("#table-dynamic-batteries"));
+        // Filter Coolers
+        console.log("Filtering Coolers");
+        filteredCollection = initialCooler.fullCollection.filter( function(ele){
+            return isItemCompatibleWithPort(ele, portTag)
+        });
+        createBackgrid(new PageableCooler(filteredCollection, {
+            state: {
+                firstPage: 1,
+                currentPage: 1
+            }
+        }), $("#table-dynamic-coolers"));
+        // Filter Displays
+        console.log("Filtering Displays");
+        filteredCollection = initialDisplays.fullCollection.filter( function(ele){
+            return isItemCompatibleWithPort(ele, portTag)
+        });
+        createBackgrid(new PageableDisplays(filteredCollection, {
+            state: {
+                firstPage: 1,
+                currentPage: 1
+            }
+        }), $("#table-dynamic-displays"));
+        // Filter Radars
+        console.log("Filtering Radars");
+        filteredCollection = initialRadars.fullCollection.filter( function(ele){
+            return isItemCompatibleWithPort(ele, portTag)
+        });
+        createBackgrid(new PageableRadars(filteredCollection, {
+            state: {
+                firstPage: 1,
+                currentPage: 1
+            }
+        }), $("#table-dynamic-radar"));
+        portTag.addClass("filtered");
+        portDatablock.find(".icon-filter").addClass("icon-active");
+    }
+}
+
+
+function toggleItemPorts(activeItemType)
+{
+    var ports = $(".item-port");
+    ports.each(function(){
+        if ($(this).hasClass(activeItemType))
+            $(this).show(200);
+        else
+            $(this).hide(200);
+    });
+}
+
+function enterPortLabel()
+{
+    $(this).addClass("well-white");
+    var imageNumber = parseInt($(this).attr("data-parent"),10);
+    // ports wth image 0 are not displayed
+    if (imageNumber == 0)
+        return
+    // select the proper image tab
+    imageNumber = imageNumber - 1;
+    $('#layout-images li:eq(' + imageNumber + ') a').tab('show'); // Select third tab (0-indexed)
+    // find and highlight the port
+    var portName = $(this).attr("data-port-name")
+    $("#" + portName).addClass("highlight")
+}
+
+function leavePortLabel()
+{
+    $(this).removeClass("well-white");
+    var portName = $(this).attr("data-port-name")
+    $("#" + portName).removeClass("highlight")
+}
+
+function enterPort()
+{
+    var portWell = $(".item-port-label[data-port-name='" + $(this).attr("id") + "']");
+    portWell.addClass("well-white");
+    $(this).addClass("highlight")
+}
+
+function leavePort()
+{
+    var portWell = $(".item-port-label[data-port-name='" + $(this).attr("id") + "']");
+    portWell.removeClass("well-white");
+    $(this).removeClass("highlight")
+}
+
+function removeItemFromPort(portName)
+{
+    // Get the port tag, datablock, and label elements
+    portTag = $("#" + portName);
+    portDatablock = $(".item-port-datablock[data-port-name='" + portName + "']");
+    portLabel = $(".item-port-label[data-port-name='" + portName + "']");
+
+    // Mark tag as filled
+    portTag.addClass("filled");
+
+    // Remove item from label
+    portLabel.removeAttr("data-item-name");
+    portLabel.find("span.item-name").text("Nothing Loaded");
+
+    // Remove item from datablock
+    portDatablock.removeAttr("data-item-name");
+    portDatablock.find("span.item-name").text("Nothing Loaded");
+
+    // Reset datablock state selection
+    parent = portDatablock.find(".item-port-datablock-statebuttons");
+    console.log(parent)
+    parent.empty();
+    $(document.createElement("input")).appendTo(parent).attr("id", "item-powerstate-" + portName + "-input").attr("type", "hidden").attr("name", "item-powerstate").attr("value","Default");
+    var parentDiv = $(document.createElement("div")).appendTo(parent).addClass("btn-group");
+    parentDiv.attr("id", "port-powerstate-" + portName);
+    parentDiv.attr("data-toggle", "buttons-radio").attr("data-target", "item-powerstate-" + portName + "-input")
+    var button = $(document.createElement("button")).appendTo(parentDiv)
+        .addClass("btn btn-mini btn-info active")
+        .attr("data-toggle-class","btn-info")
+        .attr("data-toggle-passive-class", "btn-inverse")
+        .attr("type", "button")
+        .attr("name", "port-powerstate")
+        .attr("value", "Default");
+    button.text("Default");
+    button.click(function(){
+        $(this).parent().parent().find("input").val($(this).val());
+        computeStats();
+    });
+
+    // Recompute all stats now that this item has been removed
+    computeStats();
+}
+
+function getQuickVariant(shipName)
+{
+    var data = {}
+    // ship name is dynamically added by django
+    data["ports"] = [];
+    data["version"] = 1;
+
+    // get all items equipped
+    var ports = $('.item-port-datablock');
+    ports.each(function() {
+        var itemName = $(this).attr("data-item-name");
+        var portName = $(this).attr("data-port-name");
+        if (itemName != undefined)
+        {
+            data["ports"].push({"portName" : portName, "itemName" : itemName});
+        }
+    });
+    var jsonData = JSON.stringify(data);
+    console.log(jsonData);
+    $.ajaxSetup({
+      async: true
+    });
+    $.post('/quick-variant/' + shipName + '/', jsonData).done(function(data) {
+        if (data['success'] == false)
+        {
+            console.log("Failed to get QuickVariant:", data['response']);
+        }
+        else
+        {
+            console.log(data);
+            var dialog = $('#quick-variant');
+            var urlDiv = $("#quickvariant-url");
+            var variantURL = data["url"];
+            dialog.modal("show");
+            urlDiv.empty();
+            $(document.createElement('input')).appendTo(urlDiv)
+                .attr('type', 'text')
+                .attr('size', variantURL.length + 35)
+                .attr('value', 'https://www.stantonspacebarn.com' + variantURL)
+                .addClass("span9")
+                .attr("name", "quickvariant-url-input");
+
+        }
+    });
+}
+/******************************************************************************
+// Main Functions
+******************************************************************************/
+
+var lineResize;
+function lineChartOperaHack(){
+    //lineChart is somehow not rendered correctly after updates. Need to reupdate
+    if ($.browser.opera){
+        clearTimeout(lineResize);
+        lineResize = setTimeout(lineChart.update, 300);
+    }
+}
+
+function isItemCompatibleWithPort(item, port)
+{
+    var portType = port.attr("data-types");
+    var portSubType = port.attr("data-subtypes");
+    var portMinSize = parseInt(port.attr("data-min-size"), 10);
+    var portMaxSize = parseInt(port.attr("data-max-size"), 10);
+    var itemType = item.get("type");
+    var itemSubType = item.get("subtype");
+    var itemSize = parseInt(item.get("size"), 10);
+    console.log(itemType, "in", portType);
+    if (portType.indexOf(itemType) == -1 )
+        return false;
+    console.log(itemSubType, "in", portSubType);
+    if (portSubType.indexOf(itemSubType) == -1 )
+        return false;
+    console.log(itemSize, "between", portMinSize, "and", portMaxSize);
+    if ( itemSize < portMinSize || itemSize > portMaxSize)
+        return false;
+    return true;   
+}
+
+function getItemDetails(itemName) {
+    jsonData = {
+        "itemName"  : itemName,
+    }
+    var jsonData = JSON.stringify(jsonData);
+    // console.log(jsonData);
+    $.ajaxSetup({
+      async: false
+    });
+    $.post('/items/details/', jsonData).done(function(data) {
+        if (data['success'] == false)
+        {
+            $("#item-details").hide();
+            console.log("Error occured getting item details")
+            console.log(data)
+        }
+        else
+        {
+            $("#item-details").show();
+            var section = $("#item-details");
+            $("#item-details-itemname").text(data['itemname']);
+            $("#item-details-itemclass").text(data['itemclass']);
+            $("#item-details-itemsize").text(data['itemsize']);
+            $("#item-details-itemtype").text(data['itemtype']);
+            $("#item-details-itemsubtype").text(data['itemsubtype']);
+            $("#item-details-description").text(data['description']);
+            // clear the sub divs so we;re starting fresh
+            var weaponbars = $("#item-details-weaponbars");
+            weaponbars.empty();
+            var misc = $("#item-details-misc");
+            misc.empty();
+            if (data['itemtype'] == "Weapon")
+            {
+                var stats = data['itemstats']
+                for (var index = 0; index < stats.length; index++)
+                {
+                    var h = $(document.createElement('h5')).appendTo(weaponbars).text(stats[index]['name']);
+                    var progress = $(document.createElement('div')).appendTo(weaponbars).addClass("progress");
+                    var bar = $(document.createElement('div')).appendTo(progress).addClass("bar").text(stats[index]['value'])
+                    .css("width",stats[index]['value'] + "%");
+                }
+            }
+            else
+            {
+                var stats = data['itemstats']
+                var table = $(document.createElement('table')).appendTo(misc).addClass("table");
+                var tableBody = $(document.createElement('tbody')).appendTo(table);
+                for (var index = 0; index < stats.length; index++)
+                {
+                    var tableRow = $(document.createElement('tr')).appendTo(tableBody).addClass("label-inverse");
+                    $(document.createElement('td')).appendTo(tableRow).text(stats[index]['name']);
+                    $(document.createElement('td')).appendTo(tableRow).text(stats[index]['value']);
+                }
+            }
+        }
+    });
+}
+
+function chartPipe(itemName, pipe, state) {
+    jsonData = {
+        "itemName"  : itemName,
+        "pipe"      : pipe,
+        "state"     : state,
+        "metric"    : 0
+    }
+    var jsonData = JSON.stringify(jsonData);
+    // console.log(jsonData);
+    $.ajaxSetup({
+      async: false
+    });
+    $.post('/items/pipegraph/', jsonData).done(function(data) {
+        if (data['success'] == false)
+        {
+            console.log("chartPipe failed:", data['response']);
+            $("#" + pipe.toLowerCase() + "-chart-line").parent().hide()
+        }
+        else
+        {
+            // console.log(data['data']);
+            $("#" + pipe.toLowerCase() + "-chart-line").parent().show()
+            var chartID = "#" + pipe.toLowerCase() + "-chart-line svg" 
+            // console.log($(chartID));
+            if (pipe == "Power")
+            {
+                if (data['negative'])
+                    $("#power-chart-header").text("Power Consumption (per second)")
+                else
+                    $("#power-chart-header").text("Power Generation (per second)")
+            }
+            else if (pipe == "Heat")
+            {
+                if (data['negative'])
+                    $("#heat-chart-header").text("Heat Dissipation (per second)")
+                else
+                    $("#heat-chart-header").text("Heat Generation (per second)")
+            }
+            else if (pipe == "Avionics")
+            {
+                if (data['negative'])
+                    $("#avionics-chart-header").text("Avionics Offloading (per second)")
+                else
+                    $("#avionics-chart-header").text("Avionics Consumption (per second)")
+            }
+
+            nv.addGraph(function() {
+                var chart = nv.models.lineChart()
+                    .showLegend(true)
+
+                chart.yAxis
+                    .axisLabel(pipe)
+                    .showMaxMin(true)
+                    .tickFormat(d3.format(',.f'));
+
+                chart.xAxis
+                    .axisLabel('Seconds')
+                    .showMaxMin(true)
+                    .tickFormat(d3.format(',.f'));
+
+                d3.select(chartID)
+                    .datum(data['data'])
+                    .transition().duration(0)
+                    .call(chart);
+
+                nv.utils.windowResize(chart.update);
+                lineChart = chart;
+
+                lineChartOperaHack();
+
+                return chart;
+            });
+        }
+    });
+} 
+function getItemPortDetails(itemPortName, shipName) {
+    jsonData = {
+        "portName"  : itemPortName,
+        "vehicleName" : "{{shipData.name}}"
+    }
+    var jsonData = JSON.stringify(jsonData);
+    // console.log(jsonData);
+    $.ajaxSetup({
+      async: false
+    });
+    $.post('/itemports/details/', jsonData).done(function(data) {
+        if (data['success'] == false)
+        {
+            console.log("getItemPortDetails failed. ", data)
+        }
+        else
+        {
+            $("#itemport-details").show();
+            // console.log(data)
+            // clear the sub divs so we're starting fresh
+            $("#itemport-details-name").text(data['name']);
+            var hardpointsDiv = $("#itemport-details-body");
+            // console.log(hardpointsDiv);
+            hardpointsDiv.empty()
+            $(document.createElement("p")).appendTo(hardpointsDiv).text("Size " + data["minsize"] + " - " + data["maxsize"]);
+            
+            $(document.createElement('p')).appendTo(hardpointsDiv).text("Supported Items");
+            var types = data['subtypes'];
+            for (var i = 0; i < types.length; i++)
+            {
+                $(document.createElement('p')).appendTo(hardpointsDiv).text(types[i]).addClass("offset1");
+            }
+        }
+    });
+}
+function addItemToPort(portName, itemData)
+{
+    var portTag = $("#" + portName);
+    var portDatablock = $('.item-port-datablock[data-port-name="' + portName + '"]'); 
+    var portWell = $('.item-port-label[data-port-name="' + portName + '"]');
+
+    var itemDisplayName = itemData["displayName"];
+    var itemName = itemData["name"];
+    portWell.find("span.item-name").text(itemDisplayName);
+    portWell.attr("data-item-name", itemName)
+    portDatablock.find("span.item-name").text(itemDisplayName);
+    portDatablock.attr("data-item-name", itemName)
+    portTag.addClass("filled");
+    // add state buttons for this item to port-datablock
+    jsonData = {
+        "itemName"  : itemName,
+    }
+    var jsonData = JSON.stringify(jsonData);
+    // console.log(jsonData);
+    $.ajaxSetup({
+      async: false
+    });
+    $.post('/items/details/', jsonData).done(function(data) {
+        if (data['success'] == false)
+        {
+            console.log("Error occured getting item details")
+            console.log(data)
+        }
+        else
+        {
+            // create buttons for the power and avionis states
+            // for now we are assuming power/heat have same states
+            console.log("Parent:", portDatablock);
+            if (data["power"].length > 0)
+            {
+                var parent = portDatablock.find(".item-port-datablock-statebuttons");
+                parent.empty();
+                $(document.createElement("input")).appendTo(parent).attr("id", "item-powerstate-" + portName + "-input").attr("type", "hidden").attr("name", "item-powerstate").attr("value",data["power"][0]);
+                var parentDiv = $(document.createElement("div")).appendTo(parent).addClass("btn-group");
+                parentDiv.attr("id", "port-powerstate-" + portName);
+                parentDiv.attr("data-toggle", "buttons-radio").attr("data-target", "item-powerstate-" + portName + "-input")
+                for (var i=0; i < data["power"].length; i++)
+                {
+                    var button = $(document.createElement("button")).appendTo(parentDiv)
+                        .addClass("btn btn-mini")
+                        .attr("data-toggle-class","btn-info")
+                        .attr("data-toggle-passive-class", "btn-inverse")
+                        .attr("type", "button")
+                        .attr("name", "port-powerstate")
+                        .attr("value", data["power"][i]);
+                    if (i == 0)
+                        button.addClass("btn-info active");
+                    else
+                        button.addClass("btn-inverse");
+                    button.text(data["power"][i]);
+                    button.click(function(){
+                        // when the state buttons are clicked, we update the hidden input field,
+                        // change the stats display to LDS, and recompute stats
+                        $(this).parent().parent().find("input").val($(this).val());
+                        $('#systems-monitor li:eq(1) a').tab('show');
+                        computeStats();
+                    });
+                }
+            }
+        }
+    });
+    computeStats();
+}
+
+function dropItem(ele, event, ui) {
+    // console.log("Dropped!");
+    var portWell = undefined;
+    var portDatablock = undefined;
+    var portTag = undefined;
+    if ($(ele).hasClass("item-port-label"))
+    {
+        var portName = $(ele).attr("data-port-name");
+    }
+    else if ($(ele).hasClass("item-port-datablock"))
+    {
+        var portName = $(ele).attr("data-port-name");
+    }
+    else
+    {
+        var portName = $(ele).attr("id");
+    }
+
+    var itemData = {
+        "displayName" : ui.draggable.find("td.string-cell").text(),
+        "name" : ui.draggable.find("td.item-name-cell").text()
+    };
+
+    addItemToPort(portName, itemData);
+}
+var hardpoints = $(".item-port");
+var hardpointWells = $(".item-port-label");
+var hardpointDatablocks = $(".item-port-datablock");
+
+hardpointDatablocks.droppable({
+    activeClass: "label-success",
+    tolerance : "pointer",
+    drop : function(event, ui) {
+        $(this).removeClass("over");
+        dropItem(this, event, ui);
+    },
+    deactivate : function(event, ui) {
+        $(this).removeClass("over");
+    },
+    activate : function(event, ui) {
+        // console.log("Activate drag")
+        $("#item-details-modal").modal("hide");
+        $("#itemport-details-modal").modal("hide");
+    },
+    over : function(event, ui) {
+        $(this).addClass("over");
+        // console.log("Over")
+    },
+    out : function(event, ui) {
+        $(this).removeClass("over");
+        // console.log("out")
+    },
+    accept: function(draggable) {
+        var row = draggable;
+        var itemSubType = row.find("td.item-subtype-cell").text();
+        var itemSize = parseInt(row.find("td.item-size-cell").text(), 10);
+        var supportedSubTypes = $(this).attr("data-subtypes");
+        var minSize = $(this).attr("data-min-size");
+        var maxSize = $(this).attr("data-max-size");
+        var label = $(this).find(".label")
+        // console.log("Item Sub Type:", itemSubType)
+        // console.log("Supported Sub Types:", supportedSubTypes);
+        // console.log("Item Size:", itemSize);
+        // console.log("Supported Size:", minSize, "-", maxSize);
+        if (supportedSubTypes.indexOf(itemSubType) > -1 && itemSize >= minSize && itemSize <= maxSize)
+        {
+            // console.log("Item Supported!")
+            return true;
+        }
+        return false;
+}});       
+
+hardpointWells.droppable({
+    activeClass: "label-success",
+    tolerance : "pointer",
+    drop : function(event, ui) {
+        $(this).removeClass("over");
+        dropItem(this, event, ui);
+    },
+    deactivate : function(event, ui) {
+        $(this).removeClass("over");
+    },
+    activate : function(event, ui) {
+        // console.log("Activate drag")
+        $("#item-details-modal").modal("hide");
+        $("#itemport-details-modal").modal("hide");
+    },
+    over : function(event, ui) {
+        $(this).addClass("over");
+        // console.log("Over")
+    },
+    out : function(event, ui) {
+        $(this).removeClass("over");
+        // console.log("out")
+    },
+    accept: function(draggable) {
+        var row = draggable;
+        var itemSubType = row.find("td.item-subtype-cell").text();
+        var itemSize = parseInt(row.find("td.item-size-cell").text(), 10);
+        var supportedSubTypes = $(this).attr("data-subtypes");
+        var minSize = $(this).attr("data-min-size");
+        var maxSize = $(this).attr("data-max-size");
+        var label = $(this).find(".label")
+        // console.log("Item Sub Type:", itemSubType)
+        // console.log("Supported Sub Types:", supportedSubTypes);
+        // console.log("Item Size:", itemSize);
+        // console.log("Supported Size:", minSize, "-", maxSize);
+        if (supportedSubTypes.indexOf(itemSubType) > -1 && itemSize >= minSize && itemSize <= maxSize)
+        {
+            // console.log("Item Supported!")
+            return true;
+        }
+        return false;
+}});       
+
+hardpoints.droppable({
+    activeClass: "drop-target-valid",
+    tolerance : "pointer",
+    drop : function(event, ui) {
+        $(this).removeClass("over");
+        dropItem(this, event, ui);
+    },
+    deactivate : function(event, ui) {
+        $(this).removeClass("over");
+    },
+    activate : function(event, ui) {
+        // console.log("Activate drag")
+        $("#item-details-modal").modal("hide");
+        $("#itemport-details-modal").modal("hide");
+    },
+    over : function(event, ui) {
+        $(this).addClass("over");
+        // console.log("Over")
+    },
+    out : function(event, ui) {
+        $(this).removeClass("over");
+        // console.log("out")
+    },
+    accept: function(draggable) {
+        var row = draggable;
+        var itemSubType = row.find("td.item-subtype-cell").text();
+        var itemSize = parseInt(row.find("td.item-size-cell").text(), 10);
+        var supportedSubTypes = $(this).attr("data-subtypes");
+        var minSize = $(this).attr("data-min-size");
+        var maxSize = $(this).attr("data-max-size");
+        // console.log("Item Sub Type:", itemSubType)
+        // console.log("Supported Sub Types:", supportedSubTypes);
+        // console.log("Item Size:", itemSize);
+        // console.log("Supported Size:", minSize, "-", maxSize);
+        if (supportedSubTypes.indexOf(itemSubType) > -1 && itemSize >= minSize && itemSize <= maxSize)
+        {
+            // console.log("Item Supported!")
+            return true;
+        }
+        return false;
+}});       
+
+function computeStats()
+{
+    // computes stats based on items equipped
+    console.log("Computing current stats")
+    // get all items equipped
+    var ports = $('.item-port-datablock');
+    var scannedPorts = [];
+    var scannedItems = [];
+    var LDS = []
+    ports.each(function() {
+        var itemName = $(this).attr("data-item-name");
+        if (itemName != undefined)
+        {
+            var itemState = $(this).find("input").val()
+            // console.log(itemName, itemState);
+            LDS.push( {"name" : itemName, "state" : itemState} );
+        }
+    });
+    var data = {}
+    data["items"] = []
+    for (var i=0; i < LDS.length; i++)
+    {
+        data["items"].push(LDS[i]);
+    }
+    // console.log(data);
+    var jsonData = JSON.stringify(data);
+    // console.log(jsonData);
+    $.ajaxSetup({
+      async: false
+    });
+    $.post('/graphs/get/available-power/', jsonData).done(function(data) {
+        if (data['success'] == false)
+        {
+            console.log("Failed to retrieve power usage data:", data['response']);
+        }
+        else
+        {
+            // console.log("Available Power data");
+            // console.log(data);
+            var powerConsumed = data['data']['powerConsumed'];
+            if (powerConsumed < 0)
+                powerConsumed = powerConsumed * -1;
+            var maxPower = data['data']['maxPower'];
+            var percentMaxPower = 0.0;
+            // console.log( powerConsumed, maxPower );
+            if (maxPower > 0)
+            {
+                $("#stats-lds-warning-missingpowerplant").hide();
+                percentMaxPower = (powerConsumed / maxPower) * 100;
+                $("#stats-lds-available-power-label").text(powerConsumed + "/" + maxPower);
+                $("#stats-lds-available-power-container").removeClass("progress-success").removeClass("progress-warning").removeClass("progress-error");
+                if (percentMaxPower <= 50.0)
+                {
+                    $("#stats-lds-available-power-container").addClass("progress-success");
+                }
+                else if (percentMaxPower >= 50.0 && percentMaxPower <= 75.0)
+                {
+                    $("#stats-lds-available-power-container").addClass("progress-warning");
+                }
+                else if (percentMaxPower >= 75 && percentMaxPower <= 100.0)
+                {
+                    $("#stats-lds-available-power-container").addClass("progress-danger");
+                }
+                else
+                {
+                    $("#stats-lds-available-power-container").addClass("progress-danger");
+                    percentMaxPower = 100.0;
+                }
+                $("#stats-lds-available-power-bar").css({width: percentMaxPower + "%"})
+            }
+            else
+            {
+                console.log($("#stats-lds-available-power-bar"));
+                $("#stats-lds-warning-missingpowerplant").show();
+                $("#stats-lds-available-power-label").text(powerConsumed + "/0");
+                $("#stats-lds-available-power-container").removeClass("progress-success").removeClass("progress-warning").removeClass("progress-error");
+                $("#stats-lds-available-power-container").addClass("progress-danger");
+                $("#stats-lds-available-power-bar").css({width:"100%"})
+            }
+        }
+        });
+        ports.each(function(){
+        var itemName = $(this).attr("data-item-name");
+        var portName = $(this).attr("data-port-name");
+        if (itemName != undefined && portName != undefined)
+        {
+            if (scannedPorts.indexOf(portName) == -1)
+            {
+                console.log("Found equipped item:", itemName)
+                scannedPorts.push(portName)
+                scannedItems.push(itemName)
+            }
+        }
+    });
+    // console.log(scannedItems);
+    var data = {};
+    data['state'] = "Active";
+    data['items'] = []
+    for (var index=0; index < scannedItems.length; index++)
+    {
+        var entry = {
+            "name" : scannedItems[index],
+            "state" : "Active"
+        };
+        data['items'].push( entry );
+    }
+    // console.log(data);
+    var jsonData = JSON.stringify(data);
+    // console.log(jsonData);
+    $.ajaxSetup({
+      async: false
+    });
+    $.post('/graphs/get/available-power/', jsonData).done(function(data) {
+        if (data['success'] == false)
+        {
+            console.log("Failed to retrieve power usage data:", data['response']);
+        }
+        else
+        {
+            // console.log("Available Power data");
+            // console.log(data);
+            var powerConsumed = data['data']['powerConsumed'];
+            if (powerConsumed < 0)
+                powerConsumed = powerConsumed * -1;
+            var maxPower = data['data']['maxPower'];
+            var percentMaxPower = 0.0;
+            if (maxPower > 0)
+            {
+                $("#stats-warning-missingpowerplant").hide();
+                percentMaxPower = (powerConsumed / maxPower) * 100;
+                $("#stats-available-power-label").text(powerConsumed + "/" + maxPower);
+                $("#stats-available-power-container").removeClass("progress-success").removeClass("progress-warning").removeClass("progress-error");
+                if (percentMaxPower <= 50.0)
+                {
+                    $("#stats-available-power-container").addClass("progress-success");
+                }
+                else if (percentMaxPower >= 50.0 && percentMaxPower <= 75.0)
+                {
+                    $("#stats-available-power-container").addClass("progress-warning");
+                }
+                else if (percentMaxPower >= 75 && percentMaxPower <= 100.0)
+                {
+                    $("#stats-available-power-container").addClass("progress-danger");
+                }
+                else
+                {
+                    $("#stats-available-power-container").addClass("progress-danger");
+                    percentMaxPower = 100.0;
+                }
+                $("#stats-available-power-bar").css({width: percentMaxPower + "%"})
+            }
+            else
+            {
+                $("#stats-warning-missingpowerplant").show();
+                $("#stats-available-power-label").text(powerConsumed + "/0");
+                $("#stats-available-power-container").removeClass("progress-success").removeClass("progress-warning").removeClass("progress-error");
+                $("#stats-available-power-container").addClass("progress-danger");
+                $("#stats-available-power-bar").css({width:"100%"})
+            }
+        }
+    });
+}
+
