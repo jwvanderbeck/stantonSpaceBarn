@@ -1,4 +1,7 @@
 var isUserLoggedIn = false;
+// Make this dynamic in the future
+var ITEM_TYPES = "Avionics,Battery,Container,Cooler,Display,Radar,PowerPlant,Thruster,Weapon".split(",");
+
 /**********************************************************
 // CSRF Cookie Handling
 **********************************************************/
@@ -218,6 +221,135 @@ function submitUserLogout() {
     });            
 }
 
+/***************************************************************
+// Backgrid Table Setup
+***************************************************************/
+// Stores a lookup of Backgrid tables
+var GRIDS = {};
+
+var Items = Backbone.Model.extend({});
+
+function createGrid(itemTypeName, shipName, element, pageSize)
+{
+    // default pageSize = 10
+    if (pageSize == undefined)
+        pageSize = 10;
+
+    // Build proper URL for the model to retrieve items from
+    modelURL = "/items/get/type/" + itemTypeName.toLowerCase() + "/compatible-with-vehicle/" + shipName + "/"
+
+    gridData = {
+        "collection" : Backbone.PageableCollection.extend({
+            model : Items,
+            url : modelURL,
+            state : { pageSize : pageSize },
+            mode : "client"
+        })
+    }
+    var collection = gridData["collection"];
+    gridData["pageable"] = new collection();
+    gridData["initialSet"] = gridData["pageable"];
+    createBackgrid(gridData["pageable"], element);
+    gridData["pageable"].fetch();
+    GRIDS[itemTypeName] = gridData;
+}
+
+
+var ItemTypeCell = Backgrid.StringCell.extend({
+    className : "item-type-cell"
+});
+var ItemSubTypeCell = Backgrid.StringCell.extend({
+    className : "item-subtype-cell"
+});
+var ItemSizeCell = Backgrid.StringCell.extend({
+    className : "item-size-cell"
+});
+var ItemNameCell = Backgrid.StringCell.extend({
+    className : "item-name-cell"
+});
+
+var ClickableRow = Backgrid.Row.extend({
+    className:"vehicle-item-row",
+    events: {
+        "click": "onClick"
+    },
+    onClick: function () {
+        Backbone.trigger("rowclicked", this.model);
+    }
+});
+
+function createBackgrid(collection, parentElement){
+    var columns = [{
+        name: "displayName",
+        label: "Item",
+        editable : false,
+        // The cell type can be a reference of a Backgrid.Cell subclass, any Backgrid.Cell subclass instances like *id* above, or a string
+        cell: "string" // This is converted to "StringCell" and a corresponding class in the Backgrid package namespace is looked up
+    },{
+        name: "type",
+        label: "type",
+        editable : false,
+        renderable: false,
+        // The cell type can be a reference of a Backgrid.Cell subclass, any Backgrid.Cell subclass instances like *id* above, or a string
+        cell: ItemTypeCell // This is converted to "StringCell" and a corresponding class in the Backgrid package namespace is looked up
+    },{
+        name: "subtype",
+        label: "subtype",
+        editable : false,
+        renderable: false,
+        // The cell type can be a reference of a Backgrid.Cell subclass, any Backgrid.Cell subclass instances like *id* above, or a string
+        cell: ItemSubTypeCell // This is converted to "StringCell" and a corresponding class in the Backgrid package namespace is looked up
+    },{
+        name: "size",
+        label: "size",
+        editable : false,
+        renderable: false,
+        // The cell type can be a reference of a Backgrid.Cell subclass, any Backgrid.Cell subclass instances like *id* above, or a string
+        cell: ItemSizeCell // This is converted to "StringCell" and a corresponding class in the Backgrid package namespace is looked up
+    },{
+        name: "name",
+        label: "name",
+        editable : false,
+        renderable: false,
+        // The cell type can be a reference of a Backgrid.Cell subclass, any Backgrid.Cell subclass instances like *id* above, or a string
+        cell: ItemNameCell // This is converted to "StringCell" and a corresponding class in the Backgrid package namespace is looked up
+    }
+    ]
+
+    var pageableGrid = new Backgrid.Grid({
+        columns: columns,
+        row : ClickableRow,
+        collection: collection,
+        footer: Backgrid.Extension.Paginator.extend({
+            //okendoken. rewrite template to add pagination class to container
+            template: _.template('<tr><td class="pagination" colspan="<%= colspan %>"><ul><% _.each(handles, function (handle) { %><li <% if (handle.className) { %>class="<%= handle.className %>"<% } %>><a href="#" <% if (handle.title) {%> title="<%= handle.title %>"<% } %>><%= handle.label %></a></li><% }); %></ul></td></tr>')
+        }),
+        className: 'table table-condensed no-margin table-hover'
+    });
+    parentElement.html(pageableGrid.render().$el);
+}
+
+// var tableResize;
+// $(window).resize(function(e) {
+//     clearTimeout(tableResize);
+//     tableResize = setTimeout(function(){
+//         createBackgrid(pageableAvionics, $("#table-dynamic-avionics"));
+//         createBackgrid(pageableBatteries, $("#table-dynamic-batteries"));
+//         createBackgrid(pageableCargo, $("#table-dynamic-cargo"));
+//         createBackgrid(pageableCooler, $("#table-dynamic-coolers"));
+//         createBackgrid(pageableDisplays, $("#table-dynamic-displays"));
+//         createBackgrid(pageableRadars, $("#table-dynamic-radar"));
+//         createBackgrid(pageablePowerplants, $("#table-dynamic-powerplants"));
+//         createBackgrid(pageableWeapons, $("#table-dynamic-weapons"));
+//         createBackgrid(pageableThrusters, $("#table-dynamic-thrusters"));
+//         }, 200);
+// });
+
+
+/***************************
+// End Backgrid
+***************************/
+
 /******************************************************************************
 // Event Handlers
 ******************************************************************************/
@@ -228,137 +360,48 @@ function clearAllPortFilters()
     tags.each(function(){
         $(this).removeClass("filtered")
     })
-    filteredCollection = initialWeapons.fullCollection.filter( function(ele){
-        return true;
-    });
-    createBackgrid(new PageableWeapons(filteredCollection, {
-        state: {
-            firstPage: 1,
-            currentPage: 1
-        }
-    }), $("#table-dynamic-weapons"));
+    for (var i = 0; i < ITEM_TYPES.length; i++)
+    {
+        var pageable = GRIDS[ITEM_TYPES[i]]["pageable"]
+        createBackgrid(pageable, $("#table-dynamic-" + ITEM_TYPES[i]));
+    }
 }
 
 function filterByItemPort(itemPortName)
 {
     var portTag = $("#" + itemPortName);
     var portDatablock = $(".item-port-datablock[data-port-name='" + itemPortName + "']");
-    if (portTag.hasClass("filtered"))
+    var supportedItemTypes = portTag.attr("data-types");
+
+    
+    if (portTag.hasClass("filtered") || portDatablock.find(".icon-filter").hasClass("icon-active"))
     {
-        createBackgrid(pageableAvionics, $("#table-dynamic-avionics"));
-        createBackgrid(pageableBatteries, $("#table-dynamic-batteries"));
-        createBackgrid(pageableCargo, $("#table-dynamic-cargo"));
-        createBackgrid(pageableCooler, $("#table-dynamic-coolers"));
-        createBackgrid(pageableDisplays, $("#table-dynamic-displays"));
-        createBackgrid(pageableRadars, $("#table-dynamic-radars"));
-        createBackgrid(pageablePowerplants, $("#table-dynamic-powerplants"));
-        createBackgrid(pageableWeapons, $("#table-dynamic-weapons"));
-        createBackgrid(pageableThrusters, $("#table-dynamic-thrusters"));
+        for (var i = 0; i < ITEM_TYPES.length; i++)
+        {
+            var pageable = GRIDS[ITEM_TYPES[i]]["pageable"]
+            createBackgrid(pageable, $("#table-dynamic-" + ITEM_TYPES[i]));
+        }
         portTag.removeClass("filtered");
         portDatablock.find(".icon-filter").removeClass("icon-active");
     }
     else
     {
         clearAllPortFilters();
-        // Filter Weapons
-        console.log("Filtering Weapons");
-        filteredCollection = initialWeapons.fullCollection.filter( function(ele){
-            return isItemCompatibleWithPort(ele, portTag)
-        });
-        createBackgrid(new PageableWeapons(filteredCollection, {
-            state: {
-                firstPage: 1,
-                currentPage: 1
-            }
-        }), $("#table-dynamic-weapons"));
-        // Filter Thrusters
-        console.log("Filtering Thrusters");
-        filteredCollection = initialThrusters.fullCollection.filter( function(ele){
-            return isItemCompatibleWithPort(ele, portTag)
-        });
-        createBackgrid(new PageableThrusters(filteredCollection, {
-            state: {
-                firstPage: 1,
-                currentPage: 1
-            }
-        }), $("#table-dynamic-thrusters"));
-        // Filter Powerplant
-        console.log("Filtering Powerplants");
-        filteredCollection = initialPowerplants.fullCollection.filter( function(ele){
-            return isItemCompatibleWithPort(ele, portTag)
-        });
-        createBackgrid(new PageablePowerplants(filteredCollection, {
-            state: {
-                firstPage: 1,
-                currentPage: 1
-            }
-        }), $("#table-dynamic-powerplants"));
-        // Filter Cargo
-        console.log("Filtering Cargo");
-        filteredCollection = initialCargo.fullCollection.filter( function(ele){
-            return isItemCompatibleWithPort(ele, portTag)
-        });
-        createBackgrid(new PageableCargo(filteredCollection, {
-            state: {
-                firstPage: 1,
-                currentPage: 1
-            }
-        }), $("#table-dynamic-cargo"));
-        // Filter Avionics
-        console.log("Filtering Avionics");
-        filteredCollection = initialAvionics.fullCollection.filter( function(ele){
-            return isItemCompatibleWithPort(ele, portTag)
-        });
-        createBackgrid(new PageableAvionics(filteredCollection, {
-            state: {
-                firstPage: 1,
-                currentPage: 1
-            }
-        }), $("#table-dynamic-avionics"));
-        // Filter Batteries
-        console.log("Filtering Batteries");
-        filteredCollection = initialBatteries.fullCollection.filter( function(ele){
-            return isItemCompatibleWithPort(ele, portTag)
-        });
-        createBackgrid(new PageableBatteries(filteredCollection, {
-            state: {
-                firstPage: 1,
-                currentPage: 1
-            }
-        }), $("#table-dynamic-batteries"));
-        // Filter Coolers
-        console.log("Filtering Coolers");
-        filteredCollection = initialCooler.fullCollection.filter( function(ele){
-            return isItemCompatibleWithPort(ele, portTag)
-        });
-        createBackgrid(new PageableCooler(filteredCollection, {
-            state: {
-                firstPage: 1,
-                currentPage: 1
-            }
-        }), $("#table-dynamic-coolers"));
-        // Filter Displays
-        console.log("Filtering Displays");
-        filteredCollection = initialDisplays.fullCollection.filter( function(ele){
-            return isItemCompatibleWithPort(ele, portTag)
-        });
-        createBackgrid(new PageableDisplays(filteredCollection, {
-            state: {
-                firstPage: 1,
-                currentPage: 1
-            }
-        }), $("#table-dynamic-displays"));
-        // Filter Radars
-        console.log("Filtering Radars");
-        filteredCollection = initialRadars.fullCollection.filter( function(ele){
-            return isItemCompatibleWithPort(ele, portTag)
-        });
-        createBackgrid(new PageableRadars(filteredCollection, {
-            state: {
-                firstPage: 1,
-                currentPage: 1
-            }
-        }), $("#table-dynamic-radar"));
+        for (var i = 0; i < ITEM_TYPES.length; i++)
+        {
+            var initialCollection = GRIDS[ITEM_TYPES[i]]["initialSet"]
+            filteredCollection = initialCollection.fullCollection.filter( function(ele){
+                return isItemCompatibleWithPort(ele, portDatablock)
+            });
+            var collection = GRIDS[ITEM_TYPES[i]]["collection"];
+            var pageable = new collection(filteredCollection, {
+                state: {
+                    firstPage: 1,
+                    currentPage: 1
+                    }
+                })
+            createBackgrid(pageable, $("#table-dynamic-" + ITEM_TYPES[i]));
+        }
         portTag.addClass("filtered");
         portDatablock.find(".icon-filter").addClass("icon-active");
     }
@@ -446,8 +489,9 @@ function removeItemFromPort(portName)
         .attr("name", "port-powerstate")
         .attr("value", "Default");
     button.text("Default");
-    button.click(function(){
+    button.click(function(event){
         $(this).parent().parent().find("input").val($(this).val());
+        event.stopPropagation();
         computeStats();
     });
 
@@ -522,13 +566,13 @@ function isItemCompatibleWithPort(item, port)
     var itemType = item.get("type");
     var itemSubType = item.get("subtype");
     var itemSize = parseInt(item.get("size"), 10);
-    console.log(itemType, "in", portType);
+    // console.log(itemType, "in", portType);
     if (portType.indexOf(itemType) == -1 )
         return false;
-    console.log(itemSubType, "in", portSubType);
+    // console.log(itemSubType, "in", portSubType);
     if (portSubType.indexOf(itemSubType) == -1 )
         return false;
-    console.log(itemSize, "between", portMinSize, "and", portMaxSize);
+    // console.log(itemSize, "between", portMinSize, "and", portMaxSize);
     if ( itemSize < portMinSize || itemSize > portMaxSize)
         return false;
     return true;   
@@ -670,7 +714,7 @@ function chartPipe(itemName, pipe, state) {
 function getItemPortDetails(itemPortName, shipName) {
     jsonData = {
         "portName"  : itemPortName,
-        "vehicleName" : "{{shipData.name}}"
+        "vehicleName" : shipName
     }
     var jsonData = JSON.stringify(jsonData);
     // console.log(jsonData);
@@ -757,11 +801,26 @@ function addItemToPort(portName, itemData)
                     else
                         button.addClass("btn-inverse");
                     button.text(data["power"][i]);
-                    button.click(function(){
+                    button.click(function(event){
                         // when the state buttons are clicked, we update the hidden input field,
                         // change the stats display to LDS, and recompute stats
+                        event.stopPropagation();
                         $(this).parent().parent().find("input").val($(this).val());
                         $('#systems-monitor li:eq(1) a').tab('show');
+                        // Taken from theme - toggles button classes for visual click
+                        var $this = $(this),
+                            $parent = $this.parent();
+
+                        if ($parent.data("toggle") == "buttons-radio"){
+                            $parent.children(".btn[data-toggle-class]").removeClass(function(){
+                                return $(this).data("toggle-class")
+                            }).addClass(function(){
+                                    return $(this).data("toggle-passive-class")
+                                });
+                            $this.removeClass($(this).data("toggle-passive-class")).addClass($this.data("toggle-class"));
+                        } else {
+                            $this.toggleClass($(this).data("toggle-passive-class")).toggleClass($this.data("toggle-class"));
+                        }
                         computeStats();
                     });
                 }

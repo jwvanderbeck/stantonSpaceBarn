@@ -189,14 +189,14 @@
                                     {% for itemPort in shipData.itemport_set.all %}
                                         {% if forloop.counter0|divisibleby:3 %}</section><section>{% endif %}
                                         <div class="span4">
-                                            <div class="well item-port-datablock" data-port-name="{{itemPort.name}}" data-parent={{itemPort.parentImage}} data-min-size={{itemPort.minSize}} data-max-size={{itemPort.maxSize}} data-subtypes="{%for type in itemPort.supportedSubTypes.all%}{{type.subTypeName}}{%if not forloop.last %},{%endif%}{%endfor%}">
+                                            <div class="well item-port-datablock" data-port-name="{{itemPort.name}}" data-parent={{itemPort.parentImage}} data-types="{%for type in itemPort.supportedTypes.all%}{{type.typeName}}{%if not forloop.last %},{%endif%}{%endfor%}" data-min-size={{itemPort.minSize}} data-max-size={{itemPort.maxSize}} data-subtypes="{%for type in itemPort.supportedSubTypes.all%}{{type.subTypeName}}{%if not forloop.last %},{%endif%}{%endfor%}">
                                                 <p class="label label-inverse">{% firstof itemPort.displayName itemPort.name %}</p><i class="icon-remove pull-right icon-large"></i><i class="icon-filter pull-right icon-large"></i>
                                                 <br>
                                                 
                                                 <div class="item-port-datablock-statebuttons">
                                                     <input id="item-powerstate-{{itemPort.name}}-input" type="hidden" name="item-powerstate" value="Default">
                                                     <div class="btn-group" id="port-powerstate-{{itemPort.name}}" data-toggle="buttons-radio" data-target="item-powerstate-{{itemPort.name}}-input">
-                                                        <button class="btn btn-mini btn-info active" data-toggle-class="btn-info" data-toggle-passive-class="btn-inverse" type="button" value="Default">Default</button>
+                                                        <button class="btn btn-mini btn-info active noop" data-toggle-class="btn-info" data-toggle-passive-class="btn-inverse" type="button" value="Default">Default</button>
                                                     </div>
                                                 </div>
                                                 <br><span class="item-name">Nothing Loaded</span>
@@ -290,7 +290,7 @@
                             </ul>
                             <div id="items-list-content" class="tab-content">
                                 <div id="hardpoints-Weapon" class="tab-pane fade in active">
-                                    <div id="table-dynamic-weapons"></div>
+                                    <div id="table-dynamic-Weapon"></div>
                                     <div></div>
                                     <h4>Hardpoints</h4>
                                     <p><span class="label-highlight">Use Systems Overview to see all hardpoints at once</span></p>
@@ -305,7 +305,7 @@
                                     {% endfor %}
                                 </div>
                                 <div id="hardpoints-Thruster" class="tab-pane fade">
-                                    <div id="table-dynamic-thrusters"></div>
+                                    <div id="table-dynamic-Thruster"></div>
                                     <div></div>
                                     <h4>Hardpoints</h4>
                                     {% for itemPort in shipData.itemport_set.all %}
@@ -319,7 +319,7 @@
                                     {% endfor %}
                                 </div>
                                 <div id="hardpoints-PowerPlant" class="tab-pane fade">
-                                    <div id="table-dynamic-powerplants"></div>
+                                    <div id="table-dynamic-PowerPlant"></div>
                                     <div></div>
                                     <h4>Hardpoints</h4>
                                     {% for itemPort in shipData.itemport_set.all %}
@@ -333,7 +333,7 @@
                                     {% endfor %}
                                 </div>
                                 <div id="hardpoints-Container" class="tab-pane fade">
-                                    <div id="table-dynamic-cargo"></div>
+                                    <div id="table-dynamic-Container"></div>
                                     <div></div>
                                     <h4>Hardpoints</h4>
                                     {% for itemPort in shipData.itemport_set.all %}
@@ -347,7 +347,7 @@
                                     {% endfor %}
                                 </div>
                                 <div id="hardpoints-Avionics" class="tab-pane fade">
-                                    <div id="table-dynamic-avionics"></div>
+                                    <div id="table-dynamic-Avionics"></div>
                                     <div></div>
                                     <h4>Hardpoints</h4>
                                     {% for itemPort in shipData.itemport_set.all %}
@@ -361,7 +361,7 @@
                                     {% endfor %}
                                 </div>
                                 <div id="hardpoints-Battery" class="tab-pane fade">
-                                    <div id="table-dynamic-batteries"></div>
+                                    <div id="table-dynamic-Battery"></div>
                                     <div></div>
                                     <h4>Hardpoints</h4>
                                     {% for itemPort in shipData.itemport_set.all %}
@@ -375,7 +375,7 @@
                                     {% endfor %}
                                 </div>
                                 <div id="hardpoints-Cooler" class="tab-pane fade">
-                                    <div id="table-dynamic-coolers"></div>
+                                    <div id="table-dynamic-Cooler"></div>
                                     <div></div>
                                     <h4>Hardpoints</h4>
                                     {% for itemPort in shipData.itemport_set.all %}
@@ -389,7 +389,7 @@
                                     {% endfor %}
                                 </div>
                                 <div id="hardpoints-Display" class="tab-pane fade">
-                                    <div id="table-dynamic-displays"></div>
+                                    <div id="table-dynamic-Display"></div>
                                     <div></div>
                                     <h4>Hardpoints</h4>
                                     {% for itemPort in shipData.itemport_set.all %}
@@ -403,7 +403,7 @@
                                     {% endfor %}
                                 </div>
                                 <div id="hardpoints-Radar" class="tab-pane fade">
-                                    <div id="table-dynamic-radar"></div>
+                                    <div id="table-dynamic-Radar"></div>
                                     <div></div>
                                     <h4>Hardpoints</h4>
                                     {% for itemPort in shipData.itemport_set.all %}
@@ -482,230 +482,18 @@
 
 {% block ready-script %}
 
-/***************************************************************
-// Backgrid Table Setup
-***************************************************************/
-var Items = Backbone.Model.extend({});
-
-var PageableAvionics = Backbone.PageableCollection.extend({
-model: Items,
-url : '/items/get/type/avionics/compatible-with-vehicle/{{shipData.name}}/',
-state: {
-    pageSize: 10
-},
-mode: "client" // page entirely on the client side
-});
-var PageableBatteries = Backbone.PageableCollection.extend({
-model: Items,
-url : '/items/get/type/battery/compatible-with-vehicle/{{shipData.name}}/',
-state: {
-    pageSize: 10
-},
-mode: "client" // page entirely on the client side
-});
-var PageableCooler = Backbone.PageableCollection.extend({
-model: Items,
-url : '/items/get/type/cooler/compatible-with-vehicle/{{shipData.name}}/',
-state: {
-    pageSize: 10
-},
-mode: "client" // page entirely on the client side
-});
-var PageableCargo = Backbone.PageableCollection.extend({
-model: Items,
-url : '/items/get/type/container/compatible-with-vehicle/{{shipData.name}}/',
-state: {
-    pageSize: 10
-},
-mode: "client" // page entirely on the client side
-});
-var PageableDisplays = Backbone.PageableCollection.extend({
-model: Items,
-url : '/items/get/type/display/compatible-with-vehicle/{{shipData.name}}/',
-state: {
-    pageSize: 10
-},
-mode: "client" // page entirely on the client side
-});
-var PageablePowerplants = Backbone.PageableCollection.extend({
-model: Items,
-url : '/items/get/type/powerplant/compatible-with-vehicle/{{shipData.name}}/',
-state: {
-    pageSize: 10
-},
-mode: "client" // page entirely on the client side
-});
-var PageableRadars = Backbone.PageableCollection.extend({
-model: Items,
-url : '/items/get/type/radar/compatible-with-vehicle/{{shipData.name}}/',
-state: {
-    pageSize: 10
-},
-mode: "client" // page entirely on the client side
-});
-var PageableWeapons = Backbone.PageableCollection.extend({
-model: Items,
-url : '/items/get/type/weapon/compatible-with-vehicle/{{shipData.name}}/',
-state: {
-    pageSize: 10
-},
-mode: "client" // page entirely on the client side
-});
-var PageableThrusters = Backbone.PageableCollection.extend({
-model: Items,
-url : '/items/get/type/thruster/compatible-with-vehicle/{{shipData.name}}/',
-state: {
-    pageSize: 10
-},
-mode: "client" // page entirely on the client side
-});
-
-var pageableAvionics = new PageableAvionics(),
-initialAvionics = pageableAvionics;
-
-var pageableBatteries = new PageableBatteries(),
-initialBatteries = pageableBatteries;
-
-var pageableCargo = new PageableCargo(),
-initialCargo = pageableCargo;
-
-var pageableCooler = new PageableCooler(),
-initialCooler = pageableCooler;
-
-var pageableDisplays = new PageableDisplays(),
-initialDisplays = pageableDisplays;
-
-var pageableRadars = new PageableRadars(),
-initialRadars = pageableRadars;
-
-var pageablePowerplants = new PageablePowerplants(),
-initialPowerplants = pageablePowerplants;
-
-
-var pageableWeapons = new PageableWeapons(),
-initialWeapons = pageableWeapons;
-
-var pageableThrusters = new PageableThrusters(),
-initialThrusters = pageableThrusters;
-
-var ItemTypeCell = Backgrid.StringCell.extend({
-    className : "item-type-cell"
-});
-var ItemSubTypeCell = Backgrid.StringCell.extend({
-    className : "item-subtype-cell"
-});
-var ItemSizeCell = Backgrid.StringCell.extend({
-    className : "item-size-cell"
-});
-var ItemNameCell = Backgrid.StringCell.extend({
-    className : "item-name-cell"
-});
-
-var ClickableRow = Backgrid.Row.extend({
-    className:"vehicle-item-row",
-    events: {
-        "click": "onClick"
-    },
-    onClick: function () {
-        Backbone.trigger("rowclicked", this.model);
-    }
-});
-
-function createBackgrid(collection, parentElement){
-    var columns = [{
-        name: "displayName",
-        label: "Item",
-        editable : false,
-        // The cell type can be a reference of a Backgrid.Cell subclass, any Backgrid.Cell subclass instances like *id* above, or a string
-        cell: "string" // This is converted to "StringCell" and a corresponding class in the Backgrid package namespace is looked up
-    },{
-        name: "type",
-        label: "type",
-        editable : false,
-        renderable: false,
-        // The cell type can be a reference of a Backgrid.Cell subclass, any Backgrid.Cell subclass instances like *id* above, or a string
-        cell: ItemTypeCell // This is converted to "StringCell" and a corresponding class in the Backgrid package namespace is looked up
-    },{
-        name: "subtype",
-        label: "subtype",
-        editable : false,
-        renderable: false,
-        // The cell type can be a reference of a Backgrid.Cell subclass, any Backgrid.Cell subclass instances like *id* above, or a string
-        cell: ItemSubTypeCell // This is converted to "StringCell" and a corresponding class in the Backgrid package namespace is looked up
-    },{
-        name: "size",
-        label: "size",
-        editable : false,
-        renderable: false,
-        // The cell type can be a reference of a Backgrid.Cell subclass, any Backgrid.Cell subclass instances like *id* above, or a string
-        cell: ItemSizeCell // This is converted to "StringCell" and a corresponding class in the Backgrid package namespace is looked up
-    },{
-        name: "name",
-        label: "name",
-        editable : false,
-        renderable: false,
-        // The cell type can be a reference of a Backgrid.Cell subclass, any Backgrid.Cell subclass instances like *id* above, or a string
-        cell: ItemNameCell // This is converted to "StringCell" and a corresponding class in the Backgrid package namespace is looked up
-    }
-    ]
-
-    var pageableGrid = new Backgrid.Grid({
-        columns: columns,
-        row : ClickableRow,
-        collection: collection,
-        footer: Backgrid.Extension.Paginator.extend({
-            //okendoken. rewrite template to add pagination class to container
-            template: _.template('<tr><td class="pagination" colspan="<%= colspan %>"><ul><% _.each(handles, function (handle) { %><li <% if (handle.className) { %>class="<%= handle.className %>"<% } %>><a href="#" <% if (handle.title) {%> title="<%= handle.title %>"<% } %>><%= handle.label %></a></li><% }); %></ul></td></tr>')
-        }),
-        className: 'table table-condensed no-margin table-hover'
-    });
-    parentElement.html(pageableGrid.render().$el);
-}
-
-var tableResize;
-$(window).resize(function(e) {
-    clearTimeout(tableResize);
-    tableResize = setTimeout(function(){
-        createBackgrid(pageableAvionics, $("#table-dynamic-avionics"));
-        createBackgrid(pageableBatteries, $("#table-dynamic-batteries"));
-        createBackgrid(pageableCargo, $("#table-dynamic-cargo"));
-        createBackgrid(pageableCooler, $("#table-dynamic-cooler"));
-        createBackgrid(pageableDisplays, $("#table-dynamic-displays"));
-        createBackgrid(pageableRadars, $("#table-dynamic-radar"));
-        createBackgrid(pageablePowerplants, $("#table-dynamic-powerplants"));
-        createBackgrid(pageableWeapons, $("#table-dynamic-weapons"));
-        createBackgrid(pageableThrusters, $("#table-dynamic-thrusters"));
-        }, 200);
-});
-
-createBackgrid(pageableAvionics, $("#table-dynamic-avionics"));
-createBackgrid(pageableBatteries, $("#table-dynamic-batteries"));
-createBackgrid(pageableCargo, $("#table-dynamic-cargo"));
-createBackgrid(pageableCooler, $("#table-dynamic-coolers"));
-createBackgrid(pageableDisplays, $("#table-dynamic-displays"));
-createBackgrid(pageableRadars, $("#table-dynamic-radar"));
-createBackgrid(pageablePowerplants, $("#table-dynamic-powerplants"));
-createBackgrid(pageableWeapons, $("#table-dynamic-weapons"));
-createBackgrid(pageableThrusters, $("#table-dynamic-thrusters"));
-
-pageableAvionics.fetch();
-pageableBatteries.fetch();
-pageableCargo.fetch();
-pageableCooler.fetch();
-pageableDisplays.fetch();
-pageableRadars.fetch();
-pageablePowerplants.fetch();
-pageableWeapons.fetch();
-pageableThrusters.fetch();
-
-/***************************
-// End Backgrid
-***************************/
-
-
-
-
-
+/******************************************************************************
+// Set up Dynamic Tables (Backgrid)
+******************************************************************************/
+createGrid("Avionics","{{shipData.name}}", $("#table-dynamic-Avionics"));
+createGrid("Battery","{{shipData.name}}", $("#table-dynamic-Battery"));
+createGrid("Container","{{shipData.name}}", $("#table-dynamic-Container"));
+createGrid("Cooler","{{shipData.name}}", $("#table-dynamic-Cooler"));
+createGrid("Display","{{shipData.name}}", $("#table-dynamic-Display"));
+createGrid("Radar","{{shipData.name}}", $("#table-dynamic-Radar"));
+createGrid("PowerPlant","{{shipData.name}}", $("#table-dynamic-PowerPlant"));
+createGrid("Thruster","{{shipData.name}}", $("#table-dynamic-Thruster"));
+createGrid("Weapon", "{{shipData.name}}", $("#table-dynamic-Weapon"));
 
 /******************************************************************************
 // Set up Modal Dialogs 
@@ -790,14 +578,14 @@ $(".item-port-label").on("click", function(){
     $("#item-details-modal").modal("hide");
     $("#itemport-details-modal").modal("show");
     var portName = $(this).attr("data-port-name")
-    getItemPortDetails(portName, {{shipData.name}});
+    getItemPortDetails(portName, "{{shipData.name}}");
 });
 
 $(".item-port-datablock").on("click", function(){
     $("#item-details-modal").modal("hide");
     $("#itemport-details-modal").modal("show");
     var portName = $(this).attr("data-port-name")
-    getItemPortDetails(portName, {{shipData.name}});
+    getItemPortDetails(portName, "{{shipData.name}}");
 });
 
 $(document).on("mouseenter", "tr.vehicle-item-row", function(){
@@ -828,9 +616,14 @@ $("#user-action-newuser").on("click", function(event) {
 
 $("#system-action-quickvariant").on("click", function(event){
     event.preventDefault();
-    getQuickVariant({{shipData.name}});
+    getQuickVariant("{{shipData.name}}");
 });
 
+$("button.noop").click(function(event){
+    $(this).parent().parent().find("input").val($(this).val());
+    event.stopPropagation();
+    computeStats();
+});
 
 toggleItemPorts("Weapon");
 computeStats();
