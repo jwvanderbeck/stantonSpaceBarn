@@ -20,6 +20,7 @@
         <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
     </div>
 </div>
+
 <div id="user-newuser" class="modal hide fade" tabindex="-1" role="dialog">
     <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal">X</button>
@@ -35,6 +36,24 @@
         <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
     </div>
 </div>
+
+<div id="quick-variant" class="modal hide fade wide" tabindex="-1" role="dialog">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">X</button>
+        <h3>QuickVariant</h3>
+    </div>
+    <div class="modal-body">
+        <h5>Here is Your Quick Variant URL</h5>
+        <p>This URL is a snapshot of this current ship configuration.  It is static and will always display exactly what you see now.  If you make changes to this configuration you will need to request a new link.</p>
+        <div id="quickvariant-url"></div>        
+    </div>
+    <div class="modal-footer">
+        <button class="btn btn-primary" aria-hidden="true" onclick="gotoQuickVariant()">Go To QuickVariant</button>
+        <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+    </div>
+</div>
+
+
 <div id="item-details-modal" class="modal hide fade dark" tabindex="-1" role="dialog">
     <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal">X</button>
@@ -712,6 +731,11 @@ $('#user-newuser').modal({
     show: false
 })
 
+$('#quick-variant').modal({
+    backdrop: true,
+    show: false    
+})
+
 /******************************************************************************
 // Bind Events  
 ******************************************************************************/
@@ -1075,10 +1099,21 @@ function getQuickVariant()
         else
         {
             console.log(data);
+            var dialog = $('#quick-variant');
+            var urlDiv = $("#quickvariant-url");
+            var variantURL = data["url"];
+            dialog.modal("show");
+            urlDiv.empty();
+            $(document.createElement('input')).appendTo(urlDiv)
+                .attr('type', 'text')
+                .attr('size', variantURL.length + 35)
+                .attr('value', 'https://www.stantonspacebarn.com' + variantURL)
+                .addClass("span9")
+                .attr("name", "quickvariant-url-input");
+
         }
     });
 }
-
 /******************************************************************************
 // Main Functions
 ******************************************************************************/
@@ -1281,39 +1316,14 @@ function getItemPortDetails(itemPortName) {
         }
     });
 }
-function dropItem(ele, event, ui) {
-    // console.log("Dropped!");
-    var portWell = undefined;
-    var portDatablock = undefined;
-    var portTag = undefined;
-    if ($(ele).hasClass("item-port-label"))
-    {
-        // hard datablock in hardpoints list
-        portWell = $(ele);
-        var portName = $(ele).attr("data-port-name");
-        portDatablock = $('.item-port-datablock[data-port-name="' + portName + '"]'); 
-        portTag = $("#" + portName);
-        // we re-grab the portwell to make sure we have all of them in the case of multiple wells for the same slot
-        portWell = $('.item-port-label[data-port-name="' + portName + '"]');
+function addItemToPort(portName, itemData)
+{
+    var portTag = $("#" + portName);
+    var portDatablock = $('.item-port-datablock[data-port-name="' + portName + '"]'); 
+    var portWell = $('.item-port-label[data-port-name="' + portName + '"]');
 
-    }
-    else if ($(ele).hasClass("item-port-datablock"))
-    {
-        portDatablock = $(ele);
-        var portName = $(ele).attr("data-port-name");
-        portWell = $('.item-port-label[data-port-name="' + portName + '"]');
-        portTag = $("#" + portName);
-    }
-    else
-    {
-        // hardpoint on ship image
-        var portName = $(ele).attr("id");
-        portWell = $('.item-port-label[data-port-name="' + portName + '"]');
-        portDatablock = $('.item-port-datablock[data-port-name="' + portName + '"]');
-        portTag = $(ele);
-    }
-    var itemDisplayName = ui.draggable.find("td.string-cell").text();
-    var itemName = ui.draggable.find("td.item-name-cell").text();
+    var itemDisplayName = itemData["displayName"];
+    var itemName = itemData["name"];
     portWell.find("span.item-name").text(itemDisplayName);
     portWell.attr("data-item-name", itemName)
     portDatablock.find("span.item-name").text(itemDisplayName);
@@ -1373,6 +1383,32 @@ function dropItem(ele, event, ui) {
         }
     });
     computeStats();
+}
+
+function dropItem(ele, event, ui) {
+    // console.log("Dropped!");
+    var portWell = undefined;
+    var portDatablock = undefined;
+    var portTag = undefined;
+    if ($(ele).hasClass("item-port-label"))
+    {
+        var portName = $(ele).attr("data-port-name");
+    }
+    else if ($(ele).hasClass("item-port-datablock"))
+    {
+        var portName = $(ele).attr("data-port-name");
+    }
+    else
+    {
+        var portName = $(ele).attr("id");
+    }
+
+    var itemData = {
+        "displayName" : ui.draggable.find("td.string-cell").text(),
+        "name" : ui.draggable.find("td.item-name-cell").text()
+    };
+
+    addItemToPort(portName, itemData);
 }
 var hardpoints = $(".item-port");
 var hardpointWells = $(".item-port-label");
