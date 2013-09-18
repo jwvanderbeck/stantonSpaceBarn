@@ -34,6 +34,7 @@
 <div class="logo">
     <h4><a href="/">Stanton <strong>Space Barn</strong></a></h4>
 </div>
+{% block sidebar %}
 <nav id="sidebar" class="sidebar">
     <ul id="side-nav" class="side-nav">
         <li id="my-hangar" style="display:none;">
@@ -69,8 +70,11 @@
 
     </ul>
 </nav>
+{% endblock sidebar %}
+
 {% block pre-content %}
 {% endblock pre-content %}
+
 <div class="wrap">
     <header class="page-header">
     <h1 class="offset5">{% block page-header %}Workshop{% endblock page-header %}</h1>
