@@ -421,10 +421,11 @@ class ItemPort(models.Model):
     supportedTypes = models.ManyToManyField('VehicleItemType', blank = True, null = True) 
     supportedSubTypes = models.ManyToManyField('VehicleItemSubType', blank = True, null = True)
     parentVehicle = models.ForeignKey('Vehicle', blank = True, null = True)
+    parentItem = models.ForeignKey('VehicleItem', blank = True, null = True)
     # Added just in case the game starts using it
     portClass = models.PositiveIntegerField(default = 0)
     # Additional fields required for The Barn
-        # 1 = TopLeft, 2 = TopRight, 3 = BottomLeft, 4 = BottomRight
+        # 1 = TopRight, 2 = TopLeft, 3 = BottomRightLeft, 4 = BottomRight
     parentImage = models.PositiveIntegerField(default = 0)
     image = models.ForeignKey('Image', null = True, blank = True)
     tagLocationX = models.FloatField(default = 0.0)
