@@ -1,5 +1,6 @@
 from django.conf.urls import patterns, include, url
 from django.contrib import auth
+from django.contrib.auth.views import login, password_reset
 
 from django.contrib import admin
 
@@ -12,6 +13,7 @@ urlpatterns = patterns('stantonSpaceBarn.views',
 	url(r'^users/logout/$', 'userLogout'),
 	url(r'^users/create/$', 'userCreate'),
     url(r'^admin/', include(admin.site.urls)),
+    url(r'^accounts/reset/', password_reset),
     url(r'^accounts/', include('django.contrib.auth.urls')),
     url(r'^ship-builder/', include('shipBuilder.urls')),
     url(r'^test/$', 'testView'),

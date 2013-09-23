@@ -1,0 +1,71 @@
+{% extends "bootstrap/light-blue/base.html" %}
+
+{% block page-header %}Account{% endblock %}
+
+{% block main-content %}
+<div class="row-fluid">
+    <div class="span8">
+        <section class="widget">
+            <header>
+                <h2 class="page-title">{% block page-title %}Pilot Details{% endblock page-title %}</h2>
+            </header>
+            <div class="body" id="user-main">
+            {% block user-main-content %}
+            {% endblock %}
+            </div>
+        </section>
+    </div>
+    <div class="span4">
+    	<section class="widget">
+    		<header>
+    			<h2>Pilot Account Actions</h2>
+    		</header>
+    		<div class="body">
+    			<ul>
+    				<li id="user-actions-editaccount" style="display:none;"><a href="#" id="user-action-editaccount">Edit Account Details</a></li>
+    				<li id="user-actions-editprofile" style="display:none;"><a href="#" id="user-action-editprofile">Edit Profile</a></li>
+    				<li id="user-actions-login" style="display:none;"><a href="#" id="user-action-login">Login</a></li>
+    				<li id="user-actions-logout" style="display:none;"><a href="#" id="user-action-logout">Logout</a></li>
+    				<li id="user-actions-create" style="display:none;"><a href="#" id="user-action-create">Create Account</a></li>
+    				<li id="user-actions-recover" style="display:none;"><a href="#" id="user-action-recover">Lost Password</a></li>
+    			</ul>
+    		</div>
+    	</section>
+    </div>
+</div>
+{% endblock main-content %}
+
+{% block ready-script %}
+{{ block.super }}
+
+function setUserState(loggedIn)
+{
+	if (loggedIn)
+	{
+		$("#user-actions-editaccount").show(200);
+		$("#user-actions-editprofile").show(200);
+		$("#user-actions-logout").show(200);
+
+		$("#user-actions-login").hide(200);
+		$("#user-actions-create").hide(200);
+		$("#user-actions-recover").hide(200);
+	}
+	else
+	{
+		$("#user-actions-editaccount").hide(200);
+		$("#user-actions-editprofile").hide(200);
+		$("#user-actions-logout").hide(200);
+
+		$("#user-actions-login").show(200);
+		$("#user-actions-create").show(200);
+		$("#user-actions-recover").show(200);
+	}
+}
+
+
+{% if user.is_authenticated %}
+setUserState(true);
+{% else %}
+setUserState(false);
+{% endif %}
+{% endblock ready-script %}

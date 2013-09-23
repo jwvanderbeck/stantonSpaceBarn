@@ -1,0 +1,54 @@
+{% extends "bootstrap/light-blue/accountBase.html" %}
+{% load static %}
+
+{% block page-header %}Account{% endblock %}
+
+{% block page-title %}Account Details{% endblock page-title %}
+
+{% block main-content %}
+{{ block.super }}
+{% endblock main-content %}
+
+{% block user-main-content %}
+{{ block.super }}
+<form id="user-form" class="form-horizontal label-left"
+      novalidate="novalidate"
+      method="post"
+      data-validate="parsley">
+    <div class="control-group controls-row">
+        <label class="control-label " for="disabled-input">Username</label>
+        <div class="controls">
+            <input type="text" id="disabled-input"  class="span5"
+                   disabled="disabled" value="{{user.username}}" >
+        </div>
+    </div>
+    <div class="control-group controls-row">
+        <label class="control-label " for="displayname">Display Name</label>
+        <div class="controls">
+            <input type="text" id="displayname"  class="span5"
+                    value="{{user.username}}" >
+        </div>
+    </div>
+    <fieldset>
+    <div class="control-group">
+        <label id="email-label" for="email" class="control-label">Email</label>
+        <div class="controls controls-row">
+                <input id="email" type="email"
+                       data-trigger="change"
+                       class="span5"
+                       name="email">
+        </div>
+    </div>
+    </fieldset>
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Validate &amp; Submit</button>
+        <button type="button" class="btn">Cancel</button>
+    </div>
+</form>
+{% endblock %}
+
+
+{% block ready-script %}
+{{ block.super }}
+
+{% endblock ready-script %}
