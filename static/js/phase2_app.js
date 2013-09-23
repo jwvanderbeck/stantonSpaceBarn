@@ -371,8 +371,7 @@ function filterByItemPort(itemPortName)
 {
     var portTag = $("#" + itemPortName);
     var portDatablock = $(".item-port-datablock[data-port-name='" + itemPortName + "']");
-    var supportedItemTypes = portTag.attr("data-types");
-
+    console.log("Filtering", itemPortName)
     
     if (portTag.hasClass("filtered") || portDatablock.find(".icon-filter").hasClass("icon-active"))
     {
@@ -458,10 +457,10 @@ function leavePort()
 function removeItemFromPort(portName)
 {
     // Get the port tag, datablock, and label elements
-    portTag = $("#" + portName);
-    portDatablock = $(".item-port-datablock[data-port-name='" + portName + "']");
-    portLabel = $(".item-port-label[data-port-name='" + portName + "']");
-
+    var portTag = $("#" + portName);
+    var portDatablock = $(".item-port-datablock[data-port-name='" + portName + "']");
+    var portLabel = $(".item-port-label[data-port-name='" + portName + "']");
+    var itemName = portDatablock.attr("data-item-name");
     // Mark tag as filled
     portTag.addClass("filled");
 
@@ -494,7 +493,42 @@ function removeItemFromPort(portName)
         event.stopPropagation();
         computeStats();
     });
-
+    // If this item has any ItemPorts, we need to remove those
+    // TODO
+    var datablocks = $(".item-port-datablock[data-parent-port='" + portName + "']");
+    datablocks.each(function(){
+        var div = $(this).parent();
+        var section = div.parent();
+        div.remove();
+        if (section.children().length == 0)
+            section.remove();
+    });
+    // after removing the datablocks for that port, we need to re-arrange
+    // what is left so the HTML doesn't get all crappy
+    datablocks = $(".item-port-datablock[data-parent-port]");
+    var divs = []
+    datablocks.each(function(){        
+        var div = $(this).parent();
+        divs.push(div);
+        var section = div.parent();
+        div.detach();
+        if (section.children().length == 0)
+            section.remove();
+    });
+    var overview = $("#hardpoints-overview");
+    var sections = overview.find("section");
+    var currentSection = $(sections[sections.length-1]);
+    var count = currentSection.children().length;
+    console.log("Count", count);
+    for (var index=0;index < divs.length; index++)
+    {
+        if (count > 2)
+        {
+            currentSection = $(document.createElement("section")).appendTo(overview);
+        }
+        divs[index].appendTo(currentSection);
+        count = count + 1;
+    }
     // Recompute all stats now that this item has been removed
     computeStats();
 }
@@ -632,6 +666,22 @@ function getItemDetails(itemName) {
                     $(document.createElement('td')).appendTo(tableRow).text(stats[index]['value']);
                 }
             }
+            var ports = data['ports']
+            for (var index = 0; index < ports.length; index++)
+            {
+                var section = $(document.createElement('section')).appendTo(misc).addClass("widget");
+                var header = $(document.createElement('header')).appendTo(section);
+                $(document.createElement('h5')).appendTo(header).text("Hardpoint: " + ports[index]["name"]);
+                var body = $(document.createElement('div')).appendTo(section).addClass("body");
+                $(document.createElement("p")).appendTo(body).text("Size " + ports[index]["minsize"] + " - " + ports[index]["maxsize"]);
+                
+                $(document.createElement('p')).appendTo(body).text("Supported Items");
+                var types = ports[index]['subtypes'];
+                for (var i = 0; i < types.length; i++)
+                {
+                    $(document.createElement('p')).appendTo(body).text(types[i]).addClass("offset1");
+                }
+            }
         }
     });
 }
@@ -712,9 +762,20 @@ function chartPipe(itemName, pipe, state) {
     });
 } 
 function getItemPortDetails(itemPortName, shipName) {
-    jsonData = {
-        "portName"  : itemPortName,
-        "vehicleName" : shipName
+    if (itemPortName.indexOf(":") > -1)
+    {
+        jsonData = {
+            "portName"  : itemPortName.split(":")[1]
+        }
+        var portDatablock = $('.item-port-datablock[data-port-name="' + itemPortName + '"]');
+        jsonData["itemName"] = portDatablock.attr("data-parent-item");
+    }
+    else
+    {
+        jsonData = {
+            "portName"  : itemPortName,
+            "vehicleName" : shipName
+        }
     }
     var jsonData = JSON.stringify(jsonData);
     // console.log(jsonData);
@@ -748,9 +809,14 @@ function getItemPortDetails(itemPortName, shipName) {
 }
 function addItemToPort(portName, itemData)
 {
+    // remove the item first so we don't have any doubling issues
+    // Just simpler and cleaner this way
+    removeItemFromPort(portName);
+
     var portTag = $("#" + portName);
     var portDatablock = $('.item-port-datablock[data-port-name="' + portName + '"]'); 
     var portWell = $('.item-port-label[data-port-name="' + portName + '"]');
+    var portDisplayName = portDatablock.find("p.label-inverse").text();
 
     var itemDisplayName = itemData["displayName"];
     var itemName = itemData["name"];
@@ -759,15 +825,13 @@ function addItemToPort(portName, itemData)
     portDatablock.find("span.item-name").text(itemDisplayName);
     portDatablock.attr("data-item-name", itemName)
     portTag.addClass("filled");
-    // add state buttons for this item to port-datablock
+    // Add ItemPorts that may be on this item
+    // TODO
     jsonData = {
         "itemName"  : itemName,
     }
     var jsonData = JSON.stringify(jsonData);
     // console.log(jsonData);
-    $.ajaxSetup({
-      async: false
-    });
     $.post('/items/details/', jsonData).done(function(data) {
         if (data['success'] == false)
         {
@@ -776,7 +840,95 @@ function addItemToPort(portName, itemData)
         }
         else
         {
-            // create buttons for the power and avionis states
+            if (data["ports"].length > 0)
+            {
+                console.log("adding itemports for item");
+                console.log(data["ports"])
+                var overview = $("#hardpoints-overview");
+                var sections = overview.find("section");
+                var currentSection = $(sections[sections.length-1]);
+                var count = currentSection.children().length;
+                console.log(count);
+                ports = data["ports"];
+                for (var index = 0; index < ports.length; index++)
+                {
+                    console.log(ports[index]);
+                    if (count > 2)
+                    {
+                        currentSection = $(document.createElement("section")).appendTo(overview);
+                        count = 0;
+                    }
+                    // Since this port is on an item, we can't be sure it's name
+                    // is unique on the ship.  So we build a new name
+                    // based on the name of the ship's port holding the item.
+                    newPortName = portName + ":" + ports[index]["portname"]
+                    var mainDiv = $(document.createElement("div")).appendTo(currentSection).addClass("span4");
+                    var well = $(document.createElement("div")).appendTo(mainDiv)
+                        .addClass("well item-port-datablock")
+                        .attr("data-port-name", newPortName)
+                        .attr("data-parent-item", itemName)
+                        .attr("data-parent-port", portName)
+                        .attr("data-min-size", ports[index]["minsize"])
+                        .attr("data-max-size", ports[index]["maxsize"])
+                        .attr("data-types", ports[index]["types"].join(","))
+                        .attr("data-subtypes", ports[index]["subtypes"].join(","));
+                    $(document.createElement("p")).appendTo(well)
+                        .addClass("label label-inverse")
+                        .text(ports[index]["name"]);
+                    $(document.createElement("i")).appendTo(well)
+                        .addClass("icon-remove pull-right icon-large");
+                    $(document.createElement("i")).appendTo(well)
+                        .addClass("icon-filter pull-right icon-large");
+                    $(document.createElement("br")).appendTo(well);
+                    $(document.createElement("p")).appendTo(well)
+                        .addClass("label label-inverse")
+                        .text(portDisplayName + "|" + data["itemname"]);
+                    $(document.createElement("br")).appendTo(well);
+                    var stateDiv = $(document.createElement("div")).appendTo(well)
+                        .addClass("item-port-datablock-statebuttons");
+                    $(document.createElement("input")).appendTo(stateDiv)
+                        .attr("id", "item-powerstate-" + newPortName + "-input")
+                        .attr("type", "hidden")
+                        .attr("name", "item-powerstate")
+                        .attr("value", "Default");
+                    var buttonGroup = $(document.createElement("div")).appendTo(stateDiv)
+                        .addClass("btn-group")
+                        .attr("id", "item-powerstate-" + newPortName)
+                        .attr("data-toggle", "buttons-radio")
+                        .attr("data-target", "item-powerstate-" + newPortName + "-input");
+                    $(document.createElement("button")).appendTo(buttonGroup)
+                        .addClass("btn btn-mini btn-info active noop")
+                        .attr("data-toggle-class", "btn-info")
+                        .attr("data-toggle-passive-class", "btn-inverse")
+                        .attr("type", "button")
+                        .attr("value", "Default")
+                        .text("Default");
+                    $(document.createElement("br")).appendTo(well);
+                    $(document.createElement("span")).appendTo(well)
+                        .addClass("item-name")
+                        .text("Nothing Loaded");
+                    enableDatablock($(well));
+                    count = count + 1;
+                }
+            }
+        }
+    });
+            
+    // add state buttons for this item to port-datablock
+    jsonData = {
+        "itemName"  : itemName,
+    }
+    var jsonData = JSON.stringify(jsonData);
+    // console.log(jsonData);
+    $.post('/items/details/', jsonData).done(function(data) {
+        if (data['success'] == false)
+        {
+            console.log("Error occured getting item details")
+            console.log(data)
+        }
+        else
+        {
+            // create buttons for the power and avionics states
             // for now we are assuming power/heat have same states
             console.log("Parent:", portDatablock);
             if (data["power"].length > 0)
@@ -855,6 +1007,80 @@ function dropItem(ele, event, ui) {
 
     addItemToPort(portName, itemData);
 }
+
+/*********************************************
+// Takes a dynamically created datablock
+// and wires it up to all neccesary events
+*********************************************/
+function enableDatablock(element)
+{
+    // Connect click events for Clear and Filter
+    element.find(".icon-remove").on("click", function(event){
+        event.stopPropagation();
+        var portWell = $(this).parent()
+        var portName = portWell.attr("data-port-name");
+        removeItemFromPort(portName);
+    });
+    element.find(".icon-filter").on("click", function(event){
+        event.stopPropagation();
+        var portWell = $(this).parent()
+        var portName = portWell.attr("data-port-name");
+        filterByItemPort(portName);
+    });
+    // Click event for port details
+    element.on("click", function(){
+        $("#item-details-modal").modal("hide");
+        $("#itemport-details-modal").modal("show");
+        var portName = $(this).attr("data-port-name")
+        getItemPortDetails(portName, "{{shipData.name}}");
+    });
+
+    // Make Droppable
+    element.droppable({
+        activeClass: "label-success",
+        tolerance : "pointer",
+        drop : function(event, ui) {
+            $(this).removeClass("over");
+            dropItem(this, event, ui);
+        },
+        deactivate : function(event, ui) {
+            $(this).removeClass("over");
+        },
+        activate : function(event, ui) {
+            // console.log("Activate drag")
+            $("#item-details-modal").modal("hide");
+            $("#itemport-details-modal").modal("hide");
+        },
+        over : function(event, ui) {
+            $(this).addClass("over");
+            // console.log("Over")
+        },
+        out : function(event, ui) {
+            $(this).removeClass("over");
+            // console.log("out")
+        },
+        accept: function(draggable) {
+            var row = draggable;
+            var itemSubType = row.find("td.item-subtype-cell").text();
+            var itemSize = parseInt(row.find("td.item-size-cell").text(), 10);
+            var supportedSubTypes = $(this).attr("data-subtypes");
+            var minSize = $(this).attr("data-min-size");
+            var maxSize = $(this).attr("data-max-size");
+            var label = $(this).find(".label")
+            // console.log("Item Sub Type:", itemSubType)
+            // console.log("Supported Sub Types:", supportedSubTypes);
+            // console.log("Item Size:", itemSize);
+            // console.log("Supported Size:", minSize, "-", maxSize);
+            if (supportedSubTypes.indexOf(itemSubType) > -1 && itemSize >= minSize && itemSize <= maxSize)
+            {
+                // console.log("Item Supported!")
+                return true;
+            }
+            return false;
+    }});       
+
+}
+
 var hardpoints = $(".item-port");
 var hardpointWells = $(".item-port-label");
 var hardpointDatablocks = $(".item-port-datablock");

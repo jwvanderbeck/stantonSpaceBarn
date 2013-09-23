@@ -420,6 +420,8 @@
                 }
                 else
                 {
+                    console.log("Data");
+                    console.log(data);
                     $("#item-details").show();
                     var section = $("#item-details");
                     $("#item-details-itemname").text(data['itemname']);
@@ -454,6 +456,22 @@
                             var tableRow = $(document.createElement('tr')).appendTo(tableBody);
                             $(document.createElement('td')).appendTo(tableRow).text(stats[index]['name']);
                             $(document.createElement('td')).appendTo(tableRow).text(stats[index]['value']);
+                        }
+                    }
+                    var ports = data['ports']
+                    for (var index = 0; index < ports.length; index++)
+                    {
+                        var section = $(document.createElement('section')).appendTo(misc).addClass("widget");
+                        var header = $(document.createElement('header')).appendTo(section);
+                        $(document.createElement('h5')).appendTo(header).text("Hardpoint: " + ports[index]["name"]);
+                        var body = $(document.createElement('div')).appendTo(section).addClass("body");
+                        $(document.createElement("p")).appendTo(body).text("Size " + ports[index]["minsize"] + " - " + ports[index]["maxsize"]);
+                        
+                        $(document.createElement('p')).appendTo(body).text("Supported Items");
+                        var types = ports[index]['subtypes'];
+                        for (var i = 0; i < types.length; i++)
+                        {
+                            $(document.createElement('p')).appendTo(body).text(types[i]).addClass("offset1");
                         }
                     }
                 }

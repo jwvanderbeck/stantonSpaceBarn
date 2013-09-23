@@ -1352,26 +1352,48 @@ def getItemPortDetails(request):
             }
             return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
 
-        # Find the vehicle this belongs to
-        try:
-            vehicleData = Vehicle.objects.get(name__iexact = requestData["vehicleName"])
-        except:
-            print "Unable to find the specified vehicle"
-            response_data = {
-            'success' : False,
-            'response' : 'Unable to find vehicle.',
-            }
-            return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
+        # Find the vehicle or item this belongs to
+        if "vehicleName" in requestData:
+            try:
+                vehicleData = Vehicle.objects.get(name__iexact = requestData["vehicleName"])
+            except:
+                print "Unable to find the specified vehicle"
+                response_data = {
+                'success' : False,
+                'response' : 'Unable to find vehicle.',
+                }
+                return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
 
-        try:
-            itemPortData = ItemPort.objects.get(name__iexact=requestData["portName"], parentVehicle=vehicleData)
-        except:
-            print "Unable to find the specified itemport"
-            response_data = {
-            'success' : False,
-            'response' : 'Unable to find itemport.',
-            }
-            return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
+            try:
+                itemPortData = ItemPort.objects.get(name__iexact=requestData["portName"], parentVehicle=vehicleData)
+            except:
+                print "Unable to find the specified itemport"
+                response_data = {
+                'success' : False,
+                'response' : 'Unable to find itemport.',
+                }
+                return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
+        elif "itemName" in requestData:
+            try:
+                itemData = VehicleItem.objects.get(name__iexact = requestData["itemName"])
+            except:
+                print "Unable to find the specified item"
+                response_data = {
+                'success' : False,
+                'response' : 'Unable to find item.',
+                }
+                return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
+
+            try:
+                itemPortData = ItemPort.objects.get(name__iexact=requestData["portName"], parentItem=itemData)
+            except:
+                print "Unable to find the specified itemport"
+                response_data = {
+                'success' : False,
+                'response' : 'Unable to find itemport.',
+                }
+                return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
+
 
         response_data = {}
         # Basic details
@@ -1435,11 +1457,13 @@ def getItemDetails(request):
         response_data['itemtype'] = item.itemType.typeName
         response_data['itemsubtype'] = item.itemSubType.subTypeName
         response_data['description'] = item.description
+
         # VehicleItemStats
         allStats = item.itemStats.all()
         response_data['itemstats'] = []
         for stat in allStats:
             response_data['itemstats'].append( {'name' : stat.name, 'value' : stat.value} )
+
         # Supported states
         response_data['power'] = []
         for state in item.power.all():
@@ -1450,8 +1474,29 @@ def getItemDetails(request):
         response_data['avionics'] = []
         for state in item.avionics.all():
             response_data['avionics'].append(state.state)
-        return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
 
+        # ItemPorts
+        response_data["ports"] = []
+        allPorts = ItemPort.objects.filter(parentItem__exact=item)
+        for port in allPorts:
+            portData = dict()
+            portData["portname"] = port.name
+            if port.displayName:
+                portData['name'] = port.displayName
+            else:
+                portData['name'] = port.name
+            portData['minsize'] = port.minSize
+            portData['maxsize'] = port.maxSize
+            portData['types'] = []
+            portData['subtypes'] = []
+            types = port.supportedTypes.all()
+            for itemType in types:
+                portData["types"].append(itemType.typeName)
+            subTypes = port.supportedSubTypes.all()
+            for subType in subTypes:
+                portData["subtypes"].append(subType.subTypeName)
+            response_data["ports"].append(portData)
+        return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
     assert False   
 
 @ensure_csrf_cookie
@@ -1600,6 +1645,7 @@ def getPipeGraph(request):
         # This should never be anything but an AJAX call, so
         # someone is doing somethign fishy!
         assert False
+
 @ensure_csrf_cookie
 def getGraph(request, graphType):
     # JSON callable function to retrive graph data
@@ -1650,141 +1696,11 @@ def getGraph(request, graphType):
             'data' : {"powerConsumed" : powerConsumed,"maxPower" : powerGenerated}
             }
             return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
-        # else:
-        #     response_data = {
-        #     'success' : False,
-        #     'response' : 'Unknown graph type.',
-        #     'data' : [{"values":[]}]
-        #     }
-        #     return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
-
-        # # Retrieve the specified item
-        # try:
-        #     print "Looking for %s" % (requestData['itemName'])
-        #     items = VehicleItem.objects.all().filter(name__iexact=requestData['itemName'])
-        #     item = items[0]
-        # except Exception as e:
-        #     response_data = {
-        #     'success' : False,
-        #     'response' : 'Unable to find specified item.',
-        #     'data' : [{"values":[]}]
-        #     }
-        #     print response_data
-        #     print e
-        #     return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
-
-        # # Get the proper pipe
-        # stacking = False
-        # try:
-        #     if requestData['pipe'].lower() == "power":
-        #         pipe = item.power
-        #     elif requestData['pipe'].lower() == "heat":
-        #         stacking = True # Heat stacks over time
-        #         pipe = item.heat
-        #     elif requestData['pipe'].lower() == "avionics":
-        #         pipe = item.avionics
-        #     else:
-        #         response_data = {
-        #         'success' : False,
-        #         'response' : 'Invalid pipe requested.',
-        #         'data' : [{"values":[]}]
-        #         }
-        #         print response_data
-        #         return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
-        # except:
-        #         response_data = {
-        #         'success' : False,
-        #         'response' : 'Failed to load pipe data.',
-        #         'data' : [{"values":[]}]
-        #         }
-        #         print response_data
-        #         return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
-
-
-        # if not pipe:
-        #     response_data = {
-        #     'success' : False,
-        #     'response' : 'Unable to find specified pipe.',
-        #     'data' : [{"values":[]}]
-        #     }
-        #     print response_data
-        #     return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
-
-        # if not "state" in requestData:
-        #     response_data = {
-        #     'success' : False,
-        #     'response' : 'No state requested.',
-        #     'data' : [{"values":[]}]
-        #     }
-        #     print response_data
-        #     return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
-
-        # requestedState = requestData['state']
-        # requestedStates = []
-        # if "," in requestedState:
-        #     for stateName in requestedState.split(','):
-        #         try:
-        #             state = pipe.get(state=stateName)
-        #         except: 
-        #             print "Unable to find state %s.  Ignoring" % stateName
-        #             state = None
-        #         if state:
-        #             requestedStates.append(state)
-        # elif requestedState.lower() == "all":
-        #     requestedStates = pipe.all()
-        # else:
-        #     try:
-        #         state = pipe.get(state=requestedState)
-        #     except: 
-        #         print "Unable to find state %s.  Ignoring" % requestedState
-        #         state = None
-        #     if state:
-        #         requestedStates.append(state)
-
-        # if len(requestedStates) == 0:
-        #     response_data = {
-        #     'success' : False,
-        #     'response' : 'No valid states found.',
-        #     'data' : [{"values":[]}]
-        #     }
-        #     print response_data
-        #     return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
-
-        # # At this point we should have a list of all pipe states
-        # # requested that we were able to find.
-        # # We extrapolate the data out to a 30 second period
-        # # for the chart
-
-        # data = []
-        # for state in requestedStates:
-        #     if "-" in state.value:
-        #         negativeValues = True
-        #     else:
-        #         negativeValues = False
-        #     stateValues = extrapolateStateValues(state, 30, metric=requestData['metric'], stacking=stacking)
-        #     stateData = {   'key'    : state.state,
-        #                     'color'  : getGraphColorForState(state.state),
-        #                     'values' : []
-        #                 }
-        #     for second in range(0,31,1):
-        #         value = stateValues[second]
-        #         stateData['values'].append( {'x' : second, 'y' : value} )
-
-        #     data.append(stateData)
-
-        # response_data = {
-        # 'success' : True,
-        # 'response' : 'Blah',
-        # 'negative'  : negativeValues,
-        # 'data' : data
-        # }
-        # print response_data
-        # return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
-
     else:
         # This should never be anything but an AJAX call, so
         # someone is doing somethign fishy!
         assert False
+
 @ensure_csrf_cookie
 def shipLayout(request, shipName):
     shipData = Vehicle.objects.get(name__iexact=shipName)
@@ -1798,6 +1714,7 @@ def shipLayout(request, shipName):
     }
 
     return render_to_response('bootstrap/light-blue/shipMain.html', renderContext, context_instance=RequestContext(request))
+
 def phase2(request):
     renderContext = {
     }
@@ -1806,6 +1723,7 @@ def phase2(request):
     # as it is what enables the resulting rendered view to contain the CSRF token!
     # !!!!!!!!!!!!!
     return render_to_response('bootstrap/light-blue/phase2.html', renderContext, context_instance=RequestContext(request))
+
 def testView(request):
     shipName = '300i'  
     # Get all hardpoints
@@ -1833,4 +1751,4 @@ def testView(request):
     # The bit here about context_instance=RequestContext(request) is ABSOLUTELY VITAL 
     # as it is what enables the resulting rendered view to contain the CSRF token!
     # !!!!!!!!!!!!!
-    return render_to_response('bootstrap/light-blue/base.html', renderContext, context_instance=RequestContext(request))
+    return render_to_response('bootstrap/light-blue/accountMain.html', renderContext, context_instance=RequestContext(request))
