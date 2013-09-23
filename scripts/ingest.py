@@ -48,13 +48,18 @@ def ingestVehicle(dataFile, data):
 	vehicle.vehicleClass = int(data["class"])
 	vehicle.displayName = data["displayname"]
 	vehicle.category = category
-	print "Saving vehicle", vehicle
 	vehicle.save()
-	print "Vehicle saved"
-	# Destroy all ports on this vehicle, and make new ones
-	# print "Deleting old ports"
-	# vehicle.itemport_set.all().delete()
-	print "Creating/Updating ports"
+	# ItemPorts
+	portNames = []
+	for port in data['ports']:
+		portNames.append(port['name'].lower())
+
+	currentPorts = ItemPort.objects.filter(parentVehicle__exact=vehicle)
+	for port in currentPorts:
+		if not port.name.lower() in portNames:
+			print "Found stale port %s.  Removing." % port.name
+			port.delete()
+
 	ports = data["ports"]
 	for port in ports:
 		try:
@@ -97,11 +102,9 @@ def ingestItem(dataFile, data):
 	# Look for the manufacturer
 	if not data['manufacturer']:
 		return False
-	print "Processing %s" % dataFile	
 	manufacturerName = data['manufacturer'].replace('_', ' ').replace('and', '&')
 	manufacturers = Manufacturer.objects.filter(name__iexact=manufacturerName)
 	if len(manufacturers) == 1:
-		print "\tFound %s" % manufacturerName
 		manufacturer = manufacturers[0]
 	elif len(manufacturers) == 0:
 		print"\tCreating %s" % manufacturerName
@@ -117,7 +120,6 @@ def ingestItem(dataFile, data):
 		item = VehicleItem()
 	else:
 		# This item already exists, so update its stats
-		print "\tUpdating stats on %s" % itemName
 		item = items[0]
 
 	item.name = itemName
@@ -171,6 +173,55 @@ def ingestItem(dataFile, data):
 			itemParam.value = params[key]
 			itemParam.save()
 			item.itemStats.add(itemParam)
+
+	# ItemPorts
+	if "ports" in data:
+		portNames = []
+		for port in data['ports']:
+			portNames.append(port['name'].lower())
+
+		currentPorts = ItemPort.objects.filter(parentItem__exact=item)
+		for port in currentPorts:
+			if not port.name.lower() in portNames:
+				print "Found stale port %s.  Removing." % port.name
+
+		ports = data["ports"]
+		for port in ports:
+			try:
+				itemPort = ItemPort.objects.get(name__iexact=port["name"], parentItem__exact=item)
+			except:
+				itemPort = ItemPort(name = port["name"])
+			itemPort.displayName = port["displayname"]
+			itemPort.flags = port["flags"]
+			itemPort.minSize = int(port["minsize"])
+			itemPort.maxSize = int(port["maxsize"])
+			itemPort.name = port["name"]
+			itemPort.parentItem = item
+			itemPort.save()
+			for supportedType in port["types"]:
+				supportedItemType = supportedType["type"]
+				supportedItemSubTypes = supportedType["subtypes"]
+				try:
+					itemType = VehicleItemType.objects.get(typeName__iexact=supportedItemType)
+				except:
+					itemType = VehicleItemType(typeName=supportedItemType)
+					itemType.save()
+					print "Created new VehicleItemType %s" % supportedItemType
+				itemPort.supportedTypes.add(itemType)
+				if len(supportedItemSubTypes) > 0:
+					for supportedSubType in supportedItemSubTypes:
+						try:
+							itemSubType = VehicleItemSubType.objects.get(subTypeName__iexact=supportedSubType)
+						except:
+							itemSubType = VehicleItemSubType(subTypeName = supportedSubType, parent = itemType)
+							itemSubType.save()
+							print "Created new VehicleItemSubType %s" % supportedSubType
+						itemPort.supportedSubTypes.add(itemSubType)
+				else:
+					# No supported subtypes for this type, so we add all known subtypes
+					allSubTypes = VehicleItemSubType.objects.filter(parent__typeName__iexact=itemType)
+					for subType in allSubTypes:
+						itemPort.supportedSubTypes.add(subType)					
 	# Power
 	try:
 		powerBase = data['pipes']['Power']
@@ -214,7 +265,7 @@ def ingestItem(dataFile, data):
 # Ingest Weapons
 allFiles = os.listdir(DATA_PATH)
 for dataFile in allFiles:
-	# print dataFile
+	print dataFile
 	if os.path.splitext(dataFile)[-1] == '.json':
 		try:
 			with open(os.path.join(DATA_PATH, dataFile), 'r') as f:
