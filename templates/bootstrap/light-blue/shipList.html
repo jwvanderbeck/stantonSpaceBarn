@@ -1,0 +1,31 @@
+{% extends "bootstrap/light-blue/listBase.html" %}
+{% load static %}
+{% block head %}
+{{block.super}}
+{% endblock head %}
+
+{% block sidebar %}
+{{block.super}}
+{% endblock sidebar %}
+
+{% block page-header %}Available Ships{% endblock page-header %}
+
+{% block main-content %}
+{% for vehicle in vehicle_list %}
+{% if vehicle.available %}
+<div class="span4">
+    <section class="widget normal">
+        <header>
+            <h2><a href="/phase2/ship/{{vehicle.name}}">{{vehicle.displayName}}</a></h2>
+        </header>
+        <div class="body">
+            <a href="/phase2/ship/{{vehicle.name}}"><image src="{{vehicle.thumbnail}}" /></a>
+        </div>
+    </section>
+</div>
+{% endif %}
+{% endfor %}
+{% endblock main-content %}
+
+{% block ready-script %}
+{% endblock ready-script %}

@@ -1724,6 +1724,18 @@ def phase2(request):
     # !!!!!!!!!!!!!
     return render_to_response('bootstrap/light-blue/phase2.html', renderContext, context_instance=RequestContext(request))
 
+def phase2ShipList(request):
+    vehicles = Vehicle.objects.all().order_by("displayName")
+
+    renderContext = {
+    'vehicle_list'      : vehicles
+    }
+
+    # The bit here about context_instance=RequestContext(request) is ABSOLUTELY VITAL 
+    # as it is what enables the resulting rendered view to contain the CSRF token!
+    # !!!!!!!!!!!!!
+    return render_to_response('bootstrap/light-blue/shipList.html', renderContext, context_instance=RequestContext(request))
+
 def testView(request):
     shipName = '300i'  
     # Get all hardpoints
@@ -1734,6 +1746,7 @@ def testView(request):
     submitBuildForm = SubmitBuildForm()
     loginForm = AuthenticationForm()
     createUserForm = UserCreationForm()
+    vehicles = Vehicle.objects.all()
     if len(images) == 0:
         raise Http404() 
     renderContext = {
@@ -1745,10 +1758,11 @@ def testView(request):
     'itemtype_list'     : item_types,
     'saveVariantForm'           : submitBuildForm,
     'loginForm'                 : loginForm,
-    'createUserForm'            : createUserForm
+    'createUserForm'            : createUserForm,
+    'vehicle_list'      : vehicles
     }
 
     # The bit here about context_instance=RequestContext(request) is ABSOLUTELY VITAL 
     # as it is what enables the resulting rendered view to contain the CSRF token!
     # !!!!!!!!!!!!!
-    return render_to_response('bootstrap/light-blue/accountMain.html', renderContext, context_instance=RequestContext(request))
+    return render_to_response('bootstrap/light-blue/shipList.html', renderContext, context_instance=RequestContext(request))

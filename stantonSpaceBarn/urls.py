@@ -42,7 +42,7 @@ urlpatterns = patterns('stantonSpaceBarn.views',
 	url(r'^vehicles/list/$', 'getBackgridVehicleList'),
 	url(r'^vehicles/details/$', 'getVehicleDetails'),
 	url(r'^phase2/ship/([a-zA-Z0-9_-]+)', 'shipLayout'),
-	url(r'^phase2/$', 'phase2'),
+	url(r'^phase2/$', 'phase2ShipList'),
 	url(r'^items/get/([a-zA-Z0-9_-]+)$', 'getVehicleItemList'),
 	
 	url(r'^graphs/get/(?P<graphType>[a-zA-Z0-9_-]+)/$', 'getGraph'),
