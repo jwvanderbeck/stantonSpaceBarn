@@ -413,7 +413,7 @@ class VehicleImage(models.Model):
 
 class ItemPort(models.Model):
     # Basic fields as required by game model
-    displayName = models.CharField(max_length = 255, blank = True, null = True)
+    displayName = models.CharField(max_length = 255, blank = True)
     name = models.CharField(max_length = 255)
     flags = models.CharField(max_length = 512, blank = True)
     maxSize = models.PositiveIntegerField(default = 1)
@@ -448,7 +448,7 @@ class Vehicle(models.Model):
     # Basic fields as required by game model
     vehicleClass = models.PositiveIntegerField(default = 1)
     category = models.ForeignKey('VehicleCategory')
-    displayName = models.CharField(max_length = 255, blank = True, null = True)
+    displayName = models.CharField(max_length = 255, blank = True)
     name = models.CharField(max_length = 255)
     # Additional fields required for The Barn
     views = models.PositiveIntegerField(default = 0)
@@ -458,13 +458,13 @@ class Vehicle(models.Model):
     length = models.FloatField(default = 0)
     width = models.FloatField(default = 0)
     height = models.FloatField(default = 0)
-    thumbnail = models.URLField(default='', blank = True, null = True)
+    thumbnail = models.URLField(default='', blank = True)
     available = models.BooleanField(default = False)
     manufacturer = models.ForeignKey('Manufacturer', blank = True, null = True)
-    layoutImageTopRight = models.URLField(blank = True, null = True)
-    layoutImageTopLeft = models.URLField(blank = True, null = True)
-    layoutImageBottomRight = models.URLField(blank = True, null = True)
-    layoutImageBottomLeft = models.URLField(blank = True, null = True)
+    layoutImageTopRight = models.URLField(blank = True)
+    layoutImageTopLeft = models.URLField(blank = True)
+    layoutImageBottomRight = models.URLField(blank = True)
+    layoutImageBottomLeft = models.URLField(blank = True)
 
     def __unicode__(self):
         if self.displayName and self.displayName != "":
@@ -472,3 +472,20 @@ class Vehicle(models.Model):
         else:
             name = self.name
         return u"%s Class %d %s" % (name, self.vehicleClass, self.category)
+
+class VariantItem(models.Model):
+    variant = models.ForeignKey("Variant", blank=True, null=True)
+    item = models.CharField(max_length = 255, blank=True)
+    port = models.CharField(max_length = 255, blank=True)
+    parentPort = models.CharField(max_length = 255, blank=True)
+    parentItem = models.CharField(max_length = 255, blank=True)
+
+class Variant(models.Model):
+    baseVehicle = models.ForeignKey('Vehicle', blank=True, null=True)
+    created_by = models.ForeignKey(User, blank=True, null=True, default=None)
+    creation_date = models.DateTimeField(auto_now_add=True)
+    name = models.CharField(max_length=30, default='', blank=True)
+    role = models.CharField(max_length=30, blank=True)
+    up_votes = models.PositiveIntegerField(default=0)
+    down_votes = models.PositiveIntegerField(default=0)
+    views = models.PositiveIntegerField(default = 0)
