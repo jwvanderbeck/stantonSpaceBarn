@@ -195,7 +195,14 @@
                                     {% for itemPort in shipData.itemport_set.all %}
                                         {% if forloop.counter0|divisibleby:3 %}</section><section>{% endif %}
                                         <div class="span4">
-                                            <div class="well item-port-datablock" data-port-name="{{itemPort.name}}" data-parent={{itemPort.parentImage}} data-types="{%for type in itemPort.supportedTypes.all%}{{type.typeName}}{%if not forloop.last %},{%endif%}{%endfor%}" data-min-size={{itemPort.minSize}} data-max-size={{itemPort.maxSize}} data-subtypes="{%for type in itemPort.supportedSubTypes.all%}{{type.subTypeName}}{%if not forloop.last %},{%endif%}{%endfor%}">
+                                            <div class="well item-port-datablock" 
+                                                data-port-name="{{itemPort.name}}" 
+                                                data-parent={{itemPort.parentImage}} 
+                                                data-types="{%for type in itemPort.supportedTypes.all%}{{type.typeName}}{%if not forloop.last %},{%endif%}{%endfor%}" 
+                                                data-min-size={{itemPort.minSize}} 
+                                                data-max-size={{itemPort.maxSize}} 
+                                                data-subtypes="{%for type in itemPort.supportedSubTypes.all%}{{type.subTypeName}}{%if not forloop.last %},{%endif%}{%endfor%}"
+                                                data-parent-vehicle="{{shipData.name}}">
                                                 <p class="label label-inverse">{% firstof itemPort.displayName itemPort.name %}</p><i class="icon-remove pull-right icon-large"></i><i class="icon-filter pull-right icon-large"></i>
                                                 <br>
                                                 
@@ -501,7 +508,11 @@ $(".icon-remove").on("click", function(event){
     event.stopPropagation();
     var portWell = $(this).parent()
     var portName = portWell.attr("data-port-name");
-    removeItemFromPort(portName);
+    var parentPort = portWell.attr("data-parent-port");
+    var parentItem = portWell.attr("data-parent-item");
+    var portData = {"name" : portName, "parentPort":parentPort,"parentItem":parentItem};
+    console.log(portData)
+    removeItemFromPort(portData);
 });
 
 $(".item-port-label").hoverIntent({
@@ -532,14 +543,15 @@ $(".item-port-label").on("click", function(){
     $("#item-details-modal").modal("hide");
     $("#itemport-details-modal").modal("show");
     var portName = $(this).attr("data-port-name")
-    getItemPortDetails(portName, "{{shipData.name}}");
+    getItemPortDetails({"name":portName}, "{{shipData.name}}");
 });
 
 $(".item-port-datablock").on("click", function(){
     $("#item-details-modal").modal("hide");
     $("#itemport-details-modal").modal("show");
     var portName = $(this).attr("data-port-name")
-    getItemPortDetails(portName, "{{shipData.name}}");
+    var portData = {"name":portName,"parentItem":$(this).attr("data-parent-item")}
+    getItemPortDetails(portData, "{{shipData.name}}");
 });
 
 $(document).on("mouseenter", "tr.vehicle-item-row", function(){

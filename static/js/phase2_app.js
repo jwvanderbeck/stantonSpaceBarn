@@ -454,19 +454,31 @@ function leavePort()
     $(this).removeClass("highlight")
 }
 
-function removeItemFromPort(portName)
+function removeItemFromPort(portData)
 {
     // Get the port tag, datablock, and label elements
-    var portTag = $("#" + portName);
-    var portDatablock = $(".item-port-datablock[data-port-name='" + portName + "']");
-    var portLabel = $(".item-port-label[data-port-name='" + portName + "']");
-    var itemName = portDatablock.attr("data-item-name");
-    // Mark tag as filled
-    portTag.addClass("filled");
+    var portName = portData["name"];
+    var parentPort = portData["parentPort"];
+    console.log("parentPort", parentPort);
+    if (parentPort == undefined)
+    {
+        var portTag = $("#" + portName);
+        var portLabel = $(".item-port-label[data-port-name='" + portName + "']");
+        portTag.removeClass("filled");
 
-    // Remove item from label
-    portLabel.removeAttr("data-item-name");
-    portLabel.find("span.item-name").text("Nothing Loaded");
+        // Remove item from label
+        portLabel.removeAttr("data-item-name");
+        portLabel.find("span.item-name").text("Nothing Loaded");
+        var portDatablock = $(".item-port-datablock[data-port-name='" + portName + "']");
+    }
+    else
+    {
+        console.log("Sub port");
+        var parentItem = portData["parentItem"];
+        var portDatablock = $(".item-port-datablock[data-port-name='" + portName + "'][data-parent-port='" + parentPort + "'][data-parent-item='" + parentItem + "']");
+        console.log(portDatablock);
+    }
+    var itemName = portDatablock.attr("data-item-name");
 
     // Remove item from datablock
     portDatablock.removeAttr("data-item-name");
@@ -495,7 +507,9 @@ function removeItemFromPort(portName)
     });
     // If this item has any ItemPorts, we need to remove those
     // TODO
+    console.log("Removing sub ports");
     var datablocks = $(".item-port-datablock[data-parent-port='" + portName + "']");
+    console.log(datablocks);
     datablocks.each(function(){
         var div = $(this).parent();
         var section = div.parent();
@@ -545,9 +559,14 @@ function getQuickVariant(shipName)
     ports.each(function() {
         var itemName = $(this).attr("data-item-name");
         var portName = $(this).attr("data-port-name");
+        var parentPort = $(this).attr("data-parent-port");
+        var parentItem = $(this).attr("data-parent-item");
         if (itemName != undefined)
         {
-            data["ports"].push({"portName" : portName, "itemName" : itemName});
+            if (parentItem != undefined)
+                data["ports"].push({"portName" : portName, "itemName" : itemName, "parentItem" : parentItem, "parentPort" : parentPort});
+            else
+                data["ports"].push({"portName" : portName, "itemName" : itemName});
         }
     });
     var jsonData = JSON.stringify(data);
@@ -761,14 +780,16 @@ function chartPipe(itemName, pipe, state) {
         }
     });
 } 
-function getItemPortDetails(itemPortName, shipName) {
-    if (itemPortName.indexOf(":") > -1)
+function getItemPortDetails(portData, shipName) {
+    var itemPortName = portData["name"]
+    var parentItem = portData["parentItem"]
+    console.log(portData)
+    if (parentItem != undefined)
     {
         jsonData = {
-            "portName"  : itemPortName.split(":")[1]
+            "portName"  : itemPortName,
+            "itemName"  : parentItem
         }
-        var portDatablock = $('.item-port-datablock[data-port-name="' + itemPortName + '"]');
-        jsonData["itemName"] = portDatablock.attr("data-parent-item");
     }
     else
     {
@@ -778,7 +799,7 @@ function getItemPortDetails(itemPortName, shipName) {
         }
     }
     var jsonData = JSON.stringify(jsonData);
-    // console.log(jsonData);
+    console.log(jsonData);
     $.ajaxSetup({
       async: false
     });
@@ -807,11 +828,38 @@ function getItemPortDetails(itemPortName, shipName) {
         }
     });
 }
-function addItemToPort(portName, itemData)
+function addItemToPort(portData, itemData)
 {
+    var portName = portData["name"];
     // remove the item first so we don't have any doubling issues
     // Just simpler and cleaner this way
-    removeItemFromPort(portName);
+    removeItemFromPort(portData);
+
+
+    // TODO
+    // Need to add code for adding item to subport based on parentPort and parentItem
+    //
+    var parentPort = portData["parentPort"];
+    console.log("parentPort", parentPort);
+    if (parentPort == undefined)
+    {
+        var portTag = $("#" + portName);
+        var portLabel = $(".item-port-label[data-port-name='" + portName + "']");
+        // Mark tag as filled
+        portTag.addClass("filled");
+
+        // Remove item from label
+        portLabel.removeAttr("data-item-name");
+        portLabel.find("span.item-name").text("Nothing Loaded");
+        var portDatablock = $(".item-port-datablock[data-port-name='" + portName + "']");
+    }
+    else
+    {
+        console.log("Sub port");
+        var parentItem = portData["parentItem"];
+        var portDatablock = $(".item-port-datablock[data-port-name='" + portName + "'][data-parent-port='" + parentPort + "'][data-parent-item='" + parentItem + "']");
+        console.log(portDatablock);
+    }
 
     var portTag = $("#" + portName);
     var portDatablock = $('.item-port-datablock[data-port-name="' + portName + '"]'); 
@@ -824,7 +872,6 @@ function addItemToPort(portName, itemData)
     portWell.attr("data-item-name", itemName)
     portDatablock.find("span.item-name").text(itemDisplayName);
     portDatablock.attr("data-item-name", itemName)
-    portTag.addClass("filled");
     // Add ItemPorts that may be on this item
     // TODO
     jsonData = {
@@ -861,7 +908,7 @@ function addItemToPort(portName, itemData)
                     // Since this port is on an item, we can't be sure it's name
                     // is unique on the ship.  So we build a new name
                     // based on the name of the ship's port holding the item.
-                    newPortName = portName + ":" + ports[index]["portname"]
+                    newPortName = ports[index]["portname"]
                     var mainDiv = $(document.createElement("div")).appendTo(currentSection).addClass("span4");
                     var well = $(document.createElement("div")).appendTo(mainDiv)
                         .addClass("well item-port-datablock")
@@ -1004,8 +1051,8 @@ function dropItem(ele, event, ui) {
         "displayName" : ui.draggable.find("td.string-cell").text(),
         "name" : ui.draggable.find("td.item-name-cell").text()
     };
-
-    addItemToPort(portName, itemData);
+    var portData = {"name" : portName};
+    addItemToPort(portData, itemData);
 }
 
 /*********************************************
@@ -1019,7 +1066,11 @@ function enableDatablock(element)
         event.stopPropagation();
         var portWell = $(this).parent()
         var portName = portWell.attr("data-port-name");
-        removeItemFromPort(portName);
+        var parentPort = portWell.attr("data-parent-port");
+        var parentItem = portWell.attr("data-parent-item");
+        var portData = {"name" : portName, "parentPort":parentPort,"parentItem":parentItem};
+        console.log(portData)
+        removeItemFromPort(portData);
     });
     element.find(".icon-filter").on("click", function(event){
         event.stopPropagation();
@@ -1032,7 +1083,8 @@ function enableDatablock(element)
         $("#item-details-modal").modal("hide");
         $("#itemport-details-modal").modal("show");
         var portName = $(this).attr("data-port-name")
-        getItemPortDetails(portName, "{{shipData.name}}");
+        var portData = {"name":portName,"parentItem":$(this).attr("data-parent-item")}
+        getItemPortDetails(portData, "{{shipData.name}}");
     });
 
     // Make Droppable

@@ -541,7 +541,9 @@ def quickVariant(request, shipName, variantURL = 0):
     # 1-00_00-00_00*
     #   First digit is version
     #   After the version, is a series of groups, each group is in two parts separated by an underscore
-    #   First part of the group is the port ID, the second part of the grou is the item ID
+    #   First part of the group is the port ID, the second part of the group is the item ID.
+    #   If the Port ID is 6 characters, then it is a subport.  The first 2 characters are the parent Item ID
+    #       The next 2 characters are the parent port ID and the last 2 characters are the actual port ID
     #   Each group is separated by a dash
     # Incoming AJAX data should specify the requested version.  If data["version"] does not exist, or is blank
     # then the version is assumed to be v0.  This functionality is present to allow both V0 and V1 to exist at the 
@@ -641,6 +643,8 @@ def quickVariant(request, shipName, variantURL = 0):
             #   EG
             #   data["shipName"] = "oj_350r"
             #   data["ports"] = [ {"portName" : "nose_slot", "itemName" : "mass_driver"} ]
+            #   optionally a port record can contain parentPort and parentItem IDs for ports
+            #   that are on items.
 
             try:
                 vehicleData = Vehicle.objects.get(name__iexact=shipName)
@@ -659,8 +663,22 @@ def quickVariant(request, shipName, variantURL = 0):
             for port in data["ports"]:
                 portName = port["portName"]
                 itemName = port["itemName"]
+                if "parentPort" in port:
+                    parentPort = port["parentPort"]
+                else:
+                    parentPort = None
+                if "parentItem" in port:
+                    parentItem = port["parentItem"]
+                else:
+                    parentItem = None
+
                 try:
-                    portData = ItemPort.objects.get(name__iexact=portName, parentVehicle__exact=vehicleData)
+                    if parentItem and parentPort:
+                        parentItemData = VehicleItem.objects.get(name__iexact=parentItem);
+                        portData = ItemPort.objects.get(name__iexact=portName, parentItem__exact=parentItemData)
+                        parentPortData = ItemPort.objects.get(name__iexact=parentPort, parentVehicle__exact=vehicleData)
+                    else:
+                        portData = ItemPort.objects.get(name__iexact=portName, parentVehicle__exact=vehicleData)
                     itemData = VehicleItem.objects.get(name__iexact=itemName)
                 except Exception as e:
                     print "----------------"
@@ -673,7 +691,10 @@ def quickVariant(request, shipName, variantURL = 0):
                     'response' : 'Failed to load data for port %s, item %s' % (portName, itemName)
                     }
                     return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
-                variantURL = variantURL + "-" + itemLuts.idToURL(portData.id, 0) + "_" + itemLuts.idToURL(itemData.id, 0)
+                if parentItem:
+                    variantURL = variantURL + "-" + itemLuts.idToURL(parentItemData.id, 0) + itemLuts.idToURL(parentPortData.id, 0) + itemLuts.idToURL(portData.id, 0) + "_" + itemLuts.idToURL(itemData.id, 0)
+                else:
+                    variantURL = variantURL + "-" + itemLuts.idToURL(portData.id, 0) + "_" + itemLuts.idToURL(itemData.id, 0)
 
             response_data = {
                 'url' : baseURL + variantURL,
@@ -772,15 +793,33 @@ def quickVariant(request, shipName, variantURL = 0):
         items = []
         variantData = []
         for itemGroup in itemGroups:
-            portID = itemLuts.urlToID(itemGroup.split("_")[0])
-            itemID = itemLuts.urlToID(itemGroup.split("_")[1])
-            print portID, itemID
+            IDSplit = itemGroup.split("_")
+            if len(IDSplit[0]) == 2:
+                portID = itemLuts.urlToID(IDSplit[0])
+                itemID = itemLuts.urlToID(IDSplit[1])
+                parentPortID = None
+                parentItemID = None
+                print portID, itemID
+            elif len(IDSplit[0]) == 6:
+                portID = itemLuts.urlToID(IDSplit[0][4:6])
+                parentPortID = itemLuts.urlToID(IDSplit[0][2:4])
+                parentItemID = itemLuts.urlToID(IDSplit[0][:2])
+                itemID = itemLuts.urlToID(itemGroup.split("_")[1])
             try:
+                if parentPortID:
+                    parentPortData = ItemPort.objects.get(pk=parentPortID)
+                    parentItemData = VehicleItem.objects.get(pk=parentItemID)
+                else:
+                    parentPortData = None
+                    parentItemData = None
                 portData = ItemPort.objects.get(pk=portID)
                 itemData = VehicleItem.objects.get(pk=itemID)
             except Exception as e:
                 print e
-            variantData.append({"port" : portData, "item" : itemData})
+            if parentPortData:
+                variantData.append({"port" : portData, "item" : itemData, "parentPort" : parentPortData, "parentItem" : parentItemData})
+            else:
+                variantData.append({"port" : portData, "item" : itemData})
         loginForm = AuthenticationForm()
         createUserForm = UserCreationForm()
         renderContext = {
@@ -1704,6 +1743,8 @@ def getGraph(request, graphType):
 @ensure_csrf_cookie
 def shipLayout(request, shipName):
     shipData = Vehicle.objects.get(name__iexact=shipName)
+    shipData.views = shipData.views + 1
+    shipData.save()
     loginForm = AuthenticationForm()
     createUserForm = UserCreationForm()
 
@@ -1747,6 +1788,7 @@ def testView(request):
     loginForm = AuthenticationForm()
     createUserForm = UserCreationForm()
     vehicles = Vehicle.objects.all()
+    itemPorts = ItemPort.objects.all().filter(parentVehicle__exact=vehicles[0])
     if len(images) == 0:
         raise Http404() 
     renderContext = {
@@ -1759,10 +1801,11 @@ def testView(request):
     'saveVariantForm'           : submitBuildForm,
     'loginForm'                 : loginForm,
     'createUserForm'            : createUserForm,
+    'port_list'         : itemPorts,
     'vehicle_list'      : vehicles
     }
 
     # The bit here about context_instance=RequestContext(request) is ABSOLUTELY VITAL 
     # as it is what enables the resulting rendered view to contain the CSRF token!
     # !!!!!!!!!!!!!
-    return render_to_response('bootstrap/light-blue/shipList.html', renderContext, context_instance=RequestContext(request))
+    return render_to_response('bootstrap/light-blue/test.html', renderContext, context_instance=RequestContext(request))
