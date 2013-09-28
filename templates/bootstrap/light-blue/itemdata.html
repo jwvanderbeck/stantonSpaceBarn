@@ -329,6 +329,7 @@
 <script src='{% static "theme/light-blue/lib/parsley/parsley.js" %}'> </script>
 <script src='{% static "theme/light-blue/lib/icheck.js/jquery.icheck.js" %}'></script>
 <script src='{% static "theme/light-blue/lib/select2.js" %}'></script>
+<script type="text/javascript" src='{% static "js/jquery.backstretch.min.js" %}'></script>
 
 <!-- d3, nvd3-->
 <script src='{% static "theme/light-blue/lib/nvd3/lib/d3.v2.js" %}'></script>
@@ -404,6 +405,7 @@
         //     });  
         //     event.preventDefault();
         // });
+        $.backstretch('{% static "images/bg.jpg" %}');
 
         $(".item-select").on("click", function(event) {
             event.preventDefault();

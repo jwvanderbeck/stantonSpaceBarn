@@ -12717,7 +12717,7 @@ input.parsley-error {
 .widget {
   padding: 10px 12px;
   color: #f8f8f8;
-  background: rgba(10, 40, 255, 0.1);
+  background: rgba(10, 40, 105, 0.5);
   margin-bottom: 30px;
   position: relative;
   border: 1px solid white;

@@ -104,6 +104,7 @@
 <script type="text/javascript" src='{% static "js/jquery-ui-1.10.3.custom.min.js" %}'></script>
 <script type='text/javascript' src='{% static "js/jquery.form.min.js" %}'></script>
 <script type="text/javascript" src='{% static "js/jquery.hoverIntent.minified.js" %}'></script>
+<script type="text/javascript" src='{% static "js/jquery.backstretch.min.js" %}'></script>
 
 <!-- d3, nvd3-->
 <script src='{% static "theme/light-blue/lib/nvd3/lib/d3.v2.js" %}'></script>
@@ -149,6 +150,7 @@
 
 <script type='text/javascript'>
     $(document).ready( function () {
+        $.backstretch('{% static "images/bg.jpg" %}');
         {% block ready-script %}
         {% endblock ready-script %}
     });
