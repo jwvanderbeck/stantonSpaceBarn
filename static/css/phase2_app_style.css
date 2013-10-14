@@ -63,3 +63,9 @@
 .filtered {
     border-color: green;
 }
+.chart svg {
+  height: 200px;
+}
+.tick {
+    opacity: 0;
+}

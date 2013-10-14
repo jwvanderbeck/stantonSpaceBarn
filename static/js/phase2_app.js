@@ -322,9 +322,9 @@ function createBackgrid(collection, parentElement){
         collection: collection,
         footer: Backgrid.Extension.Paginator.extend({
             //okendoken. rewrite template to add pagination class to container
-            template: _.template('<tr><td class="pagination" colspan="<%= colspan %>"><ul><% _.each(handles, function (handle) { %><li <% if (handle.className) { %>class="<%= handle.className %>"<% } %>><a href="#" <% if (handle.title) {%> title="<%= handle.title %>"<% } %>><%= handle.label %></a></li><% }); %></ul></td></tr>')
+            template: _.template('<tr><td colspan="<%= colspan %>"><ul class="pagination"><% _.each(handles, function (handle) { %><li <% if (handle.className) { %>class="<%= handle.className %>"<% } %>><a href="#" <% if (handle.title) {%> title="<%= handle.title %>"<% } %>><%= handle.label %></a></li><% }); %></ul></td></tr>')
         }),
-        className: 'table table-condensed no-margin table-hover'
+        className: 'table table-condensed no-margin'
     });
     parentElement.html(pageableGrid.render().$el);
 }
@@ -427,7 +427,7 @@ function enterPortLabel()
         return
     // select the proper image tab
     imageNumber = imageNumber - 1;
-    $('#layout-images li:eq(' + imageNumber + ') a').tab('show'); // Select third tab (0-indexed)
+    $('#main-hardpoint-images li:eq(' + imageNumber + ') a').tab('show'); // Select tab (0-indexed)
     // find and highlight the port
     var portName = $(this).attr("data-port-name")
     $("#" + portName).addClass("highlight")
@@ -443,20 +443,24 @@ function leavePortLabel()
 function enterPort()
 {
     var portWell = $(".item-port-label[data-port-name='" + $(this).attr("id") + "']");
-    portWell.addClass("well-white");
+    var panel = portWell.parent().parent();
+    panel.addClass("panel-info");
     $(this).addClass("highlight")
 }
 
 function leavePort()
 {
     var portWell = $(".item-port-label[data-port-name='" + $(this).attr("id") + "']");
-    portWell.removeClass("well-white");
+    var panel = portWell.parent().parent();
+    panel.removeClass("panel-info");
     $(this).removeClass("highlight")
 }
 
 function removeItemFromPort(portData)
 {
     // Get the port tag, datablock, and label elements
+    console.log("Remove item from port");
+    console.log(portData);
     var portName = portData["name"];
     var parentPort = portData["parentPort"];
     console.log("parentPort", parentPort);
@@ -493,7 +497,7 @@ function removeItemFromPort(portData)
     parentDiv.attr("id", "port-powerstate-" + portName);
     parentDiv.attr("data-toggle", "buttons-radio").attr("data-target", "item-powerstate-" + portName + "-input")
     var button = $(document.createElement("button")).appendTo(parentDiv)
-        .addClass("btn btn-mini btn-info active")
+        .addClass("btn btn-xs btn-info active")
         .attr("data-toggle-class","btn-info")
         .attr("data-toggle-passive-class", "btn-inverse")
         .attr("type", "button")
@@ -517,32 +521,32 @@ function removeItemFromPort(portData)
         if (section.children().length == 0)
             section.remove();
     });
-    // after removing the datablocks for that port, we need to re-arrange
-    // what is left so the HTML doesn't get all crappy
-    datablocks = $(".item-port-datablock[data-parent-port]");
-    var divs = []
-    datablocks.each(function(){        
-        var div = $(this).parent();
-        divs.push(div);
-        var section = div.parent();
-        div.detach();
-        if (section.children().length == 0)
-            section.remove();
-    });
-    var overview = $("#hardpoints-overview");
-    var sections = overview.find("section");
-    var currentSection = $(sections[sections.length-1]);
-    var count = currentSection.children().length;
-    console.log("Count", count);
-    for (var index=0;index < divs.length; index++)
-    {
-        if (count > 2)
-        {
-            currentSection = $(document.createElement("section")).appendTo(overview);
-        }
-        divs[index].appendTo(currentSection);
-        count = count + 1;
-    }
+    // // after removing the datablocks for that port, we need to re-arrange
+    // // what is left so the HTML doesn't get all crappy
+    // datablocks = $(".item-port-datablock[data-parent-port]");
+    // var divs = []
+    // datablocks.each(function(){        
+    //     var div = $(this).parent();
+    //     divs.push(div);
+    //     var section = div.parent();
+    //     div.detach();
+    //     if (section.children().length == 0)
+    //         section.remove();
+    // });
+    // var overview = $("#hardpoints-overview");
+    // var sections = overview.find("section");
+    // var currentSection = $(sections[sections.length-1]);
+    // var count = currentSection.children().length;
+    // console.log("Count", count);
+    // for (var index=0;index < divs.length; index++)
+    // {
+    //     if (count > 2)
+    //     {
+    //         currentSection = $(document.createElement("section")).appendTo(overview);
+    //     }
+    //     divs[index].appendTo(currentSection);
+    //     count = count + 1;
+    // }
     // Recompute all stats now that this item has been removed
     computeStats();
 }
@@ -669,7 +673,7 @@ function getItemDetails(itemName) {
                 {
                     var h = $(document.createElement('h5')).appendTo(weaponbars).text(stats[index]['name']);
                     var progress = $(document.createElement('div')).appendTo(weaponbars).addClass("progress");
-                    var bar = $(document.createElement('div')).appendTo(progress).addClass("bar").text(stats[index]['value'])
+                    var bar = $(document.createElement('div')).appendTo(progress).addClass("progress-bar progress-bar-info").text(stats[index]['value'])
                     .css("width",stats[index]['value'] + "%");
                 }
             }
@@ -771,6 +775,9 @@ function chartPipe(itemName, pipe, state) {
                     .call(chart);
 
                 nv.utils.windowResize(chart.update);
+                console.log(chartID);
+                console.log("Updating chart");
+                setTimeout(chart.update, 300);
                 lineChart = chart;
 
                 lineChartOperaHack();
@@ -864,7 +871,7 @@ function addItemToPort(portData, itemData)
     var portTag = $("#" + portName);
     var portDatablock = $('.item-port-datablock[data-port-name="' + portName + '"]'); 
     var portWell = $('.item-port-label[data-port-name="' + portName + '"]');
-    var portDisplayName = portDatablock.find("p.label-inverse").text();
+    var portDisplayName = portDatablock.parent().parent().find(".panel-heading h5").text();
 
     var itemDisplayName = itemData["displayName"];
     var itemName = itemData["name"];
@@ -872,6 +879,20 @@ function addItemToPort(portData, itemData)
     portWell.attr("data-item-name", itemName)
     portDatablock.find("span.item-name").text(itemDisplayName);
     portDatablock.attr("data-item-name", itemName)
+    // Reset the datablock's coloring
+    var panel = portDatablock.parent().parent();
+    panel.attr("data-state", "filled");
+    panel.attr("data-status", "success");
+    panel = portWell.parent().parent();
+    panel.attr("data-state", "filled");
+    panel.attr("data-status", "success");
+    var panels = $(".panel-compact[data-status]");
+    console.log(panels);
+    panels.each(function(){
+        $(this).removeClass("panel-success panel-warning panel-danger");
+        var status = $(this).attr("data-status");
+        $(this).addClass("panel-" + status);
+    });
     // Add ItemPorts that may be on this item
     // TODO
     jsonData = {
@@ -887,31 +908,28 @@ function addItemToPort(portData, itemData)
         }
         else
         {
+            var currentSection = portDatablock.parent().parent().parent();
+            console.log("currentSection " + currentSection);
+            console.log("-----");
             if (data["ports"].length > 0)
             {
                 console.log("adding itemports for item");
                 console.log(data["ports"])
                 var overview = $("#hardpoints-overview");
-                var sections = overview.find("section");
-                var currentSection = $(sections[sections.length-1]);
-                var count = currentSection.children().length;
-                console.log(count);
                 ports = data["ports"];
                 for (var index = 0; index < ports.length; index++)
                 {
-                    console.log(ports[index]);
-                    if (count > 2)
-                    {
-                        currentSection = $(document.createElement("section")).appendTo(overview);
-                        count = 0;
-                    }
-                    // Since this port is on an item, we can't be sure it's name
-                    // is unique on the ship.  So we build a new name
-                    // based on the name of the ship's port holding the item.
                     newPortName = ports[index]["portname"]
-                    var mainDiv = $(document.createElement("div")).appendTo(currentSection).addClass("span4");
-                    var well = $(document.createElement("div")).appendTo(mainDiv)
-                        .addClass("well item-port-datablock")
+                    var mainDiv = $(document.createElement("div")).insertAfter(currentSection).addClass("col-lg-3");
+                    var panel = $(document.createElement("div")).appendTo(mainDiv).addClass("panel panel-compact panel-warning")
+                        .attr("data-state", "empty")
+                        .attr("data-status", "warning");
+                    var heading = $(document.createElement("div")).appendTo(panel).addClass("panel-heading");
+                    $(document.createElement("h5")).appendTo(heading).text(ports[index]["name"]);
+                    var body = $(document.createElement("div")).appendTo(panel)
+                        .addClass("panel-body");
+                    var well = $(document.createElement("div")).appendTo(body)
+                        .addClass("well well-compact item-port-datablock")
                         .attr("data-port-name", newPortName)
                         .attr("data-parent-item", itemName)
                         .attr("data-parent-port", portName)
@@ -919,18 +937,10 @@ function addItemToPort(portData, itemData)
                         .attr("data-max-size", ports[index]["maxsize"])
                         .attr("data-types", ports[index]["types"].join(","))
                         .attr("data-subtypes", ports[index]["subtypes"].join(","));
-                    $(document.createElement("p")).appendTo(well)
-                        .addClass("label label-inverse")
-                        .text(ports[index]["name"]);
-                    $(document.createElement("i")).appendTo(well)
-                        .addClass("icon-remove pull-right icon-large");
-                    $(document.createElement("i")).appendTo(well)
-                        .addClass("icon-filter pull-right icon-large");
-                    $(document.createElement("br")).appendTo(well);
-                    $(document.createElement("p")).appendTo(well)
-                        .addClass("label label-inverse")
-                        .text(portDisplayName + "|" + data["itemname"]);
-                    $(document.createElement("br")).appendTo(well);
+                    // $(document.createElement("i")).appendTo(well)
+                    //     .addClass("icon-remove pull-right icon-large");
+                    // $(document.createElement("i")).appendTo(well)
+                    //     .addClass("icon-filter pull-right icon-large");
                     var stateDiv = $(document.createElement("div")).appendTo(well)
                         .addClass("item-port-datablock-statebuttons");
                     $(document.createElement("input")).appendTo(stateDiv)
@@ -944,7 +954,7 @@ function addItemToPort(portData, itemData)
                         .attr("data-toggle", "buttons-radio")
                         .attr("data-target", "item-powerstate-" + newPortName + "-input");
                     $(document.createElement("button")).appendTo(buttonGroup)
-                        .addClass("btn btn-mini btn-info active noop")
+                        .addClass("btn btn-xs btn-info active noop")
                         .attr("data-toggle-class", "btn-info")
                         .attr("data-toggle-passive-class", "btn-inverse")
                         .attr("type", "button")
@@ -954,8 +964,11 @@ function addItemToPort(portData, itemData)
                     $(document.createElement("span")).appendTo(well)
                         .addClass("item-name")
                         .text("Nothing Loaded");
+                    $(document.createElement("div")).appendTo(panel)
+                        .addClass("panel-footer")
+                        .text(portDisplayName);
+
                     enableDatablock($(well));
-                    count = count + 1;
                 }
             }
         }
@@ -989,7 +1002,7 @@ function addItemToPort(portData, itemData)
                 for (var i=0; i < data["power"].length; i++)
                 {
                     var button = $(document.createElement("button")).appendTo(parentDiv)
-                        .addClass("btn btn-mini")
+                        .addClass("btn btn-xs")
                         .attr("data-toggle-class","btn-info")
                         .attr("data-toggle-passive-class", "btn-inverse")
                         .attr("type", "button")
@@ -1096,7 +1109,13 @@ function enableDatablock(element)
             dropItem(this, event, ui);
         },
         deactivate : function(event, ui) {
-            $(this).removeClass("over");
+        // reset temporary status coloring
+            var panels = $(".panel-compact[data-status]");
+            panels.each(function(){
+                $(this).removeClass("panel-success panel-warning panel-danger");
+                var status = $(this).attr("data-status");
+                $(this).addClass("panel-" + status);
+            });
         },
         activate : function(event, ui) {
             // console.log("Activate drag")
@@ -1111,24 +1130,32 @@ function enableDatablock(element)
             $(this).removeClass("over");
             // console.log("out")
         },
-        accept: function(draggable) {
-            var row = draggable;
-            var itemSubType = row.find("td.item-subtype-cell").text();
-            var itemSize = parseInt(row.find("td.item-size-cell").text(), 10);
-            var supportedSubTypes = $(this).attr("data-subtypes");
-            var minSize = $(this).attr("data-min-size");
-            var maxSize = $(this).attr("data-max-size");
-            var label = $(this).find(".label")
-            // console.log("Item Sub Type:", itemSubType)
-            // console.log("Supported Sub Types:", supportedSubTypes);
-            // console.log("Item Size:", itemSize);
-            // console.log("Supported Size:", minSize, "-", maxSize);
-            if (supportedSubTypes.indexOf(itemSubType) > -1 && itemSize >= minSize && itemSize <= maxSize)
-            {
-                // console.log("Item Supported!")
-                return true;
-            }
+    accept: function(draggable) {
+        var row = draggable;
+        var itemSubType = row.find("td.item-subtype-cell").text();
+        var itemSize = parseInt(row.find("td.item-size-cell").text(), 10);
+        var supportedSubTypes = $(this).attr("data-subtypes");
+        var minSize = $(this).attr("data-min-size");
+        var maxSize = $(this).attr("data-max-size");
+        var label = $(this).find(".label")
+        // console.log("Item Sub Type:", itemSubType)
+        // console.log("Supported Sub Types:", supportedSubTypes);
+        // console.log("Item Size:", itemSize);
+        // console.log("Supported Size:", minSize, "-", maxSize);
+        var panel = $(this).parent().parent();
+        if (supportedSubTypes.indexOf(itemSubType) > -1 && itemSize >= minSize && itemSize <= maxSize)
+        {
+            // console.log("Item Supported!")
+            panel.removeClass("panel-warning panel-danger panel-success");
+            panel.addClass("panel-success");
+            return true;
+        }
+        else
+        {
+            panel.removeClass("panel-warning panel-danger panel-success");
+            panel.addClass("panel-danger");
             return false;
+        }
     }});       
 
 }
@@ -1138,14 +1165,20 @@ var hardpointWells = $(".item-port-label");
 var hardpointDatablocks = $(".item-port-datablock");
 
 hardpointDatablocks.droppable({
-    activeClass: "label-success",
-    tolerance : "pointer",
+    tolerance : "intersect",
     drop : function(event, ui) {
         $(this).removeClass("over");
         dropItem(this, event, ui);
     },
     deactivate : function(event, ui) {
-        $(this).removeClass("over");
+        // reset temporary status coloring
+        // console.log("Deactivate drag")
+        var panels = $(".panel-compact[data-status]");
+        panels.each(function(){
+            $(this).removeClass("panel-success panel-warning panel-danger");
+            var status = $(this).attr("data-status");
+            $(this).addClass("panel-" + status);
+        });
     },
     activate : function(event, ui) {
         // console.log("Activate drag")
@@ -1172,38 +1205,44 @@ hardpointDatablocks.droppable({
         // console.log("Supported Sub Types:", supportedSubTypes);
         // console.log("Item Size:", itemSize);
         // console.log("Supported Size:", minSize, "-", maxSize);
+        var panel = $(this).parent().parent();
         if (supportedSubTypes.indexOf(itemSubType) > -1 && itemSize >= minSize && itemSize <= maxSize)
         {
             // console.log("Item Supported!")
+            panel.removeClass("panel-warning panel-danger panel-success");
+            panel.addClass("panel-success");
             return true;
         }
-        return false;
+        else
+        {
+            panel.removeClass("panel-warning panel-danger panel-success");
+            panel.addClass("panel-danger");
+            return false;
+        }
 }});       
 
 hardpointWells.droppable({
     activeClass: "label-success",
-    tolerance : "pointer",
+    tolerance : "intersect",
     drop : function(event, ui) {
         $(this).removeClass("over");
         dropItem(this, event, ui);
     },
     deactivate : function(event, ui) {
-        $(this).removeClass("over");
+        // reset temporary status coloring
+        // console.log("Deactivate drag")
+        var panels = $(".panel-compact[data-status]");
+        // console.log(panels);
+        panels.each(function(){
+            $(this).removeClass("panel-success panel-warning panel-danger");
+            var status = $(this).attr("data-status");
+            $(this).addClass("panel-" + status);
+        });
     },
     activate : function(event, ui) {
         // console.log("Activate drag")
-        $("#item-details-modal").modal("hide");
-        $("#itemport-details-modal").modal("hide");
-    },
-    over : function(event, ui) {
-        $(this).addClass("over");
-        // console.log("Over")
-    },
-    out : function(event, ui) {
-        $(this).removeClass("over");
-        // console.log("out")
-    },
-    accept: function(draggable) {
+        var draggable = ui.draggable;
+        // console.log(draggable)
         var row = draggable;
         var itemSubType = row.find("td.item-subtype-cell").text();
         var itemSize = parseInt(row.find("td.item-size-cell").text(), 10);
@@ -1211,16 +1250,46 @@ hardpointWells.droppable({
         var minSize = $(this).attr("data-min-size");
         var maxSize = $(this).attr("data-max-size");
         var label = $(this).find(".label")
-        // console.log("Item Sub Type:", itemSubType)
-        // console.log("Supported Sub Types:", supportedSubTypes);
-        // console.log("Item Size:", itemSize);
-        // console.log("Supported Size:", minSize, "-", maxSize);
+        var panel = $(this).parent().parent();
+        if (supportedSubTypes.indexOf(itemSubType) > -1 && itemSize >= minSize && itemSize <= maxSize)
+        {
+            // console.log("Item Supported!")
+            panel.removeClass("panel-warning panel-danger panel-success");
+            panel.addClass("panel-success");
+        }
+        else
+        {
+            panel.removeClass("panel-warning panel-danger panel-success");
+            panel.addClass("panel-danger");
+        }
+        $("#item-details-modal").modal("hide");
+        $("#itemport-details-modal").modal("hide");
+    },
+    over : function(event, ui) {
+        $(this).addClass("over");
+    },
+    out : function(event, ui) {
+        $(this).removeClass("over");
+    },
+    accept: function(draggable) {
+        // console.log(draggable)
+        var row = draggable;
+        var itemSubType = row.find("td.item-subtype-cell").text();
+        var itemSize = parseInt(row.find("td.item-size-cell").text(), 10);
+        var supportedSubTypes = $(this).attr("data-subtypes");
+        var minSize = $(this).attr("data-min-size");
+        var maxSize = $(this).attr("data-max-size");
+        var label = $(this).find(".label")
+        var panel = $(this).parent().parent();
         if (supportedSubTypes.indexOf(itemSubType) > -1 && itemSize >= minSize && itemSize <= maxSize)
         {
             // console.log("Item Supported!")
             return true;
         }
-        return false;
+        else
+        {
+            return false;
+        }
 }});       
 
 hardpoints.droppable({
@@ -1315,22 +1384,22 @@ function computeStats()
                 $("#stats-lds-warning-missingpowerplant").hide();
                 percentMaxPower = (powerConsumed / maxPower) * 100;
                 $("#stats-lds-available-power-label").text(powerConsumed + "/" + maxPower);
-                $("#stats-lds-available-power-container").removeClass("progress-success").removeClass("progress-warning").removeClass("progress-error");
+                $("#stats-lds-available-power-bar").removeClass("progress-bar-success").removeClass("progress-bar-warning").removeClass("progress-bar-danger");
                 if (percentMaxPower <= 50.0)
                 {
-                    $("#stats-lds-available-power-container").addClass("progress-success");
+                    $("#stats-lds-available-power-bar").addClass("progress-bar-success");
                 }
                 else if (percentMaxPower >= 50.0 && percentMaxPower <= 75.0)
                 {
-                    $("#stats-lds-available-power-container").addClass("progress-warning");
+                    $("#stats-lds-available-power-bar").addClass("progress-bar-warning");
                 }
                 else if (percentMaxPower >= 75 && percentMaxPower <= 100.0)
                 {
-                    $("#stats-lds-available-power-container").addClass("progress-danger");
+                    $("#stats-lds-available-power-bar").addClass("progress-bar-danger");
                 }
                 else
                 {
-                    $("#stats-lds-available-power-container").addClass("progress-danger");
+                    $("#stats-lds-available-power-bar").addClass("progress-bar-danger");
                     percentMaxPower = 100.0;
                 }
                 $("#stats-lds-available-power-bar").css({width: percentMaxPower + "%"})
@@ -1340,8 +1409,8 @@ function computeStats()
                 console.log($("#stats-lds-available-power-bar"));
                 $("#stats-lds-warning-missingpowerplant").show();
                 $("#stats-lds-available-power-label").text(powerConsumed + "/0");
-                $("#stats-lds-available-power-container").removeClass("progress-success").removeClass("progress-warning").removeClass("progress-error");
-                $("#stats-lds-available-power-container").addClass("progress-danger");
+                $("#stats-lds-available-power-bar").removeClass("progress-bar-success").removeClass("progress-bar-warning").removeClass("progress-bar-danger");
+                $("#stats-lds-available-power-bar").addClass("progress-bar-danger");
                 $("#stats-lds-available-power-bar").css({width:"100%"})
             }
         }
@@ -1396,22 +1465,22 @@ function computeStats()
                 $("#stats-warning-missingpowerplant").hide();
                 percentMaxPower = (powerConsumed / maxPower) * 100;
                 $("#stats-available-power-label").text(powerConsumed + "/" + maxPower);
-                $("#stats-available-power-container").removeClass("progress-success").removeClass("progress-warning").removeClass("progress-error");
+                $("#stats-available-power-bar").removeClass("progress-bar-success").removeClass("progress-bar-warning").removeClass("progress-bar-danger");
                 if (percentMaxPower <= 50.0)
                 {
-                    $("#stats-available-power-container").addClass("progress-success");
+                    $("#stats-available-power-bar").addClass("progress-bar-success");
                 }
                 else if (percentMaxPower >= 50.0 && percentMaxPower <= 75.0)
                 {
-                    $("#stats-available-power-container").addClass("progress-warning");
+                    $("#stats-available-power-bar").addClass("progress-bar-warning");
                 }
                 else if (percentMaxPower >= 75 && percentMaxPower <= 100.0)
                 {
-                    $("#stats-available-power-container").addClass("progress-danger");
+                    $("#stats-available-power-bar").addClass("progress-bar-danger");
                 }
                 else
                 {
-                    $("#stats-available-power-container").addClass("progress-danger");
+                    $("#stats-available-power-bar").addClass("progress-bar-danger");
                     percentMaxPower = 100.0;
                 }
                 $("#stats-available-power-bar").css({width: percentMaxPower + "%"})
@@ -1420,8 +1489,8 @@ function computeStats()
             {
                 $("#stats-warning-missingpowerplant").show();
                 $("#stats-available-power-label").text(powerConsumed + "/0");
-                $("#stats-available-power-container").removeClass("progress-success").removeClass("progress-warning").removeClass("progress-error");
-                $("#stats-available-power-container").addClass("progress-danger");
+                $("#stats-available-power-bar").removeClass("progress-bar-success").removeClass("progress-bar-warning").removeClass("progress-bar-danger");
+                $("#stats-available-power-bar").addClass("progress-bar-danger");
                 $("#stats-available-power-bar").css({width:"100%"})
             }
         }
