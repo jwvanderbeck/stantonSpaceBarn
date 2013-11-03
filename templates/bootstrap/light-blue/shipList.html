@@ -13,15 +13,15 @@
 {% block main-content %}
 {% for vehicle in vehicle_list %}
 {% if vehicle.available %}
-<div class="span4">
-    <section class="widget normal">
-        <header>
-            <h2><a href="/phase2/ship/{{vehicle.name}}">{{vehicle.displayName}}</a></h2>
-        </header>
-        <div class="body">
-            <a href="/phase2/ship/{{vehicle.name}}"><image src="{{vehicle.thumbnail}}" /></a>
+<div class="col-lg-4">
+	<div class="panel panel-info">
+        <div class="panel-heading">
+            <h4><a href="/phase2/ship/{{vehicle.name}}">{{vehicle.displayName}}</a></h4>
         </div>
-    </section>
+        <div class="panel-body">
+            <a href="/phase2/ship/{{vehicle.name}}"><image src="{{vehicle.thumbnail}}" class="img-responsive" /></a>
+        </div>
+    </div>
 </div>
 {% endif %}
 {% endfor %}

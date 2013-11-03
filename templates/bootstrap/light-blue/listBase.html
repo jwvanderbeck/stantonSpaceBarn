@@ -5,9 +5,10 @@
 <html>
 <head>
     <title>{%block title%}Stanton Space Barn{%endblock title%}</title>
-    <link href='{% static "theme/light-blue/css/application.css" %}' rel="stylesheet">
+    <link href='{% static "theme/bootstrap.css" %}' rel="stylesheet">
     <link href='{% static "css/phase2_app_style.css" %}' rel="stylesheet">
-    <link rel="shortcut icon" href='{% static "theme/light-blue/img/favicon.png" %}'>
+    <link rel="shortcut icon" href='{% static "theme/ssb-theme/img/favicon.png" %}'>
+    <link href='{% static "lib/nvd3/src/nv.d3.css" %}' rel="stylesheet">
     <script src='{% static "js/jquery-1.9.1.js" %}'> </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="">
@@ -35,47 +36,68 @@
     <h4><a href="/">Stanton <strong>Space Barn</strong></a></h4>
 </div>
 {% block sidebar %}
-<nav id="sidebar" class="sidebar">
-    <ul id="side-nav" class="side-nav">
-        <li id="my-hangar" style="display:none;">
-            <a href="/hangar/"><i class="icon-home"></i> <span class="name">My Hangar</span></a>
-        </li>
-        <li class="accordion-group">
-            <a class="accordion-toggle collapsed" data-toggle="collapse"
-               data-parent="#side-nav" href="#barn-collapse"><i class="icon-fighter-jet"></i> <span class="name">The Barn</span></a>
-            <ul id="barn-collapse" class="accordion-body collapse">
-                <li><a href="/ships/">Ships</a></li>
-                <li><a href="/variants/">Variants</a></li>
-            </ul>
-        </li>
-        <li class="accordion-group">
-            <a class="accordion-toggle" data-toggle="collapse"
-               data-parent="#side-nav" href="#items-collapse"><i class="icon-book"></i> <span class="name">DataBanks</span></a>
-            <ul id="items-collapse" class="accordion-body collapse in">
-                <li><a href="/items/">Items</a></li>
-                <li><a href="/vehicles/">Vehicles</a></li>
-            </ul>
-        </li>
-        <li >
-            <a href="/blog/"><i class="icon-home"></i> <span class="name">Blog</span></a>
-        </li>
-        <li class="accordion-group">
-            <a class="accordion-toggle collapsed" data-toggle="collapse"
-               data-parent="#side-nav" href="#phase2-collapse"><i class="icon-fighter-jet"></i> <span class="name">Phase 2</span></a>
-            <ul id="phase2-collapse" class="accordion-body collapse">
-                <li><a href="/phase2/">Ships</a></li>
-            </ul>
-        </li>
-        <li>
-            <form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
-            <input type="hidden" name="cmd" value="_s-xclick">
-            <input type="hidden" name="hosted_button_id" value="C8RN2MX2SRADW">
-            <input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
-            <img alt="" border="0" src="https://www.paypalobjects.com/en_US/i/scr/pixel.gif" width="1" height="1">
-            </form>
-        </li>
-
-    </ul>
+<nav id="sidebar" class="navbar navbar-default navbar-fixed-top" role="navigation">
+    <div class="navbar-header">
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="/">Stanton Space Barn</a>
+    </div>
+    <div class="collapse navbar-collapse navbar-ex1-collapse">
+        <ul class="nav navbar-nav">
+            <li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Phase 1 <b class="caret"></b></a>
+                <ul class="dropdown-menu">
+                    <li><a href="/ships/">Ships</a></li>
+                    <li><a href="/variants/">Variants</a></li>
+                </ul>
+            </li>
+            <li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Databanks <b class="caret"></b></a>
+                <ul class="dropdown-menu">
+                    <li><a href="/items/">Items</a></li>
+                    <li><a href="/vehicles/">Vehicles</a></li>
+                </ul>
+            </li>
+            <li class="dropdown active">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Workshop <b class="caret"></b></a>
+                <ul class="dropdown-menu">
+                    <li><a href="/phase2/">Ships</a></li>
+                </ul>
+            </li>
+        </ul>
+        <ul class="nav navbar-nav navbar-right">
+            <li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Pilot Operations <b class="caret"></b></a>
+                <ul class="dropdown-menu">
+                    <li id="user-actions-logout"><a  id="user-action-logout" href="#">Logout</a></li>
+                    <li id="user-actions-login"><a id="user-action-login" href="#">Login</a></li>
+                    <li id="user-actions-newuser"><a id="user-action-newuser" href="#">Create Account</a></li>
+                </ul>
+            </li>
+            <li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">MobiGlas Access <b class="caret"></b></a>
+                <ul class="dropdown-menu">
+                    <li id="system-actions-quickvariant"><a id="system-action-quickvariant" href="#">Share QuickVariant</a></li>
+                    <li class="disabled"><a href="#">Save Variant</a></li>
+                    <li class="divider"></li>
+                    <li><a href="http://www.robertsspaceindustries.com">Roberts Space Industries</a></li>
+                    <li><a href="http://starcitizen.mojoworld.com/StarMap/">Starmap</a></li>
+                </ul>
+            </li>
+            <span class="navbar-text pull-right">
+                <form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
+                <input type="hidden" name="cmd" value="_s-xclick">
+                <input type="hidden" name="hosted_button_id" value="C8RN2MX2SRADW">
+                <input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+                <img alt="" border="0" src="https://www.paypalobjects.com/en_US/i/scr/pixel.gif" width="1" height="1">
+                </form>
+            </span>
+        </ul>
+    </div>
 </nav>
 {% endblock sidebar %}
 
@@ -84,9 +106,9 @@
 
 <div class="wrap">
     <header class="page-header">
-        <h1 class="offset5">{% block page-header %}List{% endblock page-header %}</h1>
+        <h1 class="col-lg-offset-2">{% block page-header %}List{% endblock page-header %}</h1>
     </header>
-    <div class="content container-fluid">
+    <div class="container">
     {% block main-content %}
     {% endblock main-content %}
     </div>
@@ -94,63 +116,53 @@
 
 <!-- jquery and friends -->
 <script src='{% static "js/jquery-1.9.1.js" %}'> </script>
-<script src='{% static "theme/light-blue/lib/jquery/jquery-migrate-1.1.0.min.js" %}'> </script>
+<script src='{% static "theme/ssb-theme/lib/jquery/jquery-migrate-1.1.0.min.js" %}'> </script>
 
 <!-- jquery plugins -->
-<script src='{% static "theme/light-blue/lib/jquery-maskedinput/jquery.maskedinput.js" %}'></script>
-<script src='{% static "theme/light-blue/lib/parsley/parsley.js" %}'> </script>
-<script src='{% static "theme/light-blue/lib/icheck.js/jquery.icheck.js" %}'></script>
-<script src='{% static "theme/light-blue/lib/select2.js" %}'></script>
-<script type="text/javascript" src='{% static "js/jquery-ui-1.10.3.custom.min.js" %}'></script>
+<script src='{% static "theme/ssb-theme/lib/jquery-maskedinput/jquery.maskedinput.js" %}'></script>
+<script src='{% static "theme/ssb-theme/lib/parsley/parsley.js" %}'> </script>
+<script src='{% static "theme/ssb-theme/lib/icheck.js/jquery.icheck.js" %}'></script>
+<script src='{% static "theme/ssb-theme/lib/select2.js" %}'></script>
+<script type="text/javascript" src='{% static "js/jquery-ui-1.10.3.custom.js" %}'></script>
 <script type='text/javascript' src='{% static "js/jquery.form.min.js" %}'></script>
 <script type="text/javascript" src='{% static "js/jquery.hoverIntent.minified.js" %}'></script>
 <script type="text/javascript" src='{% static "js/jquery.backstretch.min.js" %}'></script>
 
 <!-- d3, nvd3-->
-<script src='{% static "theme/light-blue/lib/nvd3/lib/d3.v2.js" %}'></script>
-<script src='{% static "theme/light-blue/lib/nvd3/nv.d3.custom.js" %}'></script>
+<script src='{% static "lib/nvd3/lib/d3.v2.js" %}'></script>
+<script src='{% static "lib/nvd3/nv.d3.js" %}'></script>
 
 <!-- nvd3 models -->
-<script src='{% static "theme/light-blue/lib/nvd3/src/models/scatter.js" %}'></script>
-<script src='{% static "theme/light-blue/lib/nvd3/src/models/axis.js" %}'></script>
-<script src='{% static "theme/light-blue/lib/nvd3/src/models/legend.js" %}'></script>
-<script src='{% static "theme/light-blue/lib/nvd3/src/models/stackedArea.js" %}'></script>
-<script src='{% static "theme/light-blue/lib/nvd3/src/models/stackedAreaChart.js" %}'></script>
-<script src='{% static "theme/light-blue/lib/nvd3/src/models/line.js" %}'></script>
-<script src='{% static "theme/light-blue/lib/nvd3/src/models/pie.js" %}'></script>
-<script src='{% static "theme/light-blue/lib/nvd3/src/models/pieChartTotal.js" %}'></script>
-<script src='{% static "theme/light-blue/lib/nvd3/stream_layers.js" %}'></script>
-<script src='{% static "theme/light-blue/lib/nvd3/src/models/lineChart.js" %}'></script>
-<script src='{% static "theme/light-blue/lib/nvd3/src/models/multiBar.js" %}'></script>
-<script src='{% static "theme/light-blue/lib/nvd3/src/models/multiBarChart.js" %}'></script>
+<script src='{% static "lib/nvd3/src/models/lineChart.js" %}'></script>
 
 <!--backbone and friends -->
-<script src='{% static "theme/light-blue/lib/backbone/underscore-min.js" %}'></script>
-<script src='{% static "theme/light-blue/lib/backbone/backbone-min.js" %}'></script>
-<script src='{% static "theme/light-blue/lib/backbone/backbone-pageable.js" %}'></script>
-<script src='{% static "theme/light-blue/lib/backgrid/backgrid.js" %}'></script>
-<script src='{% static "theme/light-blue/lib/backgrid/backgrid-paginator.js" %}'></script>
+<script src='{% static "theme/ssb-theme/lib/backbone/underscore-min.js" %}'></script>
+<script src='{% static "theme/ssb-theme/lib/backbone/backbone-min.js" %}'></script>
+<script src='{% static "theme/ssb-theme/lib/backbone/backbone-pageable.js" %}'></script>
+<script src='{% static "theme/ssb-theme/lib/backgrid/backgrid.js" %}'></script>
+<script src='{% static "theme/ssb-theme/lib/backgrid/backgrid-paginator.js" %}'></script>
 
 <!-- bootstrap default plugins -->
-<script src='{% static "theme/light-blue/js/bootstrap/bootstrap.js" %}'></script>
-<script src='{% static "theme/light-blue/js/bootstrap/bootstrap-transition.js" %}'></script>
-<script src='{% static "theme/light-blue/js/bootstrap/bootstrap-collapse.js" %}'></script>
-<script src='{% static "theme/light-blue/js/bootstrap/bootstrap-alert.js" %}'></script>
-<script src='{% static "theme/light-blue/js/bootstrap/bootstrap-tooltip.js" %}'></script>
-<script src='{% static "theme/light-blue/js/bootstrap/bootstrap-popover.js" %}'></script>
-<script src='{% static "theme/light-blue/js/bootstrap/bootstrap-button.js" %}'></script>
-<script src='{% static "theme/light-blue/js/bootstrap/bootstrap-dropdown.js" %}'></script>
-<script src='{% static "theme/light-blue/js/bootstrap/bootstrap-modal.js" %}'></script>
-<script src='{% static "theme/light-blue/js/bootstrap/bootstrap-tab.js" %}'> </script>
+<script src='{% static "theme/ssb-theme/lib/bootstrap/transition.js" %}'></script>
+<script src='{% static "theme/ssb-theme/lib/bootstrap/collapse.js" %}'></script>
+<script src='{% static "theme/ssb-theme/lib/bootstrap/alert.js" %}'></script>
+<script src='{% static "theme/ssb-theme/lib/bootstrap/tooltip.js" %}'></script>
+<script src='{% static "theme/ssb-theme/lib/bootstrap/popover.js" %}'></script>
+<script src='{% static "theme/ssb-theme/lib/bootstrap/button.js" %}'></script>
+<script src='{% static "theme/ssb-theme/lib/bootstrap/dropdown.js" %}'></script>
+<script src='{% static "theme/ssb-theme/lib/bootstrap/modal.js" %}'></script>
+<script src='{% static "theme/ssb-theme/lib/bootstrap/tab.js" %}'> </script>
+
+<!-- Other Plugins -->
+<script src='{% static "theme/ssb-theme/lib/bootstrap-select/bootstrap-select.js" %}'> </script>
+<script src='{% static "theme/ssb-theme/lib/bootstrap-wysihtml5/bootstrap-wysihtml5.js" %}'> </script>
 
 <!-- basic application js-->
-<script src='{% static "theme/light-blue/js/app.js" %}'></script>
-<script src='{% static "theme/light-blue/js/settings.js" %}'></script>
 <script src='{% static "js/phase2_app.js" %}'></script>
 
 <script type='text/javascript'>
     $(document).ready( function () {
-        $.backstretch('{% static "images/bg.jpg" %}');
+        // $.backstretch('{% static "images/bg.jpg" %}');
         {% block ready-script %}
         {% endblock ready-script %}
     });

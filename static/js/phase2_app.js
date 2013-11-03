@@ -411,7 +411,7 @@ function toggleItemPorts(activeItemType)
 {
     var ports = $(".item-port");
     ports.each(function(){
-        if ($(this).hasClass(activeItemType))
+        if ($(this).hasClass("itemtype-" + activeItemType))
             $(this).show(200);
         else
             $(this).hide(200);
@@ -442,18 +442,74 @@ function leavePortLabel()
 
 function enterPort()
 {
-    var portWell = $(".item-port-label[data-port-name='" + $(this).attr("id") + "']");
-    var panel = portWell.parent().parent();
-    panel.addClass("panel-info");
-    $(this).addClass("highlight")
+    $(this).attr("data-focus", "yes");
+    // distance datablock should be from port tag
+    var offsetLeft = -15;
+    var offsetTop = 0;
+    // Display datablock overlay in computed postion
+    var datablock = $("#datablock-overlay-" + $(this).attr("id")).parent();
+    var datablockHeight = datablock.height();
+    var datablockWidth = datablock.width();
+    var tagLeft = $(this).position().left;
+    var tagTop = $(this).position().top;
+    console.log(tagLeft, tagTop);
+    var parentWidth = $(this).parent().width();
+    var parentHeight = $(this).parent().height();
+    console.log(parentWidth, parentHeight);
+    var datablockLeft = tagLeft - ((datablockWidth / 2) + offsetLeft);
+    var datablockTop = tagTop - (datablockHeight + offsetTop);
+    console.log(datablockLeft, datablockTop, datablockWidth, datablockHeight);
+    if (datablockLeft - (datablockWidth / 2) < 0)
+    {
+        datablockLeft = 0
+    }
+    if (datablockLeft + (datablockWidth) > (parentWidth-25))
+    {
+        datablockLeft = parentWidth - datablockWidth - 25;
+    }
+    console.log(datablockLeft, datablockTop);
+    console.log("Showing", datablock)
+    datablock.show(200);
+    datablock.css({"top" : datablockTop + "px", "left" : datablockLeft + "px"});
 }
 
 function leavePort()
 {
-    var portWell = $(".item-port-label[data-port-name='" + $(this).attr("id") + "']");
-    var panel = portWell.parent().parent();
-    panel.removeClass("panel-info");
-    $(this).removeClass("highlight")
+    $(this).attr("data-focus", "no");
+    var datablock = ("#datablock-overlay-" + $(this).attr("id"));
+    setTimeout( function() {
+        console.log("datablock", datablock)
+        hideOverlay($(datablock).parent())
+    }, 500);
+}
+
+function enterOverlay()
+{
+    console.log("enterOverlay", $(this))
+    $(this).attr("data-focus", "yes")
+}
+
+function leaveOverlay()
+{
+    console.log("LeaveOverlay", $(this))
+    $(this).attr("data-focus", "no")
+    var datablock = $(this);
+    setTimeout( function() {
+        hideOverlay(datablock)
+    }, 500);
+}
+
+function hideOverlay(overlay)
+{
+    // If the overlay or tag has focus, we cancel this
+    // otherwise we hide it
+    if (overlay.attr("data-focus") == "yes")
+        return;
+    var tagID = overlay.attr("data-port-name")
+    if ( $("#" + tagID).attr("data-focus") == "yes" )
+        return;
+    
+    overlay.hide(200);
 }
 
 function removeItemFromPort(portData)
@@ -467,12 +523,12 @@ function removeItemFromPort(portData)
     if (parentPort == undefined)
     {
         var portTag = $("#" + portName);
-        var portLabel = $(".item-port-label[data-port-name='" + portName + "']");
+        var portOverlay = $(".datablock-floating[data-port-name='" + portName + "']");
         portTag.removeClass("filled");
 
         // Remove item from label
-        portLabel.removeAttr("data-item-name");
-        portLabel.find("span.item-name").text("Nothing Loaded");
+        portOverlay.removeAttr("data-item-name");
+        portOverlay.find("span.item-name").text("Nothing Loaded");
         var portDatablock = $(".item-port-datablock[data-port-name='" + portName + "']");
     }
     else
@@ -851,13 +907,13 @@ function addItemToPort(portData, itemData)
     if (parentPort == undefined)
     {
         var portTag = $("#" + portName);
-        var portLabel = $(".item-port-label[data-port-name='" + portName + "']");
+        // var portLabel = $(".item-port-label[data-port-name='" + portName + "']");
         // Mark tag as filled
         portTag.addClass("filled");
 
         // Remove item from label
-        portLabel.removeAttr("data-item-name");
-        portLabel.find("span.item-name").text("Nothing Loaded");
+        // portLabel.removeAttr("data-item-name");
+        // portLabel.find("span.item-name").text("Nothing Loaded");
         var portDatablock = $(".item-port-datablock[data-port-name='" + portName + "']");
     }
     else
@@ -869,8 +925,8 @@ function addItemToPort(portData, itemData)
     }
 
     var portTag = $("#" + portName);
-    var portDatablock = $('.item-port-datablock[data-port-name="' + portName + '"]'); 
-    var portWell = $('.item-port-label[data-port-name="' + portName + '"]');
+    // var portDatablock = $('.item-port-datablock[data-port-name="' + portName + '"]'); 
+    var portWell = $('.datablock-floating[data-port-name="' + portName + '"]');
     var portDisplayName = portDatablock.parent().parent().find(".panel-heading h5").text();
 
     var itemDisplayName = itemData["displayName"];

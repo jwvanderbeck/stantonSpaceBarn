@@ -142,12 +142,13 @@
         </div>
     </div>
 </div>
+
 {% endblock pre-content %}
 
 {% block page-header %}Workshop{% endblock page-header %}
         {% block main-content %}
         <div class="row-fluid">
-            <div class="col-lg-9" id="ship-images">
+            <div class="col-md-8" id="ship-images">
                 <div class="panel panel-info">
                     <div class="panel-heading">
                         <h2 class="page-title">{% block page-title %}{{shipData.displayName}}{% endblock page-title %}</h2>
@@ -171,7 +172,33 @@
                                         <image src="{{shipData.layoutImageTopRight}}" class="col-lg-12"></image>
                                         {% for port in shipData.itemport_set.all %}
                                             {% if port.parentImage == 1%}
-                                            <div class="item-port {%for type in port.supportedTypes.all%}{{type.typeName}} {%endfor%}" style="left:{{port.tagLocationX}}%;top:{{port.tagLocationY}}%;" data-types="{%for type in port.supportedTypes.all%}{{type.typeName}}{%if not forloop.last %},{%endif%}{%endfor%}" data-subtypes="{%for type in port.supportedSubTypes.all%}{{type.subTypeName}}{%if not forloop.last %},{%endif%}{%endfor%}" data-min-size={{port.minSize}} data-max-size={{port.maxSize}} id="{{port.name}}" data-parent={{port.parentImage}}></div>
+                                            <div class="item-port {%for type in port.supportedTypes.all%}itemtype-{{type.typeName}} {%endfor%}" 
+                                                style="left:{{port.tagLocationX}}%;top:{{port.tagLocationY}}%;" 
+                                                data-types="{%for type in port.supportedTypes.all%}{{type.typeName}}{%if not forloop.last %},{%endif%}{%endfor%}" 
+                                                data-subtypes="{%for type in port.supportedSubTypes.all%}{{type.subTypeName}}{%if not forloop.last %},{%endif%}{%endfor%}" 
+                                                data-min-size={{port.minSize}} 
+                                                data-max-size={{port.maxSize}} 
+                                                id="{{port.name}}" 
+                                                data-parent={{port.parentImage}}
+                                                data-port-name={{port.name}}>
+                                            </div>
+                                            <div class="col-md-5 datablock datablock-floating {%for type in port.supportedTypes.all%}itemtype-{{type.typeName}} {%endfor%}" 
+                                                style='display:none;' 
+                                                data-port-name="{{port.name}}">
+                                                <div class="panel panel-compact panel-info" id="datablock-overlay-{{port.name}}">
+                                                    <div class="panel-heading">
+                                                        <h5>{{port.displayName}} (size {{port.minSize}} - {{port.maxSize}})</h5>
+                                                    </div>
+                                                    <div class-"panel-body">
+                                                        <div class="well well-compact">
+                                                            <span class="item-name">Nothing Loaded</span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="panel-footer">
+                                                        <p>{%for type in port.supportedSubTypes.all%}{{type.subTypeName}}{%if not forloop.last %}, {%endif%}{%endfor%}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
                                             {% endif %}
                                         {% endfor %}
                                     </div>
@@ -181,7 +208,33 @@
                                         <image src="{{shipData.layoutImageTopLeft}}" class="col-lg-12"></image>
                                         {% for port in shipData.itemport_set.all %}
                                             {% if port.parentImage == 2%}
-                                            <div class="item-port {%for type in port.supportedTypes.all%}{{type.typeName}} {%endfor%}" style="left:{{port.tagLocationX}}%;top:{{port.tagLocationY}}%;" data-types="{%for type in port.supportedTypes.all%}{{type.typeName}}{%if not forloop.last %},{%endif%}{%endfor%}" data-subtypes="{%for type in port.supportedSubTypes.all%}{{type.subTypeName}}{%if not forloop.last %},{%endif%}{%endfor%}" data-min-size={{port.minSize}} data-max-size={{port.maxSize}} id="{{port.name}}" data-parent={{port.parentImage}}></div>
+                                            <div class="item-port {%for type in port.supportedTypes.all%}itemtype-{{type.typeName}} {%endfor%}" 
+                                                style="left:{{port.tagLocationX}}%;top:{{port.tagLocationY}}%;" 
+                                                data-types="{%for type in port.supportedTypes.all%}{{type.typeName}}{%if not forloop.last %},{%endif%}{%endfor%}" 
+                                                data-subtypes="{%for type in port.supportedSubTypes.all%}{{type.subTypeName}}{%if not forloop.last %},{%endif%}{%endfor%}" 
+                                                data-min-size={{port.minSize}} 
+                                                data-max-size={{port.maxSize}} 
+                                                id="{{port.name}}" 
+                                                data-parent={{port.parentImage}}
+                                                data-port-name={{port.name}}>
+                                            </div>
+                                            <div class="col-md-5 datablock datablock-floating {%for type in port.supportedTypes.all%}itemtype-{{type.typeName}} {%endfor%}" 
+                                                style='display:none;' 
+                                                data-port-name="{{port.name}}">
+                                                <div class="panel panel-compact panel-info" id="datablock-overlay-{{port.name}}">
+                                                    <div class="panel-heading">
+                                                        <h5>{{port.displayName}} (size {{port.minSize}} - {{port.maxSize}})</h5>
+                                                    </div>
+                                                    <div class-"panel-body">
+                                                        <div class="well well-compact">
+                                                            <span class="item-name">Nothing Loaded</span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="panel-footer">
+                                                        <p>{%for type in port.supportedSubTypes.all%}{{type.subTypeName}}{%if not forloop.last %}, {%endif%}{%endfor%}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
                                             {% endif %}
                                         {% endfor %}
                                     </div>
@@ -191,7 +244,33 @@
                                         <image src="{{shipData.layoutImageBottomRight}}" class="col-lg-12"></image>
                                         {% for port in shipData.itemport_set.all %}
                                             {% if port.parentImage == 3%}
-                                            <div class="item-port {%for type in port.supportedTypes.all%}{{type.typeName}} {%endfor%}" style="left:{{port.tagLocationX}}%;top:{{port.tagLocationY}}%;" data-types="{%for type in port.supportedTypes.all%}{{type.typeName}}{%if not forloop.last %},{%endif%}{%endfor%}" data-subtypes="{%for type in port.supportedSubTypes.all%}{{type.subTypeName}}{%if not forloop.last %},{%endif%}{%endfor%}" data-min-size={{port.minSize}} data-max-size={{port.maxSize}} id="{{port.name}}" data-parent={{port.parentImage}}></div>
+                                            <div class="item-port {%for type in port.supportedTypes.all%}itemtype-{{type.typeName}} {%endfor%}" 
+                                                style="left:{{port.tagLocationX}}%;top:{{port.tagLocationY}}%;" 
+                                                data-types="{%for type in port.supportedTypes.all%}{{type.typeName}}{%if not forloop.last %},{%endif%}{%endfor%}" 
+                                                data-subtypes="{%for type in port.supportedSubTypes.all%}{{type.subTypeName}}{%if not forloop.last %},{%endif%}{%endfor%}" 
+                                                data-min-size={{port.minSize}} 
+                                                data-max-size={{port.maxSize}} 
+                                                id="{{port.name}}" 
+                                                data-parent={{port.parentImage}}
+                                                data-port-name={{port.name}}>
+                                            </div>
+                                            <div class="col-md-5 datablock datablock-floating {%for type in port.supportedTypes.all%}itemtype-{{type.typeName}} {%endfor%}" 
+                                                style='display:none;' 
+                                                data-port-name="{{port.name}}">
+                                                <div class="panel panel-compact panel-info" id="datablock-overlay-{{port.name}}">
+                                                    <div class="panel-heading">
+                                                        <h5>{{port.displayName}} (size {{port.minSize}} - {{port.maxSize}})</h5>
+                                                    </div>
+                                                    <div class-"panel-body">
+                                                        <div class="well well-compact">
+                                                            <span class="item-name">Nothing Loaded</span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="panel-footer">
+                                                        <p>{%for type in port.supportedSubTypes.all%}{{type.subTypeName}}{%if not forloop.last %}, {%endif%}{%endfor%}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
                                             {% endif %}
                                         {% endfor %}
                                     </div>
@@ -201,7 +280,33 @@
                                         <image src="{{shipData.layoutImageBottomLeft}}" class="col-lg-12"></image>
                                         {% for port in shipData.itemport_set.all %}
                                             {% if port.parentImage == 4%}
-                                            <div class="item-port {%for type in port.supportedTypes.all%}{{type.typeName}} {%endfor%}" style="left:{{port.tagLocationX}}%;top:{{port.tagLocationY}}%;" data-types="{%for type in port.supportedTypes.all%}{{type.typeName}}{%if not forloop.last %},{%endif%}{%endfor%}" data-subtypes="{%for type in port.supportedSubTypes.all%}{{type.subTypeName}}{%if not forloop.last %},{%endif%}{%endfor%}" data-min-size={{port.minSize}} data-max-size={{port.maxSize}} id="{{port.name}}" data-parent={{port.parentImage}}></div>
+                                            <div class="item-port {%for type in port.supportedTypes.all%}itemtype-{{type.typeName}} {%endfor%}" 
+                                                style="left:{{port.tagLocationX}}%;top:{{port.tagLocationY}}%;" 
+                                                data-types="{%for type in port.supportedTypes.all%}{{type.typeName}}{%if not forloop.last %},{%endif%}{%endfor%}" 
+                                                data-subtypes="{%for type in port.supportedSubTypes.all%}{{type.subTypeName}}{%if not forloop.last %},{%endif%}{%endfor%}" 
+                                                data-min-size={{port.minSize}} 
+                                                data-max-size={{port.maxSize}} 
+                                                id="{{port.name}}" 
+                                                data-parent={{port.parentImage}}
+                                                data-port-name={{port.name}}>
+                                            </div>
+                                            <div class="col-md-5 datablock datablock-floating {%for type in port.supportedTypes.all%}itemtype-{{type.typeName}} {%endfor%}" 
+                                                style='display:none;' 
+                                                data-port-name="{{port.name}}">
+                                                <div class="panel panel-compact panel-info" id="datablock-overlay-{{port.name}}">
+                                                    <div class="panel-heading">
+                                                        <h5>{{port.displayName}} (size {{port.minSize}} - {{port.maxSize}})</h5>
+                                                    </div>
+                                                    <div class-"panel-body">
+                                                        <div class="well well-compact">
+                                                            <span class="item-name">Nothing Loaded</span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="panel-footer">
+                                                        <p>{%for type in port.supportedSubTypes.all%}{{type.subTypeName}}{%if not forloop.last %}, {%endif%}{%endfor%}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
                                             {% endif %}
                                         {% endfor %}
                                     </div>
@@ -299,7 +404,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-lg-3">
+            <div class="col-md-4">
                 <div class="panel panel-info">
                     <div class="panel-heading">
                         <h4>Compatible Items</h4>
@@ -325,195 +430,30 @@
                             <div id="items-list-content" class="tab-content">
                                 <div id="hardpoints-Weapon" class="tab-pane fade in active">
                                     <div id="table-dynamic-Weapon"></div>
-                                    <div></div>
-                                    <h4>Hardpoints</h4>
-                                    <p><span class="label-highlight">Use Systems Overview to see all hardpoints at once</span></p>
-                                    {% for itemPort in shipData.itemport_set.all %}
-                                        {% if itemPort.parentImage > 0 %}
-                                            {% for itemType in itemPort.supportedTypes.all %}
-                                                {% if itemType.typeName == "Weapon" %}
-    <div class="panel panel-warning panel-compact" data-state="empty" data-status="warning">
-        <div class="panel-heading">
-            <h5>{% firstof itemPort.displayName itemPort.name %}</h5>
-        </div>
-        <div class="panel-body">
-            <div class="well well-compact item-port-label" data-port-name="{{itemPort.name}}" data-parent={{itemPort.parentImage}} data-min-size={{itemPort.minSize}} data-max-size={{itemPort.maxSize}} data-subtypes="{%for type in itemPort.supportedSubTypes.all%}{{type.subTypeName}}{%if not forloop.last %},{%endif%}{%endfor%}"><span class="item-name">Nothing Loaded</span></div>
-        </div>
-    </div>
-        
-
-                                                {% endif %}
-                                            {% endfor %}
-                                        {% endif %}
-                                    {% endfor %}
                                 </div>
                                 <div id="hardpoints-Thruster" class="tab-pane fade">
                                     <div id="table-dynamic-Thruster"></div>
-                                    <div></div>
-                                    <h4>Hardpoints</h4>
-                                    {% for itemPort in shipData.itemport_set.all %}
-                                        {% if itemPort.parentImage > 0 %}
-                                            {% for itemType in itemPort.supportedTypes.all %}
-                                                {% if itemType.typeName == "Thruster" %}
-    <div class="panel panel-danger panel-compact" data-state="empty" data-status="danger">
-        <div class="panel-heading">
-            <h5>{% firstof itemPort.displayName itemPort.name %}</h5>
-        </div>
-        <div class="panel-body">
-            <div class="well well-compact item-port-label" data-port-name="{{itemPort.name}}" data-parent={{itemPort.parentImage}} data-min-size={{itemPort.minSize}} data-max-size={{itemPort.maxSize}} data-subtypes="{%for type in itemPort.supportedSubTypes.all%}{{type.subTypeName}}{%if not forloop.last %},{%endif%}{%endfor%}"><span class="item-name">Nothing Loaded</span></div>
-        </div>
-    </div>
-                                                {% endif %}
-                                            {% endfor %}
-                                        {% endif %}
-                                    {% endfor %}
                                 </div>
                                 <div id="hardpoints-PowerPlant" class="tab-pane fade">
                                     <div id="table-dynamic-PowerPlant"></div>
-                                    <div></div>
-                                    <h4>Hardpoints</h4>
-                                    {% for itemPort in shipData.itemport_set.all %}
-                                        {% if itemPort.parentImage > 0 %}
-                                            {% for itemType in itemPort.supportedTypes.all %}
-                                                {% if itemType.typeName == "PowerPlant" %}
-    <div class="panel panel-danger panel-compact" data-state="empty" data-status="danger">
-        <div class="panel-heading">
-            <h5>{% firstof itemPort.displayName itemPort.name %}</h5>
-        </div>
-        <div class="panel-body">
-            <div class="well well-compact item-port-label" data-port-name="{{itemPort.name}}" data-parent={{itemPort.parentImage}} data-min-size={{itemPort.minSize}} data-max-size={{itemPort.maxSize}} data-subtypes="{%for type in itemPort.supportedSubTypes.all%}{{type.subTypeName}}{%if not forloop.last %},{%endif%}{%endfor%}"><span class="item-name">Nothing Loaded</span></div>
-        </div>
-    </div>
-                                                {% endif %}
-                                            {% endfor %}
-                                        {% endif %}
-                                    {% endfor %}
                                 </div>
                                 <div id="hardpoints-Container" class="tab-pane fade">
                                     <div id="table-dynamic-Container"></div>
-                                    <div></div>
-                                    <h4>Hardpoints</h4>
-                                    {% for itemPort in shipData.itemport_set.all %}
-                                        {% if itemPort.parentImage > 0 %}
-                                            {% for itemType in itemPort.supportedTypes.all %}
-                                                {% if itemType.typeName == "Container" %}
-    <div class="panel panel-warning panel-compact" data-state="empty" data-status="warning">
-        <div class="panel-heading">
-            <h5>{% firstof itemPort.displayName itemPort.name %}</h5>
-        </div>
-        <div class="panel-body">
-            <div class="well well-compact item-port-label" data-port-name="{{itemPort.name}}" data-parent={{itemPort.parentImage}} data-min-size={{itemPort.minSize}} data-max-size={{itemPort.maxSize}} data-subtypes="{%for type in itemPort.supportedSubTypes.all%}{{type.subTypeName}}{%if not forloop.last %},{%endif%}{%endfor%}"><span class="item-name">Nothing Loaded</span></div>
-        </div>
-    </div>
-                                                {% endif %}
-                                            {% endfor %}
-                                        {% endif %}
-                                    {% endfor %}
                                 </div>
                                 <div id="hardpoints-Avionics" class="tab-pane fade">
                                     <div id="table-dynamic-Avionics"></div>
-                                    <div></div>
-                                    <h4>Hardpoints</h4>
-                                    {% for itemPort in shipData.itemport_set.all %}
-                                        {% if itemPort.parentImage > 0 %}
-                                            {% for itemType in itemPort.supportedTypes.all %}
-                                                {% if itemType.typeName == "Avionics" %}
-    <div class="panel panel-warning panel-compact" data-state="empty" data-status="warning">
-        <div class="panel-heading">
-            <h5>{% firstof itemPort.displayName itemPort.name %}</h5>
-        </div>
-        <div class="panel-body">
-            <div class="well well-compact item-port-label" data-port-name="{{itemPort.name}}" data-parent={{itemPort.parentImage}} data-min-size={{itemPort.minSize}} data-max-size={{itemPort.maxSize}} data-subtypes="{%for type in itemPort.supportedSubTypes.all%}{{type.subTypeName}}{%if not forloop.last %},{%endif%}{%endfor%}"><span class="item-name">Nothing Loaded</span></div>
-        </div>
-    </div>
-                                                {% endif %}
-                                            {% endfor %}
-                                        {% endif %}
-                                    {% endfor %}
                                 </div>
                                 <div id="hardpoints-Battery" class="tab-pane fade">
                                     <div id="table-dynamic-Battery"></div>
-                                    <div></div>
-                                    <h4>Hardpoints</h4>
-                                    {% for itemPort in shipData.itemport_set.all %}
-                                        {% if itemPort.parentImage > 0 %}
-                                            {% for itemType in itemPort.supportedTypes.all %}
-                                                {% if itemType.typeName == "Battery" %}
-    <div class="panel panel-warning panel-compact" data-state="empty" data-status="warning">
-        <div class="panel-heading">
-            <h5>{% firstof itemPort.displayName itemPort.name %}</h5>
-        </div>
-        <div class="panel-body">
-            <div class="well well-compact item-port-label" data-port-name="{{itemPort.name}}" data-parent={{itemPort.parentImage}} data-min-size={{itemPort.minSize}} data-max-size={{itemPort.maxSize}} data-subtypes="{%for type in itemPort.supportedSubTypes.all%}{{type.subTypeName}}{%if not forloop.last %},{%endif%}{%endfor%}"><span class="item-name">Nothing Loaded</span></div>
-        </div>
-    </div>
-                                                {% endif %}
-                                            {% endfor %}
-                                        {% endif %}
-                                    {% endfor %}
                                 </div>
                                 <div id="hardpoints-Cooler" class="tab-pane fade">
                                     <div id="table-dynamic-Cooler"></div>
-                                    <div></div>
-                                    <h4>Hardpoints</h4>
-                                    {% for itemPort in shipData.itemport_set.all %}
-                                        {% if itemPort.parentImage > 0 %}
-                                            {% for itemType in itemPort.supportedTypes.all %}
-                                                {% if itemType.typeName == "Cooler" %}
-    <div class="panel panel-warning panel-compact" data-state="empty" data-status="warning">
-        <div class="panel-heading">
-            <h5>{% firstof itemPort.displayName itemPort.name %}</h5>
-        </div>
-        <div class="panel-body">
-            <div class="well well-compact item-port-label" data-port-name="{{itemPort.name}}" data-parent={{itemPort.parentImage}} data-min-size={{itemPort.minSize}} data-max-size={{itemPort.maxSize}} data-subtypes="{%for type in itemPort.supportedSubTypes.all%}{{type.subTypeName}}{%if not forloop.last %},{%endif%}{%endfor%}"><span class="item-name">Nothing Loaded</span></div>
-        </div>
-    </div>
-                                                {% endif %}
-                                            {% endfor %}
-                                        {% endif %}
-                                    {% endfor %}
                                 </div>
                                 <div id="hardpoints-Display" class="tab-pane fade">
                                     <div id="table-dynamic-Display"></div>
-                                    <div></div>
-                                    <h4>Hardpoints</h4>
-                                    {% for itemPort in shipData.itemport_set.all %}
-                                        {% if itemPort.parentImage > 0 %}
-                                            {% for itemType in itemPort.supportedTypes.all %}
-                                                {% if itemType.typeName == "Display" %}
-    <div class="panel panel-warning panel-compact" data-state="empty" data-status="warning">
-        <div class="panel-heading">
-            <h5>{% firstof itemPort.displayName itemPort.name %}</h5>
-        </div>
-        <div class="panel-body">
-            <div class="well well-compact item-port-label" data-port-name="{{itemPort.name}}" data-parent={{itemPort.parentImage}} data-min-size={{itemPort.minSize}} data-max-size={{itemPort.maxSize}} data-subtypes="{%for type in itemPort.supportedSubTypes.all%}{{type.subTypeName}}{%if not forloop.last %},{%endif%}{%endfor%}"><span class="item-name">Nothing Loaded</span></div>
-        </div>
-    </div>
-                                                {% endif %}
-                                            {% endfor %}
-                                        {% endif %}
-                                    {% endfor %}
                                 </div>
                                 <div id="hardpoints-Radar" class="tab-pane fade">
                                     <div id="table-dynamic-Radar"></div>
-                                    <div></div>
-                                    <h4>Hardpoints</h4>
-                                    {% for itemPort in shipData.itemport_set.all %}
-                                        {% if itemPort.parentImage > 0 %}
-                                            {% for itemType in itemPort.supportedTypes.all %}
-                                                {% if itemType.typeName == "Radar" %}
-    <div class="panel panel-warning panel-compact" data-state="empty" data-status="warning">
-        <div class="panel-heading">
-            <h5>{% firstof itemPort.displayName itemPort.name %}</h5>
-        </div>
-        <div class="panel-body">
-            <div class="well well-compact item-port-label" data-port-name="{{itemPort.name}}" data-parent={{itemPort.parentImage}} data-min-size={{itemPort.minSize}} data-max-size={{itemPort.maxSize}} data-subtypes="{%for type in itemPort.supportedSubTypes.all%}{{type.subTypeName}}{%if not forloop.last %},{%endif%}{%endfor%}"><span class="item-name">Nothing Loaded</span></div>
-        </div>
-    </div>
-                                                {% endif %}
-                                            {% endfor %}
-                                        {% endif %}
-                                    {% endfor %}
                                 </div>
                             </div>
                         </div>
@@ -613,6 +553,13 @@ $(".item-port").hoverIntent({
         timeout: 100,
         out: leavePort
     });
+
+$(".datablock-floating").hoverIntent({
+        over: enterOverlay,
+        timeout: 10,
+        out: leaveOverlay
+    });
+
 
 $(".item-port").on("click", function(event){
     var portName = $(this).attr("id");
