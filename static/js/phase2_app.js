@@ -372,16 +372,17 @@ function filterByItemPort(itemPortName)
     var portTag = $("#" + itemPortName);
     var portDatablock = $(".item-port-datablock[data-port-name='" + itemPortName + "']");
     console.log("Filtering", itemPortName)
-    
-    if (portTag.hasClass("filtered") || portDatablock.find(".icon-filter").hasClass("icon-active"))
+    console.log(portDatablock);
+    if (portTag.hasClass("filtered") || portDatablock.parent().parent().find(".glyphicon-filter").hasClass("icon-active"))
     {
+        console.log("Clearing filter")
         for (var i = 0; i < ITEM_TYPES.length; i++)
         {
             var pageable = GRIDS[ITEM_TYPES[i]]["pageable"]
             createBackgrid(pageable, $("#table-dynamic-" + ITEM_TYPES[i]));
         }
         portTag.removeClass("filtered");
-        portDatablock.find(".icon-filter").removeClass("icon-active");
+        portDatablock.parent().parent().find(".glyphicon-filter").removeClass("icon-active");
     }
     else
     {
@@ -402,7 +403,8 @@ function filterByItemPort(itemPortName)
             createBackgrid(pageable, $("#table-dynamic-" + ITEM_TYPES[i]));
         }
         portTag.addClass("filtered");
-        portDatablock.find(".icon-filter").addClass("icon-active");
+        portDatablock.parent().parent().find(".glyphicon-filter").addClass("icon-active");
+        console.log(portDatablock.find(".glyphicon-filter"))
     }
 }
 
@@ -572,10 +574,10 @@ function removeItemFromPort(portData)
     console.log(datablocks);
     datablocks.each(function(){
         var div = $(this).parent();
-        var section = div.parent();
-        div.remove();
-        if (section.children().length == 0)
-            section.remove();
+        var panel = div.parent();
+        panel.remove();
+        // if (section.children().length == 0)
+        //     section.remove();
     });
     // // after removing the datablocks for that port, we need to re-arrange
     // // what is left so the HTML doesn't get all crappy
@@ -976,12 +978,17 @@ function addItemToPort(portData, itemData)
                 for (var index = 0; index < ports.length; index++)
                 {
                     newPortName = ports[index]["portname"]
-                    var mainDiv = $(document.createElement("div")).insertAfter(currentSection).addClass("col-lg-3");
+                    var mainDiv = $(document.createElement("div")).insertAfter(currentSection).addClass("col-lg-4");
                     var panel = $(document.createElement("div")).appendTo(mainDiv).addClass("panel panel-compact panel-warning")
+                        .attr("data-port-name", newPortName)
                         .attr("data-state", "empty")
                         .attr("data-status", "warning");
                     var heading = $(document.createElement("div")).appendTo(panel).addClass("panel-heading");
-                    $(document.createElement("h5")).appendTo(heading).text(ports[index]["name"]);
+                    var h5 = $(document.createElement("h5")).appendTo(heading).text(ports[index]["name"]);
+                    $(document.createElement("span")).appendTo(h5)
+                        .addClass("glyphicon glyphicon-remove pull-right icon-large");
+                    $(document.createElement("span")).appendTo(h5)
+                        .addClass("glyphicon glyphicon-filter pull-right icon-large");
                     var body = $(document.createElement("div")).appendTo(panel)
                         .addClass("panel-body");
                     var well = $(document.createElement("div")).appendTo(body)
@@ -1131,9 +1138,10 @@ function dropItem(ele, event, ui) {
 function enableDatablock(element)
 {
     // Connect click events for Clear and Filter
-    element.find(".icon-remove").on("click", function(event){
+    element.parent().parent().find(".glyphicon-remove").on("click", function(event){
         event.stopPropagation();
-        var portWell = $(this).parent()
+        var portWell = $(this).parent().parent().parent();
+        console.log(portWell);
         var portName = portWell.attr("data-port-name");
         var parentPort = portWell.attr("data-parent-port");
         var parentItem = portWell.attr("data-parent-item");
@@ -1141,9 +1149,9 @@ function enableDatablock(element)
         console.log(portData)
         removeItemFromPort(portData);
     });
-    element.find(".icon-filter").on("click", function(event){
+    element.parent().parent().find(".glyphicon-filter").on("click", function(event){
         event.stopPropagation();
-        var portWell = $(this).parent()
+        var portWell = $(this).parent().parent().parent()
         var portName = portWell.attr("data-port-name");
         filterByItemPort(portName);
     });
