@@ -1183,6 +1183,26 @@ function enableDatablock(element)
         },
         activate : function(event, ui) {
             // console.log("Activate drag")
+            var draggable = ui.draggable;
+            var row = draggable;
+            var itemSubType = row.find("td.item-subtype-cell").text();
+            var itemSize = parseInt(row.find("td.item-size-cell").text(), 10);
+            var supportedSubTypes = $(this).attr("data-subtypes");
+            var minSize = $(this).attr("data-min-size");
+            var maxSize = $(this).attr("data-max-size");
+            var label = $(this).find(".label")
+            var panel = $(this).parent().parent();
+            if (supportedSubTypes.indexOf(itemSubType) > -1 && itemSize >= minSize && itemSize <= maxSize)
+            {
+                // console.log("Item Supported!")
+                panel.removeClass("panel-warning panel-danger panel-success");
+                panel.addClass("panel-success");
+            }
+            else
+            {
+                panel.removeClass("panel-warning panel-danger panel-success");
+                panel.addClass("panel-danger");
+            }
             $("#item-details-modal").modal("hide");
             $("#itemport-details-modal").modal("hide");
         },
@@ -1202,22 +1222,14 @@ function enableDatablock(element)
         var minSize = $(this).attr("data-min-size");
         var maxSize = $(this).attr("data-max-size");
         var label = $(this).find(".label")
-        // console.log("Item Sub Type:", itemSubType)
-        // console.log("Supported Sub Types:", supportedSubTypes);
-        // console.log("Item Size:", itemSize);
-        // console.log("Supported Size:", minSize, "-", maxSize);
         var panel = $(this).parent().parent();
         if (supportedSubTypes.indexOf(itemSubType) > -1 && itemSize >= minSize && itemSize <= maxSize)
         {
             // console.log("Item Supported!")
-            panel.removeClass("panel-warning panel-danger panel-success");
-            panel.addClass("panel-success");
             return true;
         }
         else
         {
-            panel.removeClass("panel-warning panel-danger panel-success");
-            panel.addClass("panel-danger");
             return false;
         }
     }});       
@@ -1246,6 +1258,26 @@ hardpointDatablocks.droppable({
     },
     activate : function(event, ui) {
         // console.log("Activate drag")
+        var draggable = ui.draggable;
+        var row = draggable;
+        var itemSubType = row.find("td.item-subtype-cell").text();
+        var itemSize = parseInt(row.find("td.item-size-cell").text(), 10);
+        var supportedSubTypes = $(this).attr("data-subtypes");
+        var minSize = $(this).attr("data-min-size");
+        var maxSize = $(this).attr("data-max-size");
+        var label = $(this).find(".label")
+        var panel = $(this).parent().parent();
+        if (supportedSubTypes.indexOf(itemSubType) > -1 && itemSize >= minSize && itemSize <= maxSize)
+        {
+            // console.log("Item Supported!")
+            panel.removeClass("panel-warning panel-danger panel-success");
+            panel.addClass("panel-success");
+        }
+        else
+        {
+            panel.removeClass("panel-warning panel-danger panel-success");
+            panel.addClass("panel-danger");
+        }
         $("#item-details-modal").modal("hide");
         $("#itemport-details-modal").modal("hide");
     },
@@ -1265,22 +1297,13 @@ hardpointDatablocks.droppable({
         var minSize = $(this).attr("data-min-size");
         var maxSize = $(this).attr("data-max-size");
         var label = $(this).find(".label")
-        // console.log("Item Sub Type:", itemSubType)
-        // console.log("Supported Sub Types:", supportedSubTypes);
-        // console.log("Item Size:", itemSize);
-        // console.log("Supported Size:", minSize, "-", maxSize);
         var panel = $(this).parent().parent();
         if (supportedSubTypes.indexOf(itemSubType) > -1 && itemSize >= minSize && itemSize <= maxSize)
         {
-            // console.log("Item Supported!")
-            panel.removeClass("panel-warning panel-danger panel-success");
-            panel.addClass("panel-success");
             return true;
         }
         else
         {
-            panel.removeClass("panel-warning panel-danger panel-success");
-            panel.addClass("panel-danger");
             return false;
         }
 }});       
