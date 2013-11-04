@@ -185,9 +185,11 @@
                                             <div class="col-md-5 datablock datablock-floating {%for type in port.supportedTypes.all%}itemtype-{{type.typeName}} {%endfor%}" 
                                                 style='display:none;' 
                                                 data-port-name="{{port.name}}">
-                                                <div class="panel panel-compact panel-info" id="datablock-overlay-{{port.name}}">
+                                                <div class="panel panel-compact panel-info" 
+                                                    id="datablock-overlay-{{port.name}}"
+                                                    data-port-name="{{port.name}}">
                                                     <div class="panel-heading">
-                                                        <h5>{{port.displayName}} (size {{port.minSize}} - {{port.maxSize}})</h5>
+                                                        <h5>{{port.displayName}} (size {{port.minSize}} - {{port.maxSize}})<span class="glyphicon glyphicon-remove pull-right icon-large"></span><span class="glyphicon glyphicon-filter pull-right icon-large"></span></h5>
                                                     </div>
                                                     <div class-"panel-body">
                                                         <div class="well well-compact">
@@ -411,6 +413,32 @@
                         <h4>Compatible Items</h4>
                     </div>
                     <div class="panel-body">
+                        <div class="panel-group" id="items-accordion">
+                            <div class="panel panel-default">
+                                <div class="panel-heading">
+                                    <h4 class="panel-title">
+                                        <a data-toggle="collapse" data-target="#collapse-weapons">Weapons</a>
+                                    </h4>
+                                </div>
+                                <div id="collapse-weapons" class="panel-collapse collapse in">
+                                    <div class="panel-body">
+                                        <div id="table-dynamic-Weapon"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="panel panel-default">
+                                <div class="panel-heading">
+                                    <h4 class="panel-title">
+                                        <a data-toggle="collapse" data-target="#collapse-thrusters">Thrusters</a>
+                                    </h4>
+                                </div>
+                                <div id="collapse-thrusters" class="panel-collapse collapse">
+                                    <div class="panel-body">
+                                        <div id="table-dynamic-Thruster"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                         <div class="tabbable tabs-right">
                             <ul id="items-list" class="nav nav-pills nav-stacked">
                                 <li class="dropdown active">
@@ -543,24 +571,28 @@ $(".glyphicon-remove").on("click", function(event){
     removeItemFromPort(portData);
 });
 
-$(".item-port-label").hoverIntent({
-        over: enterPortLabel,
-        timeout: 100,
-        out: leavePortLabel
-    });
+$(".item-port").on("mouseenter", function(event){
+    var port = $(this);
+    console.log("port", port);
+    enterPort(port);
+});
 
-$(".item-port").hoverIntent({
-        over: enterPort,
-        timeout: 100,
-        out: leavePort
-    });
+$(".item-port").on("mouseleave", function(event){
+    var port = $(this);
+    leavePort(port);
+});
 
-$(".datablock-floating").hoverIntent({
-        over: enterOverlay,
-        timeout: 10,
-        out: leaveOverlay
-    });
 
+$(".datablock-floating").on("mouseenter", function(event){
+    var datablock = $(this);
+    console.log("Datablock", datablock);
+   enterOverlay(datablock);
+});
+
+$(".datablock-floating").on("mouseleave", function(event){
+    var datablock = $(this);
+   leaveOverlay(datablock);
+});
 
 $(".item-port").on("click", function(event){
     var portName = $(this).attr("id");

@@ -442,21 +442,21 @@ function leavePortLabel()
     $("#" + portName).removeClass("highlight")
 }
 
-function enterPort()
+function enterPort(port)
 {
-    $(this).attr("data-focus", "yes");
+    port.attr("data-focus", "yes");
     // distance datablock should be from port tag
     var offsetLeft = -15;
     var offsetTop = 0;
     // Display datablock overlay in computed postion
-    var datablock = $("#datablock-overlay-" + $(this).attr("id")).parent();
+    var datablock = $("#datablock-overlay-" + port.attr("id")).parent();
     var datablockHeight = datablock.height();
     var datablockWidth = datablock.width();
-    var tagLeft = $(this).position().left;
-    var tagTop = $(this).position().top;
+    var tagLeft = port.position().left;
+    var tagTop = port.position().top;
     console.log(tagLeft, tagTop);
-    var parentWidth = $(this).parent().width();
-    var parentHeight = $(this).parent().height();
+    var parentWidth = port.parent().width();
+    var parentHeight = port.parent().height();
     console.log(parentWidth, parentHeight);
     var datablockLeft = tagLeft - ((datablockWidth / 2) + offsetLeft);
     var datablockTop = tagTop - (datablockHeight + offsetTop);
@@ -475,27 +475,27 @@ function enterPort()
     datablock.css({"top" : datablockTop + "px", "left" : datablockLeft + "px"});
 }
 
-function leavePort()
+function leavePort(port)
 {
-    $(this).attr("data-focus", "no");
-    var datablock = ("#datablock-overlay-" + $(this).attr("id"));
+    console.log("leavePort", port);
+    port.attr("data-focus", "no");
+    var datablock = ("#datablock-overlay-" + port.attr("id"));
     setTimeout( function() {
-        console.log("datablock", datablock)
         hideOverlay($(datablock).parent())
     }, 500);
 }
 
-function enterOverlay()
+function enterOverlay(overlay)
 {
-    console.log("enterOverlay", $(this))
-    $(this).attr("data-focus", "yes")
+    console.log("enterOverlay", overlay)
+    overlay.attr("data-focus", "yes")
 }
 
-function leaveOverlay()
+function leaveOverlay(overlay)
 {
-    console.log("LeaveOverlay", $(this))
-    $(this).attr("data-focus", "no")
-    var datablock = $(this);
+    console.log("LeaveOverlay", overlay)
+    overlay.attr("data-focus", "no")
+    var datablock = overlay;
     setTimeout( function() {
         hideOverlay(datablock)
     }, 500);
@@ -505,9 +505,12 @@ function hideOverlay(overlay)
 {
     // If the overlay or tag has focus, we cancel this
     // otherwise we hide it
+    console.log("hideoverlay", overlay)
+    console.log(overlay.attr("data-focus"));
     if (overlay.attr("data-focus") == "yes")
         return;
     var tagID = overlay.attr("data-port-name")
+    console.log($("#" + tagID).attr("data-focus"));
     if ( $("#" + tagID).attr("data-focus") == "yes" )
         return;
     
