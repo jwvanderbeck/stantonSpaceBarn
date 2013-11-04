@@ -223,9 +223,11 @@
                                             <div class="col-md-5 datablock datablock-floating {%for type in port.supportedTypes.all%}itemtype-{{type.typeName}} {%endfor%}" 
                                                 style='display:none;' 
                                                 data-port-name="{{port.name}}">
-                                                <div class="panel panel-compact panel-info" id="datablock-overlay-{{port.name}}">
+                                                <div class="panel panel-compact panel-info" 
+                                                    id="datablock-overlay-{{port.name}}"
+                                                    data-port-name="{{port.name}}">
                                                     <div class="panel-heading">
-                                                        <h5>{{port.displayName}} (size {{port.minSize}} - {{port.maxSize}})</h5>
+                                                        <h5>{{port.displayName}} (size {{port.minSize}} - {{port.maxSize}})<span class="glyphicon glyphicon-remove pull-right icon-large"></span><span class="glyphicon glyphicon-filter pull-right icon-large"></span></h5>
                                                     </div>
                                                     <div class-"panel-body">
                                                         <div class="well well-compact">
@@ -259,9 +261,11 @@
                                             <div class="col-md-5 datablock datablock-floating {%for type in port.supportedTypes.all%}itemtype-{{type.typeName}} {%endfor%}" 
                                                 style='display:none;' 
                                                 data-port-name="{{port.name}}">
-                                                <div class="panel panel-compact panel-info" id="datablock-overlay-{{port.name}}">
+                                                <div class="panel panel-compact panel-info" 
+                                                    id="datablock-overlay-{{port.name}}"
+                                                    data-port-name="{{port.name}}">
                                                     <div class="panel-heading">
-                                                        <h5>{{port.displayName}} (size {{port.minSize}} - {{port.maxSize}})</h5>
+                                                        <h5>{{port.displayName}} (size {{port.minSize}} - {{port.maxSize}})<span class="glyphicon glyphicon-remove pull-right icon-large"></span><span class="glyphicon glyphicon-filter pull-right icon-large"></span></h5>
                                                     </div>
                                                     <div class-"panel-body">
                                                         <div class="well well-compact">
@@ -295,9 +299,11 @@
                                             <div class="col-md-5 datablock datablock-floating {%for type in port.supportedTypes.all%}itemtype-{{type.typeName}} {%endfor%}" 
                                                 style='display:none;' 
                                                 data-port-name="{{port.name}}">
-                                                <div class="panel panel-compact panel-info" id="datablock-overlay-{{port.name}}">
+                                                <div class="panel panel-compact panel-info" 
+                                                    id="datablock-overlay-{{port.name}}"
+                                                    data-port-name="{{port.name}}">
                                                     <div class="panel-heading">
-                                                        <h5>{{port.displayName}} (size {{port.minSize}} - {{port.maxSize}})</h5>
+                                                        <h5>{{port.displayName}} (size {{port.minSize}} - {{port.maxSize}})<span class="glyphicon glyphicon-remove pull-right icon-large"></span><span class="glyphicon glyphicon-filter pull-right icon-large"></span></h5>
                                                     </div>
                                                     <div class-"panel-body">
                                                         <div class="well well-compact">
@@ -417,7 +423,7 @@
                             <div class="panel panel-default">
                                 <div class="panel-heading">
                                     <h4 class="panel-title">
-                                        <a data-toggle="collapse" data-target="#collapse-weapons">Weapons</a>
+                                        <a data-toggle="collapse" data-parent="#items-accordian" href="#collapse-weapons">Weapons</a>
                                     </h4>
                                 </div>
                                 <div id="collapse-weapons" class="panel-collapse collapse in">
@@ -429,7 +435,7 @@
                             <div class="panel panel-default">
                                 <div class="panel-heading">
                                     <h4 class="panel-title">
-                                        <a data-toggle="collapse" data-target="#collapse-thrusters">Thrusters</a>
+                                        <a data-toggle="collapse" data-parent="#items-accordian" href="#collapse-thrusters">Thrusters</a>
                                     </h4>
                                 </div>
                                 <div id="collapse-thrusters" class="panel-collapse collapse">
@@ -438,51 +444,88 @@
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                        <div class="tabbable tabs-right">
-                            <ul id="items-list" class="nav nav-pills nav-stacked">
-                                <li class="dropdown active">
-                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Select Category <b class="caret"></b></a>
-                                <ul class="dropdown-menu">
-                                    <li class="active"><a class="type-select" href="#hardpoints-Weapon" data-toggle="tab">Weapons</a></li>
-                                    <li><a class="type-select" href="#hardpoints-Thruster" data-toggle="tab">Thrusters</a></li>
-                                    <li><a class="type-select" href="#hardpoints-PowerPlant" data-toggle="tab">Powerplant</a></li>
-                                    <li><a class="type-select" href="#hardpoints-Container" data-toggle="tab">Cargo</a></li>
-                                    <li><a class="type-select" href="#hardpoints-Avionics" data-toggle="tab">Avionics</a></li>
-                                    <li><a class="type-select" href="#hardpoints-Battery" data-toggle="tab">Batteries</a></li>
-                                    <li><a class="type-select" href="#hardpoints-Cooler" data-toggle="tab">Coolers</a></li>
-                                    <li><a class="type-select" href="#hardpoints-Display" data-toggle="tab">Displays</a></li>
-                                    <li><a class="type-select" href="#hardpoints-Radar" data-toggle="tab">Radars</a></li>
-                                </ul>
-                                </li>
-                            </ul>
-                            <div id="items-list-content" class="tab-content">
-                                <div id="hardpoints-Weapon" class="tab-pane fade in active">
-                                    <div id="table-dynamic-Weapon"></div>
+                            <div class="panel panel-default">
+                                <div class="panel-heading">
+                                    <h4 class="panel-title">
+                                        <a data-toggle="collapse" data-parent="#items-accordian" href="#collapse-powerplant">Powerplant</a>
+                                    </h4>
                                 </div>
-                                <div id="hardpoints-Thruster" class="tab-pane fade">
-                                    <div id="table-dynamic-Thruster"></div>
+                                <div id="collapse-powerplant" class="panel-collapse collapse">
+                                    <div class="panel-body">
+                                        <div id="table-dynamic-PowerPlant"></div>
+                                    </div>
                                 </div>
-                                <div id="hardpoints-PowerPlant" class="tab-pane fade">
-                                    <div id="table-dynamic-PowerPlant"></div>
+                            </div>
+                            <div class="panel panel-default">
+                                <div class="panel-heading">
+                                    <h4 class="panel-title">
+                                        <a data-toggle="collapse" data-parent="#items-accordian" href="#collapse-cargo">Cargo</a>
+                                    </h4>
                                 </div>
-                                <div id="hardpoints-Container" class="tab-pane fade">
-                                    <div id="table-dynamic-Container"></div>
+                                <div id="collapse-cargo" class="panel-collapse collapse">
+                                    <div class="panel-body">
+                                        <div id="table-dynamic-Container"></div>
+                                    </div>
                                 </div>
-                                <div id="hardpoints-Avionics" class="tab-pane fade">
-                                    <div id="table-dynamic-Avionics"></div>
+                            </div>
+                            <div class="panel panel-default">
+                                <div class="panel-heading">
+                                    <h4 class="panel-title">
+                                        <a data-toggle="collapse" data-parent="#items-accordian" href="#collapse-avionics">Avionics</a>
+                                    </h4>
                                 </div>
-                                <div id="hardpoints-Battery" class="tab-pane fade">
-                                    <div id="table-dynamic-Battery"></div>
+                                <div id="collapse-avionics" class="panel-collapse collapse">
+                                    <div class="panel-body">
+                                        <div id="table-dynamic-Avionics"></div>
+                                    </div>
                                 </div>
-                                <div id="hardpoints-Cooler" class="tab-pane fade">
-                                    <div id="table-dynamic-Cooler"></div>
+                            </div>
+                            <div class="panel panel-default">
+                                <div class="panel-heading">
+                                    <h4 class="panel-title">
+                                        <a data-toggle="collapse" data-parent="#items-accordian" href="#collapse-batteries">Batteries</a>
+                                    </h4>
                                 </div>
-                                <div id="hardpoints-Display" class="tab-pane fade">
-                                    <div id="table-dynamic-Display"></div>
+                                <div id="collapse-batteries" class="panel-collapse collapse">
+                                    <div class="panel-body">
+                                        <div id="table-dynamic-Battery"></div>
+                                    </div>
                                 </div>
-                                <div id="hardpoints-Radar" class="tab-pane fade">
-                                    <div id="table-dynamic-Radar"></div>
+                            </div>
+                            <div class="panel panel-default">
+                                <div class="panel-heading">
+                                    <h4 class="panel-title">
+                                        <a data-toggle="collapse" data-parent="#items-accordian" href="#collapse-thrusters">Coolers</a>
+                                    </h4>
+                                </div>
+                                <div id="collapse-coolers" class="panel-collapse collapse">
+                                    <div class="panel-body">
+                                        <div id="table-dynamic-Cooler"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="panel panel-default">
+                                <div class="panel-heading">
+                                    <h4 class="panel-title">
+                                        <a data-toggle="collapse" data-parent="#items-accordian" href="#collapse-thrusters">Displays</a>
+                                    </h4>
+                                </div>
+                                <div id="collapse-displays" class="panel-collapse collapse">
+                                    <div class="panel-body">
+                                        <div id="table-dynamic-Display"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="panel panel-default">
+                                <div class="panel-heading">
+                                    <h4 class="panel-title">
+                                        <a data-toggle="collapse" data-parent="#items-accordian" href="#collapse-radars">Radars</a>
+                                    </h4>
+                                </div>
+                                <div id="collapse-radars" class="panel-collapse collapse">
+                                    <div class="panel-body">
+                                        <div id="table-dynamic-Radar"></div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
