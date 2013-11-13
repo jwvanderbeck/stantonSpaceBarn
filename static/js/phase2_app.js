@@ -1173,6 +1173,9 @@ function enableDatablock(element)
         deactivate : function(event, ui) {
         // reset temporary status coloring
             var panels = $(".panel-compact[data-status]");
+            filterHardpoints("all");
+            filterHardpoints("filled", $("#hardpoints-filter-show-filled").attr("checked"))
+            filterHardpoints("empty", $("#hardpoints-filter-show-empty").attr("checked"))
             panels.each(function(){
                 $(this).removeClass("panel-success panel-warning panel-danger");
                 var status = $(this).attr("data-status");
@@ -1201,6 +1204,10 @@ function enableDatablock(element)
                 panel.removeClass("panel-warning panel-danger panel-success");
                 panel.addClass("panel-danger");
             }
+            var itemData = {};
+            itemData['subtype'] = itemSubType;
+            itemData['size'] = itemSize;
+            filterHardpoints("invalid", showInvalid, itemData)
             $("#item-details-modal").modal("hide");
             $("#itemport-details-modal").modal("hide");
         },
