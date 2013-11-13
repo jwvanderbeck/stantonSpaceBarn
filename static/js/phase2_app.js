@@ -602,6 +602,10 @@ function removeItemFromPort(portData)
         // if (section.children().length == 0)
         //     section.remove();
     });
+    // update hardpoint filters
+    filterHardpoints("all");
+    filterHardpoints("filled", $("#hardpoints-filter-show-filled").attr("checked"))
+    filterHardpoints("empty", $("#hardpoints-filter-show-empty").attr("checked"))
     // Recompute all stats now that this item has been removed
     computeStats();
 }
