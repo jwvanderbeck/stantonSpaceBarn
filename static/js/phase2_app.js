@@ -85,6 +85,28 @@ var indexOf = function(needle) {
     return indexOf.call(this, needle);
 };
 
+
+/**********************************************************
+// Class-switch for button-groups
+**********************************************************/
+$(".btn-group > .btn[data-toggle-class]").click(function(){
+    var $this = $(this),
+        isRadio = $this.find('input').is('[type=radio]'),
+        $parent = $this.parent();
+
+    if (isRadio){
+        $parent.children(".btn[data-toggle-class]").removeClass(function(){
+            return $(this).data("toggle-class")
+        }).addClass(function(){
+                return $(this).data("toggle-passive-class")
+            });
+        $this.removeClass($(this).data("toggle-passive-class")).addClass($this.data("toggle-class"));
+    } else {
+        $this.toggleClass($(this).data("toggle-passive-class")).toggleClass($this.data("toggle-class"));
+    }
+});
+
+
 /**********************************************************
 // Copy all "data-item-*" atributes from one element
 // to a second element
@@ -329,22 +351,6 @@ function createBackgrid(collection, parentElement){
     parentElement.html(pageableGrid.render().$el);
 }
 
-// var tableResize;
-// $(window).resize(function(e) {
-//     clearTimeout(tableResize);
-//     tableResize = setTimeout(function(){
-//         createBackgrid(pageableAvionics, $("#table-dynamic-avionics"));
-//         createBackgrid(pageableBatteries, $("#table-dynamic-batteries"));
-//         createBackgrid(pageableCargo, $("#table-dynamic-cargo"));
-//         createBackgrid(pageableCooler, $("#table-dynamic-coolers"));
-//         createBackgrid(pageableDisplays, $("#table-dynamic-displays"));
-//         createBackgrid(pageableRadars, $("#table-dynamic-radar"));
-//         createBackgrid(pageablePowerplants, $("#table-dynamic-powerplants"));
-//         createBackgrid(pageableWeapons, $("#table-dynamic-weapons"));
-//         createBackgrid(pageableThrusters, $("#table-dynamic-thrusters"));
-//         }, 200);
-// });
-
 
 /***************************
 // End Backgrid
@@ -548,6 +554,15 @@ function removeItemFromPort(portData)
     // Remove item from datablock
     portDatablock.removeAttr("data-item-name");
     portDatablock.find("span.item-name").text("Nothing Loaded");
+    
+    // Set the proper states, coloring, etc
+    var container = portDatablock.parent().parent();
+    container.attr("data-state", "empty");
+    var baseStatus = container.attr("data-base-status");
+    container.removeClass("panel-" + baseStatus);
+    container.attr("data-status", baseStatus);
+    container.addClass("panel-" + baseStatus);
+    
 
     // Reset datablock state selection
     parent = portDatablock.find(".item-port-datablock-statebuttons");
@@ -574,40 +589,19 @@ function removeItemFromPort(portData)
     // TODO
     console.log("Removing sub ports");
     var datablocks = $(".item-port-datablock[data-parent-port='" + portName + "']");
-    console.log(datablocks);
+    console.log("Datablocks", datablocks);
     datablocks.each(function(){
+        console.log("Removing", $(this))
         var div = $(this).parent();
         var panel = div.parent();
-        panel.remove();
+        var widget = panel.parent();
+        console.log("div", div);
+        console.log("panel", panel);
+        console.log("widget", widget);
+        widget.remove();
         // if (section.children().length == 0)
         //     section.remove();
     });
-    // // after removing the datablocks for that port, we need to re-arrange
-    // // what is left so the HTML doesn't get all crappy
-    // datablocks = $(".item-port-datablock[data-parent-port]");
-    // var divs = []
-    // datablocks.each(function(){        
-    //     var div = $(this).parent();
-    //     divs.push(div);
-    //     var section = div.parent();
-    //     div.detach();
-    //     if (section.children().length == 0)
-    //         section.remove();
-    // });
-    // var overview = $("#hardpoints-overview");
-    // var sections = overview.find("section");
-    // var currentSection = $(sections[sections.length-1]);
-    // var count = currentSection.children().length;
-    // console.log("Count", count);
-    // for (var index=0;index < divs.length; index++)
-    // {
-    //     if (count > 2)
-    //     {
-    //         currentSection = $(document.createElement("section")).appendTo(overview);
-    //     }
-    //     divs[index].appendTo(currentSection);
-    //     count = count + 1;
-    // }
     // Recompute all stats now that this item has been removed
     computeStats();
 }
@@ -985,7 +979,8 @@ function addItemToPort(portData, itemData)
                     var panel = $(document.createElement("div")).appendTo(mainDiv).addClass("panel panel-compact panel-warning")
                         .attr("data-port-name", newPortName)
                         .attr("data-state", "empty")
-                        .attr("data-status", "warning");
+                        .attr("data-status", "warning")
+                        .attr("data-base-status", "warning");
                     var heading = $(document.createElement("div")).appendTo(panel).addClass("panel-heading");
                     var h5 = $(document.createElement("h5")).appendTo(heading).text(ports[index]["name"]);
                     $(document.createElement("span")).appendTo(h5)
@@ -1252,7 +1247,11 @@ hardpointDatablocks.droppable({
     deactivate : function(event, ui) {
         // reset temporary status coloring
         // console.log("Deactivate drag")
+        console.log("Deactivate")
         var panels = $(".panel-compact[data-status]");
+        filterHardpoints("all");
+        filterHardpoints("filled", $("#hardpoints-filter-show-filled").attr("checked"))
+        filterHardpoints("empty", $("#hardpoints-filter-show-empty").attr("checked"))
         panels.each(function(){
             $(this).removeClass("panel-success panel-warning panel-danger");
             var status = $(this).attr("data-status");
@@ -1270,6 +1269,10 @@ hardpointDatablocks.droppable({
         var maxSize = $(this).attr("data-max-size");
         var label = $(this).find(".label")
         var panel = $(this).parent().parent();
+        var showInvalid = $("#hardpoints-filter-show-invalid").attr('checked');
+        console.log("Show Invalid?", showInvalid);
+        var panelParent = panel.parent().parent();
+        var allPanels = $(".panel-compact[data-status]");
         if (supportedSubTypes.indexOf(itemSubType) > -1 && itemSize >= minSize && itemSize <= maxSize)
         {
             // console.log("Item Supported!")
@@ -1281,6 +1284,10 @@ hardpointDatablocks.droppable({
             panel.removeClass("panel-warning panel-danger panel-success");
             panel.addClass("panel-danger");
         }
+        var itemData = {};
+        itemData['subtype'] = itemSubType;
+        itemData['size'] = itemSize;
+        filterHardpoints("invalid", showInvalid, itemData)
         $("#item-details-modal").modal("hide");
         $("#itemport-details-modal").modal("hide");
     },
@@ -1424,6 +1431,77 @@ hardpoints.droppable({
         return false;
 }});       
 
+/*********************************************
+// Filters a given set of hardpoints in the
+// hardpoints overview page
+*********************************************/
+function filterHardpoints(set, value, item)
+{
+    /*****************************************
+    // Valid 'set' options:
+    // 'all' shows all hardpoints.  'value' is ignored
+    // 'filled' hides or shows filled hardpoints
+    // 'empty' hides or shows empty hardpoints
+    // 'invalid' hides or shows hardpoints invalid during a drag operation
+    *****************************************/
+    
+    var allHardpoints = $(".panel-compact[data-status]");
+    console.log("value", value)
+    if (set == "all")
+    {
+        allHardpoints.each( function(){
+           $(this).show(0); 
+        });
+    }
+    else if (set == "filled")
+    {
+        allHardpoints.each( function(){
+            if ( $(this).attr('data-state') == 'filled' )
+            {
+                if (value)
+                    $(this).show(200);
+                else
+                    $(this).hide(200);
+            }
+        });
+    }
+    else if (set == "empty")
+    {
+        allHardpoints.each( function(){
+            if ( $(this).attr('data-state') == 'empty' )
+            {
+                if (value)
+                    $(this).show(200);
+                else
+                    $(this).hide(200);
+            }
+        });
+    }
+    else if (set == "invalid")
+    {
+        allHardpoints.each( function(){
+            var panelBody = $(this).find(".panel-body").find('.well');
+            console.log(panelBody);
+            var supportedSubTypes = panelBody.attr("data-subtypes");
+            var minSize = panelBody.attr("data-min-size");
+            var maxSize = panelBody.attr("data-max-size");
+            console.log(supportedSubTypes);
+            console.log(minSize);
+            console.log(maxSize);
+            if (supportedSubTypes.indexOf(item['subtype']) == -1 || item['size'] < minSize || item['size'] > maxSize)
+            {
+                if (value)
+                    $(this).show(200);
+                else
+                    $(this).hide(200);
+            }
+            else
+            {
+                $(this).show(200);
+            }
+        });
+    }
+}
 function computeStats()
 {
     // computes stats based on items equipped

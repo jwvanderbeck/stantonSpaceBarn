@@ -320,6 +320,22 @@
                                     </div>
                                 </div>
                                 <div class="tab-pane fade" id="hardpoints-overview">
+                                    <div class="row">
+                                        <div class="col-md-6 col-md-offset-1">
+                                            <div class="btn-group" data-toggle="buttons">
+                                                <label class="btn btn-info btn-sm active" data-toggle-class="btn-info" data-toggle-passive-class="btn-primary">
+                                                    <input type="checkbox" value="show-empty" id="hardpoints-filter-show-empty">Show Empty Hardpoints
+                                                </label>
+                                                <label class="btn btn-info btn-sm active" data-toggle-class="btn-info" data-toggle-passive-class="btn-primary">
+                                                    <input type="checkbox" value="show-filled" id="hardpoints-filter-show-filled">Show Filled Hardpoints
+                                                </label>
+                                                <label class="btn btn-primary btn-sm" data-toggle-class="btn-info" data-toggle-passive-class="btn-primary">
+                                                    <input type="checkbox" value="show-invalid" id="hardpoints-filter-show-invalid">Show Invalid Hardpoints
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div id="hardpoints-container" class="row">
                                     {% for itemPort in shipData.itemport_set.all %}
                                         <div class="col-lg-4">
         <!-- {{itemPort.supportedTypes.all}} -->
@@ -337,12 +353,12 @@
         " data-state="empty"
         {% for type in itemPort.supportedTypes.all %}
         {% if "PowerPlant" in type.typeName %}
-          data-status="danger"
+          data-status="danger" data-base-status="danger"
         {% endif %}
         {% if "Thruster" in type.typeName %}
-          data-status="danger"
+          data-status="danger" data-base-status="danger"
         {% else %}
-          data-status="warning"
+          data-status="warning" data-base-status="warning"
         {% endif %}
         {% endfor %}
         data-port-name="{{itemPort.name}}">
@@ -373,6 +389,7 @@
 
                                         </div>
                                     {% endfor %}
+                                    </div>
                                 </div>
                             </div>
                     </div>
@@ -586,12 +603,13 @@ $('#quick-variant').modal({
 /******************************************************************************
 // Bind Events  
 ******************************************************************************/
-
+/********* Deprecated and no longer used
 $("a.type-select").on("click", function(e){
     var anchor = $(this).attr("href");
     var activeItemType = anchor.split("-")[1];
     toggleItemPorts(activeItemType);
 });
+*/
 
 Backbone.on("rowclicked", function (model) {
     console.log("Showing item details modal")
@@ -673,7 +691,9 @@ $(document).on("mouseenter", "tr.vehicle-item-row", function(){
       cursor: "move",
       delay: 100,
       distance: 5,
-      zIndex: 100
+      zIndex: 100,
+      scroll : true,
+      scrollDistance: 100
     })
 });
 
@@ -703,13 +723,33 @@ $("button.noop").click(function(event){
     computeStats();
 });
 
-toggleItemPorts("Weapon");
+//
+// Hardpoint filters on Overview page
+//
+$("#hardpoints-filter-show-empty").change(function(){
+    var isTrue = this.checked;
+    filterHardpoints("empty", isTrue);
+});
+$("#hardpoints-filter-show-filled").change(function(){
+    var isTrue = this.checked;
+    filterHardpoints("filled", isTrue);
+});
+//$("#hardpoints-filter-show-invalid").attr("checked", "true");
+
 computeStats();
+$("#hardpoints-filter-show-filled").attr("checked", "true");
+$("#hardpoints-filter-show-empty").attr("checked", "true");
 
 {% if user.is_authenticated %}
 setUserState(true);
 {% else %}
 setUserState(false);
 {% endif %}
+
+// var $container = $('#hardpoints-container');
+// $container.masonry({
+//   columnWidth: 200,
+//   itemSelector: '.panel'
+// });
 
 {% endblock ready-script %}
