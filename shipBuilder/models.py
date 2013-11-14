@@ -472,6 +472,16 @@ class Vehicle(models.Model):
         else:
             name = self.name
         return u"%s Class %d %s" % (name, self.vehicleClass, self.category)
+        
+class VehicleImage(models.Model):
+    url = models.URLField(default='')
+    name = models.CharField(max_length=80, default='')
+    tags = models.ManyToManyField('HardpointTag', blank = True, null = True)
+    
+class HardpointTag(models.Model):
+    hardpoint = models.ForeignKey('ItemPort', blank = True, nulle = True);
+    locationX = models.FloatField(default = 0);
+    locationY = models.FloatField(default = 0);
 
 class VariantItem(models.Model):
     variant = models.ForeignKey("Variant", blank=True, null=True)
