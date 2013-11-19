@@ -407,6 +407,7 @@ class VehicleImage(models.Model):
     url = models.URLField(default = '')
     name = models.CharField(max_length = 255, default = '')
     ship = models.ForeignKey('Vehicle')
+    tags = models.ManyToManyField('HardpointTag', blank = True, null = True)
     
     def __unicode__(self):
         return self.name
@@ -425,7 +426,7 @@ class ItemPort(models.Model):
     # Added just in case the game starts using it
     portClass = models.PositiveIntegerField(default = 0)
     # Additional fields required for The Barn
-        # 1 = TopRight, 2 = TopLeft, 3 = BottomRightLeft, 4 = BottomRight
+    # 1 = TopRight, 2 = TopLeft, 3 = BottomRightLeft, 4 = BottomRight
     parentImage = models.PositiveIntegerField(default = 0)
     image = models.ForeignKey('Image', null = True, blank = True)
     tagLocationX = models.FloatField(default = 0.0)
@@ -472,14 +473,9 @@ class Vehicle(models.Model):
         else:
             name = self.name
         return u"%s Class %d %s" % (name, self.vehicleClass, self.category)
-        
-class VehicleImage(models.Model):
-    url = models.URLField(default='')
-    name = models.CharField(max_length=80, default='')
-    tags = models.ManyToManyField('HardpointTag', blank = True, null = True)
-    
+            
 class HardpointTag(models.Model):
-    hardpoint = models.ForeignKey('ItemPort', blank = True, nulle = True);
+    hardpoint = models.ForeignKey('ItemPort', blank = True, null = True);
     locationX = models.FloatField(default = 0);
     locationY = models.FloatField(default = 0);
 

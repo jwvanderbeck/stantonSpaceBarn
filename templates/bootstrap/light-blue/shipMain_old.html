@@ -1,0 +1,755 @@
+{% extends "bootstrap/light-blue/base.html" %}
+{% load static %}
+
+{% block head %}
+{{block.super}}
+{% endblock head %}
+
+{% block sidebar %}
+{{block.super}}
+{% endblock sidebar %}
+
+{% block pre-content %}
+{{block.super}}
+<div class="modal fade" id="user-login">
+    <div class="modal-dialog">
+        <div class="modal-content" tabindex="-1" role="dialog">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">X</button>
+                <h3>Pilot Login</h3>
+            </div>
+            <div class="modal-body">
+                <form name='login-form' id='login-form' method='POST' action='/users/login/'>
+                    {{ loginForm.as_p}}
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" aria-hidden="true" onclick="submitUserLogin()">Submit</button>
+                <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="user-newuser">
+    <div class="modal-dialog">
+        <div class="modal-content" tabindex="-1" role="dialog">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">X</button>
+                <h3>Create New Pilot</h3>
+            </div>
+            <div class="modal-body">
+                <form name='newuser-form' id='newuser-form' method='POST' action='/users/create/'>
+                    {{ createUserForm.as_p}}
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" aria-hidden="true" onclick="submitNewUser()">Submit</button>
+                <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="quick-variant">
+    <div class="modal-dialog">
+        <div class="modal-content" tabindex="-1" role="dialog">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">X</button>
+                <h3>QuickVariant</h3>
+            </div>
+            <div class="modal-body">
+                <h5>Here is Your Quick Variant URL</h5>
+                <p>This URL is a snapshot of this current ship configuration.  It is static and will always display exactly what you see now.  If you make changes to this configuration you will need to request a new link.</p>
+                <div id="quickvariant-url"></div>        
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" aria-hidden="true" onclick="gotoQuickVariant()">Go To QuickVariant</button>
+                <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="item-details-modal">
+    <div class="modal-dialog">
+        <div class="modal-content" tabindex="-1" role="dialog">
+            <div class="modal-header">
+                <h3 id="item-details-itemname">Item Name</h3>
+            </div>
+            <div class="modal-body">
+                <div id="item-details-body">
+                    <table class="table" id="item-details-basics">
+                        <tbody>
+                        <tr class="label-inverse">
+                            <td>Class</td>
+                            <td id="item-details-itemclass"></td>
+                            <td>Size</td>
+                            <td id="item-details-itemsize"></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                    <div>
+                    <span id="item-details-itemtype"></span><span>: </span><span id="item-details-itemsubtype"></span>
+                    </div>
+                    <div id="item-details-description">
+                    </div>
+                    <div id="item-details-weaponbars">
+                    </div>
+                    <div id="item-details-misc">
+                    </div>
+                    <header>
+                        <h4 id="power-chart-header">Power</h4>
+                    </header>
+                    <div id="power-chart-line" class="chart">
+                        <svg></svg>
+                    </div>
+                    <header>
+                        <h4 id="heat-chart-header">Heat</h4>
+                    </header>
+                    <div id="heat-chart-line" class="chart">
+                        <svg></svg>
+                    </div>
+                    <header>
+                        <h4 id="avionics-chart-header">Avionics</h4>
+                    </header>
+                    <div id="avionics-chart-line" class="chart">
+                        <svg></svg>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" data-dismiss="modal" aria-hidden="true">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="itemport-details-modal">
+    <div class="modal-dialog">
+        <div class="modal-content" tabindex="-1" role="dialog">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" >×</button>
+                <h4 id="itemport-details-name">Itemport Name</h4>
+            </div>
+            <div class="modal-body">
+                <div id="itemport-details-body">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" data-dismiss="modal" aria-hidden="true">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock pre-content %}
+
+{% block page-header %}Workshop{% endblock page-header %}
+        {% block main-content %}
+        <div class="row-fluid">
+            <div class="col-md-8" id="ship-images">
+                <div class="panel panel-info">
+                    <div class="panel-heading">
+                        <h2 class="page-title">{% block page-title %}{{shipData.displayName}}{% endblock page-title %}</h2>
+                    </div>
+                    <div class="panel-body">
+                            <ul id="layout-images" class="nav nav-pills">
+                                <li class="dropdown active">
+                                    <a class="dropdown-toggle" data-toggle="dropdown" href="#">Main Hardpoints <b class="caret"></b></a>
+                                    <ul id="main-hardpoint-images" class="dropdown-menu">
+                                        <li><a href="#image-topright" data-toggle="pill">Top Right</a></li>
+                                        <li><a href="#image-topleft" data-toggle="pill">Top Left</a></li>
+                                        <li><a href="#image-bottomright" data-toggle="pill">Bottom Right</a></li>
+                                        <li><a href="#image-bottomleft" data-toggle="pill">Bottom Left</a></li>
+                                    </ul>
+                                </li>
+                                <li><a href="#hardpoints-overview" data-toggle="pill">All Hardpoints</a></li>
+                            </ul>
+                            <div id="layout-images-content" class="tab-content">
+                                <div class="tab-pane fade in active" id="image-topright">
+                                    <div style="position:relative">
+                                        <image src="{{shipData.layoutImageTopRight}}" class="col-lg-12"></image>
+                                        {% for port in shipData.itemport_set.all %}
+                                            {% if port.parentImage == 1%}
+                                            <div class="item-port {%for type in port.supportedTypes.all%}itemtype-{{type.typeName}} {%endfor%}" 
+                                                style="left:{{port.tagLocationX}}%;top:{{port.tagLocationY}}%;" 
+                                                data-types="{%for type in port.supportedTypes.all%}{{type.typeName}}{%if not forloop.last %},{%endif%}{%endfor%}" 
+                                                data-subtypes="{%for type in port.supportedSubTypes.all%}{{type.subTypeName}}{%if not forloop.last %},{%endif%}{%endfor%}" 
+                                                data-min-size={{port.minSize}} 
+                                                data-max-size={{port.maxSize}} 
+                                                id="{{port.name}}" 
+                                                data-parent={{port.parentImage}}
+                                                data-port-name={{port.name}}>
+                                            </div>
+                                            <div class="col-md-5 datablock datablock-floating {%for type in port.supportedTypes.all%}itemtype-{{type.typeName}} {%endfor%}" 
+                                                style='display:none;' 
+                                                data-port-name="{{port.name}}">
+                                                <div class="panel panel-compact panel-info" 
+                                                    id="datablock-overlay-{{port.name}}"
+                                                    data-port-name="{{port.name}}">
+                                                    <div class="panel-heading">
+                                                        <h5>{{port.displayName}} (size {{port.minSize}} - {{port.maxSize}})<span class="glyphicon glyphicon-remove pull-right icon-large"></span><span class="glyphicon glyphicon-filter pull-right icon-large"></span></h5>
+                                                    </div>
+                                                    <div class-"panel-body">
+                                                        <div class="well well-compact">
+                                                            <span class="item-name">Nothing Loaded</span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="panel-footer">
+                                                        <p>{%for type in port.supportedSubTypes.all%}{{type.subTypeName}}{%if not forloop.last %}, {%endif%}{%endfor%}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                <div class="tab-pane fade" id="image-topleft">
+                                    <div style="position:relative">
+                                        <image src="{{shipData.layoutImageTopLeft}}" class="col-lg-12"></image>
+                                        {% for port in shipData.itemport_set.all %}
+                                            {% if port.parentImage == 2%}
+                                            <div class="item-port {%for type in port.supportedTypes.all%}itemtype-{{type.typeName}} {%endfor%}" 
+                                                style="left:{{port.tagLocationX}}%;top:{{port.tagLocationY}}%;" 
+                                                data-types="{%for type in port.supportedTypes.all%}{{type.typeName}}{%if not forloop.last %},{%endif%}{%endfor%}" 
+                                                data-subtypes="{%for type in port.supportedSubTypes.all%}{{type.subTypeName}}{%if not forloop.last %},{%endif%}{%endfor%}" 
+                                                data-min-size={{port.minSize}} 
+                                                data-max-size={{port.maxSize}} 
+                                                id="{{port.name}}" 
+                                                data-parent={{port.parentImage}}
+                                                data-port-name={{port.name}}>
+                                            </div>
+                                            <div class="col-md-5 datablock datablock-floating {%for type in port.supportedTypes.all%}itemtype-{{type.typeName}} {%endfor%}" 
+                                                style='display:none;' 
+                                                data-port-name="{{port.name}}">
+                                                <div class="panel panel-compact panel-info" 
+                                                    id="datablock-overlay-{{port.name}}"
+                                                    data-port-name="{{port.name}}">
+                                                    <div class="panel-heading">
+                                                        <h5>{{port.displayName}} (size {{port.minSize}} - {{port.maxSize}})<span class="glyphicon glyphicon-remove pull-right icon-large"></span><span class="glyphicon glyphicon-filter pull-right icon-large"></span></h5>
+                                                    </div>
+                                                    <div class-"panel-body">
+                                                        <div class="well well-compact">
+                                                            <span class="item-name">Nothing Loaded</span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="panel-footer">
+                                                        <p>{%for type in port.supportedSubTypes.all%}{{type.subTypeName}}{%if not forloop.last %}, {%endif%}{%endfor%}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                <div class="tab-pane fade" id="image-bottomright">
+                                    <div style="position:relative">
+                                        <image src="{{shipData.layoutImageBottomRight}}" class="col-lg-12"></image>
+                                        {% for port in shipData.itemport_set.all %}
+                                            {% if port.parentImage == 3%}
+                                            <div class="item-port {%for type in port.supportedTypes.all%}itemtype-{{type.typeName}} {%endfor%}" 
+                                                style="left:{{port.tagLocationX}}%;top:{{port.tagLocationY}}%;" 
+                                                data-types="{%for type in port.supportedTypes.all%}{{type.typeName}}{%if not forloop.last %},{%endif%}{%endfor%}" 
+                                                data-subtypes="{%for type in port.supportedSubTypes.all%}{{type.subTypeName}}{%if not forloop.last %},{%endif%}{%endfor%}" 
+                                                data-min-size={{port.minSize}} 
+                                                data-max-size={{port.maxSize}} 
+                                                id="{{port.name}}" 
+                                                data-parent={{port.parentImage}}
+                                                data-port-name={{port.name}}>
+                                            </div>
+                                            <div class="col-md-5 datablock datablock-floating {%for type in port.supportedTypes.all%}itemtype-{{type.typeName}} {%endfor%}" 
+                                                style='display:none;' 
+                                                data-port-name="{{port.name}}">
+                                                <div class="panel panel-compact panel-info" 
+                                                    id="datablock-overlay-{{port.name}}"
+                                                    data-port-name="{{port.name}}">
+                                                    <div class="panel-heading">
+                                                        <h5>{{port.displayName}} (size {{port.minSize}} - {{port.maxSize}})<span class="glyphicon glyphicon-remove pull-right icon-large"></span><span class="glyphicon glyphicon-filter pull-right icon-large"></span></h5>
+                                                    </div>
+                                                    <div class-"panel-body">
+                                                        <div class="well well-compact">
+                                                            <span class="item-name">Nothing Loaded</span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="panel-footer">
+                                                        <p>{%for type in port.supportedSubTypes.all%}{{type.subTypeName}}{%if not forloop.last %}, {%endif%}{%endfor%}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                <div class="tab-pane fade" id="image-bottomleft">
+                                    <div style="position:relative">
+                                        <image src="{{shipData.layoutImageBottomLeft}}" class="col-lg-12"></image>
+                                        {% for port in shipData.itemport_set.all %}
+                                            {% if port.parentImage == 4%}
+                                            <div class="item-port {%for type in port.supportedTypes.all%}itemtype-{{type.typeName}} {%endfor%}" 
+                                                style="left:{{port.tagLocationX}}%;top:{{port.tagLocationY}}%;" 
+                                                data-types="{%for type in port.supportedTypes.all%}{{type.typeName}}{%if not forloop.last %},{%endif%}{%endfor%}" 
+                                                data-subtypes="{%for type in port.supportedSubTypes.all%}{{type.subTypeName}}{%if not forloop.last %},{%endif%}{%endfor%}" 
+                                                data-min-size={{port.minSize}} 
+                                                data-max-size={{port.maxSize}} 
+                                                id="{{port.name}}" 
+                                                data-parent={{port.parentImage}}
+                                                data-port-name={{port.name}}>
+                                            </div>
+                                            <div class="col-md-5 datablock datablock-floating {%for type in port.supportedTypes.all%}itemtype-{{type.typeName}} {%endfor%}" 
+                                                style='display:none;' 
+                                                data-port-name="{{port.name}}">
+                                                <div class="panel panel-compact panel-info" 
+                                                    id="datablock-overlay-{{port.name}}"
+                                                    data-port-name="{{port.name}}">
+                                                    <div class="panel-heading">
+                                                        <h5>{{port.displayName}} (size {{port.minSize}} - {{port.maxSize}})<span class="glyphicon glyphicon-remove pull-right icon-large"></span><span class="glyphicon glyphicon-filter pull-right icon-large"></span></h5>
+                                                    </div>
+                                                    <div class-"panel-body">
+                                                        <div class="well well-compact">
+                                                            <span class="item-name">Nothing Loaded</span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="panel-footer">
+                                                        <p>{%for type in port.supportedSubTypes.all%}{{type.subTypeName}}{%if not forloop.last %}, {%endif%}{%endfor%}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                <div class="tab-pane fade" id="hardpoints-overview">
+                                    <div class="row">
+                                        <div class="col-md-6 col-md-offset-1">
+                                            <div class="btn-group" data-toggle="buttons">
+                                                <label class="btn btn-info btn-sm active" data-toggle-class="btn-info" data-toggle-passive-class="btn-primary">
+                                                    <input type="checkbox" value="show-empty" id="hardpoints-filter-show-empty">Show Empty Hardpoints
+                                                </label>
+                                                <label class="btn btn-info btn-sm active" data-toggle-class="btn-info" data-toggle-passive-class="btn-primary">
+                                                    <input type="checkbox" value="show-filled" id="hardpoints-filter-show-filled">Show Filled Hardpoints
+                                                </label>
+                                                <label class="btn btn-primary btn-sm" data-toggle-class="btn-info" data-toggle-passive-class="btn-primary">
+                                                    <input type="checkbox" value="show-invalid" id="hardpoints-filter-show-invalid">Show Invalid Hardpoints
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div id="hardpoints-container" class="row">
+                                    {% for itemPort in shipData.itemport_set.all %}
+                                        <div class="col-lg-4">
+        <!-- {{itemPort.supportedTypes.all}} -->
+        <div class="panel panel-compact
+        {% for type in itemPort.supportedTypes.all %}
+        {% if "PowerPlant" in type.typeName %}
+         panel-danger
+        {% endif %}
+        {% if "Thruster" in type.typeName %}
+         panel-danger
+        {% else %}
+         panel-warning
+        {% endif %}
+        {% endfor %}
+        " data-state="empty"
+        {% for type in itemPort.supportedTypes.all %}
+        {% if "PowerPlant" in type.typeName %}
+          data-status="danger" data-base-status="danger"
+        {% endif %}
+        {% if "Thruster" in type.typeName %}
+          data-status="danger" data-base-status="danger"
+        {% else %}
+          data-status="warning" data-base-status="warning"
+        {% endif %}
+        {% endfor %}
+        data-port-name="{{itemPort.name}}">
+            <div class="panel-heading">
+                <h5>{% firstof itemPort.displayName itemPort.name %}<span class="glyphicon glyphicon-remove pull-right icon-large"></span><span class="glyphicon glyphicon-filter pull-right icon-large"></span></h5>
+            </div>
+            <div class="panel-body">
+                <div class="well well-compact item-port-datablock" 
+                    data-port-name="{{itemPort.name}}" 
+                    data-parent={{itemPort.parentImage}} 
+                    data-types="{%for type in itemPort.supportedTypes.all%}{{type.typeName}}{%if not forloop.last %},{%endif%}{%endfor%}" 
+                    data-min-size={{itemPort.minSize}} 
+                    data-max-size={{itemPort.maxSize}} 
+                    data-subtypes="{%for type in itemPort.supportedSubTypes.all%}{{type.subTypeName}}{%if not forloop.last %},{%endif%}{%endfor%}"
+                    data-parent-vehicle="{{shipData.name}}">
+                    <div class="item-port-datablock-statebuttons">
+                        <input id="item-powerstate-{{itemPort.name}}-input" type="hidden" name="item-powerstate" value="Default">
+                        <div class="btn-group" id="port-powerstate-{{itemPort.name}}" data-toggle="buttons-radio" data-target="item-powerstate-{{itemPort.name}}-input">
+                            <button class="btn btn-xs btn-info active noop" data-toggle-class="btn-info" data-toggle-passive-class="btn-inverse" type="button" value="Default">Default</button>
+                        </div>
+                    </div>
+                    <br>
+                    <span class="item-name">Nothing Loaded</span>
+                </div>
+            </div>
+            <div class="panel-footer">{{shipData.displayName}}</div>
+        </div>
+
+                                        </div>
+                                    {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                    </div>
+                </div>
+                <div class="panel panel-info">
+                    <div class="panel-heading">
+                        <h4>Systems Monitor & Calibration</h4>
+                    </div>
+                    <div class="panel-body">
+                        <div class="tabbable">
+                            <ul id="systems-monitor" class="nav nav-tabs">
+                                <li class="active"><a href="#systems-overview" data-toggle="tab">Snapshot</a></li>
+                                <li><a href="#systems-livestats" data-toggle="tab">LiveStats</a></li>
+                            </ul>
+                            <div id="systems-monitor-content" class="tab-content">
+                                <div id="systems-overview" class="tab-pane fade in active">
+                                    <h4>Systems Snapshot provides a snapshot of vehicle resources</h4>
+                                    <p>The systems snapshot provides a quick look at vehicle resource usage based on all modules running in the default or active state.  For more detailed diagnostics turn to the LiveStats Diagnostic System</p>
+                                    <h5>Power Consumption: <strong><span id="stats-available-power-label">0</span></strong></h5>
+                                    <p id="stats-warning-missingpowerplant"><span class="label label-danger">Warning No Powerplant equipped</span></p>
+                                    <div class="progress" id="stats-available-power-container">
+                                        <div class="progress-bar progress-bar-success" style="width:0%;" id="stats-available-power-bar">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="systems-livestats" class="tab-pane fade">
+                                    <h4>The MobiGlas patented LiveStats Diagnostic System (LDS) provides detailed statistics on vehicle resource usage</h4>
+                                    <p>Designed to operate in conjunction with the Systems Overview panel, LDS can give you down to the second reporting on resource usage based on individual hardpoint states.  As you change hardpoint states in the Systems Overview, LDS will update in realtime.  Never be caught off guard with MobiGlas LDS.</p>
+                                    <h5>Power Consumption: <strong><span id="stats-lds-available-power-label">0</span></strong></h5>
+                                    <p id="stats-lds-warning-missingpowerplant"><span class="label label-danger">Warning No Powerplant equipped</span></p>
+                                    <div class="progress" id="stats-lds-available-power-container">
+                                        <div class="progress-bar progress-bar-success" style="width:0%;" id="stats-lds-available-power-bar">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="panel panel-info">
+                    <div class="panel-heading">
+                        <h4>Compatible Items</h4>
+                    </div>
+                    <div class="panel-body">
+                        <div class="panel-group" id="items-accordion">
+                            <div class="panel panel-default">
+                                <div class="panel-heading">
+                                    <h4 class="panel-title">
+                                        <a data-toggle="collapse" data-parent="#items-accordion" href="#collapse-weapons">Weapons</a>
+                                    </h4>
+                                </div>
+                                <div id="collapse-weapons" class="panel-collapse collapse in">
+                                    <div class="panel-body">
+                                        <div id="table-dynamic-Weapon"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="panel panel-default">
+                                <div class="panel-heading">
+                                    <h4 class="panel-title">
+                                        <a data-toggle="collapse" data-parent="#items-accordion" href="#collapse-thrusters">Thrusters</a>
+                                    </h4>
+                                </div>
+                                <div id="collapse-thrusters" class="panel-collapse collapse">
+                                    <div class="panel-body">
+                                        <div id="table-dynamic-Thruster"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="panel panel-default">
+                                <div class="panel-heading">
+                                    <h4 class="panel-title">
+                                        <a data-toggle="collapse" data-parent="#items-accordion" href="#collapse-powerplant">Powerplant</a>
+                                    </h4>
+                                </div>
+                                <div id="collapse-powerplant" class="panel-collapse collapse">
+                                    <div class="panel-body">
+                                        <div id="table-dynamic-PowerPlant"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="panel panel-default">
+                                <div class="panel-heading">
+                                    <h4 class="panel-title">
+                                        <a data-toggle="collapse" data-parent="#items-accordion" href="#collapse-cargo">Cargo</a>
+                                    </h4>
+                                </div>
+                                <div id="collapse-cargo" class="panel-collapse collapse">
+                                    <div class="panel-body">
+                                        <div id="table-dynamic-Container"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="panel panel-default">
+                                <div class="panel-heading">
+                                    <h4 class="panel-title">
+                                        <a data-toggle="collapse" data-parent="#items-accordion" href="#collapse-avionics">Avionics</a>
+                                    </h4>
+                                </div>
+                                <div id="collapse-avionics" class="panel-collapse collapse">
+                                    <div class="panel-body">
+                                        <div id="table-dynamic-Avionics"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="panel panel-default">
+                                <div class="panel-heading">
+                                    <h4 class="panel-title">
+                                        <a data-toggle="collapse" data-parent="#items-accordion" href="#collapse-batteries">Batteries</a>
+                                    </h4>
+                                </div>
+                                <div id="collapse-batteries" class="panel-collapse collapse">
+                                    <div class="panel-body">
+                                        <div id="table-dynamic-Battery"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="panel panel-default">
+                                <div class="panel-heading">
+                                    <h4 class="panel-title">
+                                        <a data-toggle="collapse" data-parent="#items-accordion" href="#collapse-coolers">Coolers</a>
+                                    </h4>
+                                </div>
+                                <div id="collapse-coolers" class="panel-collapse collapse">
+                                    <div class="panel-body">
+                                        <div id="table-dynamic-Cooler"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="panel panel-default">
+                                <div class="panel-heading">
+                                    <h4 class="panel-title">
+                                        <a data-toggle="collapse" data-parent="#items-accordion" href="#collapse-displays">Displays</a>
+                                    </h4>
+                                </div>
+                                <div id="collapse-displays" class="panel-collapse collapse">
+                                    <div class="panel-body">
+                                        <div id="table-dynamic-Display"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="panel panel-default">
+                                <div class="panel-heading">
+                                    <h4 class="panel-title">
+                                        <a data-toggle="collapse" data-parent="#items-accordion" href="#collapse-radars">Radars</a>
+                                    </h4>
+                                </div>
+                                <div id="collapse-radars" class="panel-collapse collapse">
+                                    <div class="panel-body">
+                                        <div id="table-dynamic-Radar"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row-fluid">
+        </div>
+        {% endblock main-content %}
+
+
+{% block ready-script %}
+
+{{ block.super }}
+/******************************************************************************
+// Set up Dynamic Tables (Backgrid)
+******************************************************************************/
+createGrid("Avionics","{{shipData.name}}", $("#table-dynamic-Avionics"));
+createGrid("Battery","{{shipData.name}}", $("#table-dynamic-Battery"));
+createGrid("Container","{{shipData.name}}", $("#table-dynamic-Container"));
+createGrid("Cooler","{{shipData.name}}", $("#table-dynamic-Cooler"));
+createGrid("Display","{{shipData.name}}", $("#table-dynamic-Display"));
+createGrid("Radar","{{shipData.name}}", $("#table-dynamic-Radar"));
+createGrid("PowerPlant","{{shipData.name}}", $("#table-dynamic-PowerPlant"));
+createGrid("Thruster","{{shipData.name}}", $("#table-dynamic-Thruster"));
+createGrid("Weapon", "{{shipData.name}}", $("#table-dynamic-Weapon"));
+
+/******************************************************************************
+// Set up Modal Dialogs 
+******************************************************************************/
+
+$('#item-details-modal').modal({
+    backdrop: true,
+    show: false
+})
+
+$('#itemport-details-modal').modal({
+    backdrop: true,
+    show: false
+})
+
+$('#user-login').modal({
+    backdrop: true,
+    show: false
+})
+
+$('#user-newuser').modal({
+    backdrop: true,
+    show: false
+})
+
+$('#quick-variant').modal({
+    backdrop: true,
+    show: false    
+})
+
+/******************************************************************************
+// Bind Events  
+******************************************************************************/
+/********* Deprecated and no longer used
+$("a.type-select").on("click", function(e){
+    var anchor = $(this).attr("href");
+    var activeItemType = anchor.split("-")[1];
+    toggleItemPorts(activeItemType);
+});
+*/
+
+Backbone.on("rowclicked", function (model) {
+    console.log("Showing item details modal")
+    getItemDetails(model.get("name"));
+    chartPipe(model.get("name"), "Power", "All");
+    chartPipe(model.get("name"), "Heat", "All");
+    chartPipe(model.get("name"), "Avionics", "All");
+    $("#itemport-details-modal").modal("hide");
+    $("#item-details-modal").modal("show");
+});        
+
+$(".glyphicon-remove").on("click", function(event){
+    event.stopPropagation();
+    var portWell = $(this).parent().parent().parent();
+    var portName = portWell.attr("data-port-name");
+    var parentPort = portWell.attr("data-parent-port");
+    var parentItem = portWell.attr("data-parent-item");
+    var portData = {"name" : portName, "parentPort":parentPort,"parentItem":parentItem};
+    console.log(portData)
+    removeItemFromPort(portData);
+});
+
+$(".item-port").on("mouseenter", function(event){
+    var port = $(this);
+    console.log("port", port);
+    enterPort(port);
+});
+
+$(".item-port").on("mouseleave", function(event){
+    var port = $(this);
+    leavePort(port);
+});
+
+
+$(".datablock-floating").on("mouseenter", function(event){
+    var datablock = $(this);
+    console.log("Datablock", datablock);
+   enterOverlay(datablock);
+});
+
+$(".datablock-floating").on("mouseleave", function(event){
+    var datablock = $(this);
+   leaveOverlay(datablock);
+});
+
+$(".item-port").on("click", function(event){
+    var portName = $(this).attr("id");
+    filterByItemPort(portName);
+});
+
+$(".glyphicon-filter").on("click", function(event){
+    event.stopPropagation();
+    var portWell = $(this).parent().parent().parent();
+    console.log(portWell);
+    var portName = portWell.attr("data-port-name");
+    filterByItemPort(portName);
+});
+
+$(".item-port-label").on("click", function(){
+    $("#item-details-modal").modal("hide");
+    $("#itemport-details-modal").modal("show");
+    var portName = $(this).attr("data-port-name")
+    getItemPortDetails({"name":portName}, "{{shipData.name}}");
+});
+
+$(".item-port-datablock").on("click", function(){
+    $("#item-details-modal").modal("hide");
+    $("#itemport-details-modal").modal("show");
+    var portName = $(this).attr("data-port-name")
+    var portData = {"name":portName,"parentItem":$(this).attr("data-parent-item")}
+    getItemPortDetails(portData, "{{shipData.name}}");
+});
+
+$(document).on("mouseenter", "tr.vehicle-item-row", function(){
+    $(this).draggable({
+      revert: "invalid",
+      containment: "document",
+      helper: "clone",
+      cursor: "move",
+      delay: 100,
+      distance: 5,
+      zIndex: 100,
+      scroll : true,
+      scrollDistance: 100
+    })
+});
+
+$("#user-action-login").on("click", function(event) {
+    event.preventDefault();
+    $("#user-login").modal("show");
+});
+
+$("#user-action-logout").on("click", function(event) {
+    event.preventDefault();
+    submitUserLogout();
+});
+
+$("#user-action-newuser").on("click", function(event) {
+    event.preventDefault();
+    $("#user-newuser").modal("show");
+});
+
+$("#system-action-quickvariant").on("click", function(event){
+    event.preventDefault();
+    getQuickVariant("{{shipData.name}}");
+});
+
+$("button.noop").click(function(event){
+    $(this).parent().parent().find("input").val($(this).val());
+    event.stopPropagation();
+    computeStats();
+});
+
+//
+// Hardpoint filters on Overview page
+//
+$("#hardpoints-filter-show-empty").change(function(){
+    var isTrue = this.checked;
+    filterHardpoints("empty", isTrue);
+});
+$("#hardpoints-filter-show-filled").change(function(){
+    var isTrue = this.checked;
+    filterHardpoints("filled", isTrue);
+});
+//$("#hardpoints-filter-show-invalid").attr("checked", "true");
+
+computeStats();
+$("#hardpoints-filter-show-filled").attr("checked", "true");
+$("#hardpoints-filter-show-empty").attr("checked", "true");
+
+{% if user.is_authenticated %}
+setUserState(true);
+{% else %}
+setUserState(false);
+{% endif %}
+
+// var $container = $('#hardpoints-container');
+// $container.masonry({
+//   columnWidth: 200,
+//   itemSelector: '.panel'
+// });
+
+{% endblock ready-script %}
