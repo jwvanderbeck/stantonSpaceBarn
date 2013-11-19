@@ -244,6 +244,40 @@ function submitUserLogout() {
 }
 
 /***************************************************************
+// Utility Functions
+***************************************************************/
+function getHardpointTags(hardpointName)
+{
+    return $(".hardpoint-tag-" + hardpointName);
+}
+function getHardpointOverlays(hardpointName)
+{
+    return $(".hardpoint-datablock-" + hardpointName);
+}
+function getHardpointDatablock(hardpointName, parentPort, parentItem)
+{
+    if (parentPort == undefined)
+        return $(".item-port-datablock[data-port-name='" + hardpointName + "']");
+    else:
+        return $(".item-port-datablock[data-port-name='" + hardpointName + "'][data-parent-port='" + parentPort + "'][data-parent-item='" + parentItem + "']");
+}
+function getAllHardpointTags()
+{
+    return $(".item-port[data-port-name]");
+}
+function getAllHardpointOverlays()
+{
+    return $(".datablock-floating[data-port-name]");
+}
+function getAllHardpointDatablocks()
+{
+    return $(".item-port-datablock[data-port-name]");
+}
+function getHardpointName(hardpoint)
+{
+    return hardpoint.attr("data-port-name");
+}
+/***************************************************************
 // Backgrid Table Setup
 ***************************************************************/
 // Stores a lookup of Backgrid tables
@@ -362,10 +396,14 @@ function createBackgrid(collection, parentElement){
 
 function clearAllPortFilters()
 {
-    var tags = $(".item-port.filtered")
+    var tags = getAllHardpointTags();
     tags.each(function(){
         $(this).removeClass("filtered")
-    })
+    });
+    var datablocks = getAllHardpointDatablocks();
+    datablocks.each( function() {
+        $(this).parent().parent().find(".glyphicon-filter").removeClass("icon-active");
+    });
     for (var i = 0; i < ITEM_TYPES.length; i++)
     {
         var pageable = GRIDS[ITEM_TYPES[i]]["pageable"]
@@ -375,19 +413,18 @@ function clearAllPortFilters()
 
 function filterByItemPort(itemPortName)
 {
-    var portTag = $("#" + itemPortName);
-    var portDatablock = $(".item-port-datablock[data-port-name='" + itemPortName + "']");
-    console.log("Filtering", itemPortName)
-    console.log(portDatablock);
-    if (portTag.hasClass("filtered") || portDatablock.parent().parent().find(".glyphicon-filter").hasClass("icon-active"))
+    var portTags = getHardpointTags(itemPortName);
+    var portDatablock = getHardpointDatablock(itemPortName);
+    if (portDatablock.parent().parent().find(".glyphicon-filter").hasClass("icon-active"))
     {
-        console.log("Clearing filter")
         for (var i = 0; i < ITEM_TYPES.length; i++)
         {
             var pageable = GRIDS[ITEM_TYPES[i]]["pageable"]
             createBackgrid(pageable, $("#table-dynamic-" + ITEM_TYPES[i]));
         }
-        portTag.removeClass("filtered");
+        portTags.each( function() {
+           $(this).removeClass("filtered"); 
+        });
         portDatablock.parent().parent().find(".glyphicon-filter").removeClass("icon-active");
     }
     else
@@ -408,45 +445,46 @@ function filterByItemPort(itemPortName)
                 })
             createBackgrid(pageable, $("#table-dynamic-" + ITEM_TYPES[i]));
         }
-        portTag.addClass("filtered");
+        portTags.each( function() {
+           $(this).addClass("filtered"); 
+        });
         portDatablock.parent().parent().find(".glyphicon-filter").addClass("icon-active");
-        console.log(portDatablock.find(".glyphicon-filter"))
     }
 }
 
+// DEPRECATED
+// function toggleItemPorts(activeItemType)
+// {
+//     var ports = $(".item-port");
+//     ports.each(function(){
+//         if ($(this).hasClass("itemtype-" + activeItemType))
+//             $(this).show(200);
+//         else
+//             $(this).hide(200);
+//     });
+// }
 
-function toggleItemPorts(activeItemType)
-{
-    var ports = $(".item-port");
-    ports.each(function(){
-        if ($(this).hasClass("itemtype-" + activeItemType))
-            $(this).show(200);
-        else
-            $(this).hide(200);
-    });
-}
-
-function enterPortLabel()
-{
-    $(this).addClass("well-white");
-    var imageNumber = parseInt($(this).attr("data-parent"),10);
-    // ports wth image 0 are not displayed
-    if (imageNumber == 0)
-        return
-    // select the proper image tab
-    imageNumber = imageNumber - 1;
-    $('#main-hardpoint-images li:eq(' + imageNumber + ') a').tab('show'); // Select tab (0-indexed)
-    // find and highlight the port
-    var portName = $(this).attr("data-port-name")
-    $("#" + portName).addClass("highlight")
-}
-
-function leavePortLabel()
-{
-    $(this).removeClass("well-white");
-    var portName = $(this).attr("data-port-name")
-    $("#" + portName).removeClass("highlight")
-}
+// function enterPortLabel()
+// {
+//     $(this).addClass("well-white");
+//     var imageNumber = parseInt($(this).attr("data-parent"),10);
+//     // ports wth image 0 are not displayed
+//     if (imageNumber == 0)
+//         return
+//     // select the proper image tab
+//     imageNumber = imageNumber - 1;
+//     $('#main-hardpoint-images li:eq(' + imageNumber + ') a').tab('show'); // Select tab (0-indexed)
+//     // find and highlight the port
+//     var portName = $(this).attr("data-port-name")
+//     $("#" + portName).addClass("highlight")
+// }
+// 
+// function leavePortLabel()
+// {
+//     $(this).removeClass("well-white");
+//     var portName = $(this).attr("data-port-name")
+//     $("#" + portName).removeClass("highlight")
+// }
 
 function enterPort(port)
 {
@@ -455,18 +493,15 @@ function enterPort(port)
     var offsetLeft = -15;
     var offsetTop = 0;
     // Display datablock overlay in computed postion
-    var datablock = $("#datablock-overlay-" + port.attr("id")).parent();
+    var datablock = getDatablock(getHardpointName(port))
     var datablockHeight = datablock.height();
     var datablockWidth = datablock.width();
     var tagLeft = port.position().left;
     var tagTop = port.position().top;
-    console.log(tagLeft, tagTop);
     var parentWidth = port.parent().width();
     var parentHeight = port.parent().height();
-    console.log(parentWidth, parentHeight);
     var datablockLeft = tagLeft - ((datablockWidth / 2) + offsetLeft);
     var datablockTop = tagTop - (datablockHeight + offsetTop);
-    console.log(datablockLeft, datablockTop, datablockWidth, datablockHeight);
     if (datablockLeft - (datablockWidth / 2) < 0)
     {
         datablockLeft = 0
@@ -475,17 +510,14 @@ function enterPort(port)
     {
         datablockLeft = parentWidth - datablockWidth - 25;
     }
-    console.log(datablockLeft, datablockTop);
-    console.log("Showing", datablock)
     datablock.show(200);
     datablock.css({"top" : datablockTop + "px", "left" : datablockLeft + "px"});
 }
 
 function leavePort(port)
 {
-    console.log("leavePort", port);
     port.attr("data-focus", "no");
-    var datablock = ("#datablock-overlay-" + port.attr("id"));
+    var datablock = getDatablock(getHardpointName(port))
     setTimeout( function() {
         hideOverlay($(datablock).parent())
     }, 500);
@@ -493,13 +525,11 @@ function leavePort(port)
 
 function enterOverlay(overlay)
 {
-    console.log("enterOverlay", overlay)
     overlay.attr("data-focus", "yes")
 }
 
 function leaveOverlay(overlay)
 {
-    console.log("LeaveOverlay", overlay)
     overlay.attr("data-focus", "no")
     var datablock = overlay;
     setTimeout( function() {
@@ -511,13 +541,10 @@ function hideOverlay(overlay)
 {
     // If the overlay or tag has focus, we cancel this
     // otherwise we hide it
-    console.log("hideoverlay", overlay)
-    console.log(overlay.attr("data-focus"));
     if (overlay.attr("data-focus") == "yes")
         return;
-    var tagID = overlay.attr("data-port-name")
-    console.log($("#" + tagID).attr("data-focus"));
-    if ( $("#" + tagID).attr("data-focus") == "yes" )
+    var tag = getHardpointTag(getHardpointName(overlay));
+    if ( tag.attr("data-focus") == "yes" )
         return;
     
     overlay.hide(200);
@@ -526,28 +553,23 @@ function hideOverlay(overlay)
 function removeItemFromPort(portData)
 {
     // Get the port tag, datablock, and label elements
-    console.log("Remove item from port");
-    console.log(portData);
     var portName = portData["name"];
     var parentPort = portData["parentPort"];
-    console.log("parentPort", parentPort);
     if (parentPort == undefined)
     {
-        var portTag = $("#" + portName);
-        var portOverlay = $(".datablock-floating[data-port-name='" + portName + "']");
+        var portTag = getHardpointTag(portName);
+        var portOverlay = getHardpointOverlay(portName);
         portTag.removeClass("filled");
 
         // Remove item from label
         portOverlay.removeAttr("data-item-name");
         portOverlay.find("span.item-name").text("Nothing Loaded");
-        var portDatablock = $(".item-port-datablock[data-port-name='" + portName + "']");
+        var portDatablock = getHardpointDatablock(portName);
     }
     else
     {
-        console.log("Sub port");
         var parentItem = portData["parentItem"];
-        var portDatablock = $(".item-port-datablock[data-port-name='" + portName + "'][data-parent-port='" + parentPort + "'][data-parent-item='" + parentItem + "']");
-        console.log(portDatablock);
+        var portDatablock = getHardpointDatablock(portName, parentPort, parentItem)
     }
     var itemName = portDatablock.attr("data-item-name");
 
@@ -618,7 +640,7 @@ function getQuickVariant(shipName)
     data["version"] = 1;
 
     // get all items equipped
-    var ports = $('.item-port-datablock');
+    var ports = getAllHardpointDatablocks();
     ports.each(function() {
         var itemName = $(this).attr("data-item-name");
         var portName = $(this).attr("data-port-name");
@@ -849,7 +871,6 @@ function chartPipe(itemName, pipe, state) {
 function getItemPortDetails(portData, shipName) {
     var itemPortName = portData["name"]
     var parentItem = portData["parentItem"]
-    console.log(portData)
     if (parentItem != undefined)
     {
         jsonData = {
@@ -906,36 +927,31 @@ function addItemToPort(portData, itemData)
     // Need to add code for adding item to subport based on parentPort and parentItem
     //
     var parentPort = portData["parentPort"];
-    console.log("parentPort", parentPort);
     if (parentPort == undefined)
     {
-        var portTag = $("#" + portName);
+        var portTags = getHardpointTag(portName);
         // var portLabel = $(".item-port-label[data-port-name='" + portName + "']");
         // Mark tag as filled
-        portTag.addClass("filled");
+        portTags.each( function(){
+            $(this).addClass("filled");
+        });
 
         // Remove item from label
         // portLabel.removeAttr("data-item-name");
         // portLabel.find("span.item-name").text("Nothing Loaded");
-        var portDatablock = $(".item-port-datablock[data-port-name='" + portName + "']");
+        var portDatablock = getHardpointDatablock(portName);
     }
     else
     {
-        console.log("Sub port");
         var parentItem = portData["parentItem"];
-        var portDatablock = $(".item-port-datablock[data-port-name='" + portName + "'][data-parent-port='" + parentPort + "'][data-parent-item='" + parentItem + "']");
+        var portDatablock = getHardpointDatablock(portName,parentPort,parentItem);
         console.log(portDatablock);
     }
 
-    var portTag = $("#" + portName);
-    // var portDatablock = $('.item-port-datablock[data-port-name="' + portName + '"]'); 
-    var portWell = $('.datablock-floating[data-port-name="' + portName + '"]');
     var portDisplayName = portDatablock.parent().parent().find(".panel-heading h5").text();
 
     var itemDisplayName = itemData["displayName"];
     var itemName = itemData["name"];
-    portWell.find("span.item-name").text(itemDisplayName);
-    portWell.attr("data-item-name", itemName)
     portDatablock.find("span.item-name").text(itemDisplayName);
     portDatablock.attr("data-item-name", itemName)
     // Reset the datablock's coloring
@@ -1108,22 +1124,10 @@ function addItemToPort(portData, itemData)
 }
 
 function dropItem(ele, event, ui) {
-    // console.log("Dropped!");
     var portWell = undefined;
     var portDatablock = undefined;
     var portTag = undefined;
-    if ($(ele).hasClass("item-port-label"))
-    {
-        var portName = $(ele).attr("data-port-name");
-    }
-    else if ($(ele).hasClass("item-port-datablock"))
-    {
-        var portName = $(ele).attr("data-port-name");
-    }
-    else
-    {
-        var portName = $(ele).attr("id");
-    }
+    var portName = getHArdpointName($(ele));
 
     var itemData = {
         "displayName" : ui.draggable.find("td.string-cell").text(),
@@ -1245,9 +1249,8 @@ function enableDatablock(element)
 
 }
 
-var hardpoints = $(".item-port");
-var hardpointWells = $(".item-port-label");
-var hardpointDatablocks = $(".item-port-datablock");
+var hardpoints = getAllHardpointTags();
+var hardpointDatablocks = getAllHArdpointDatablocks();
 
 hardpointDatablocks.droppable({
     tolerance : "intersect",
@@ -1329,76 +1332,6 @@ hardpointDatablocks.droppable({
         }
 }});       
 
-hardpointWells.droppable({
-    activeClass: "label-success",
-    tolerance : "intersect",
-    drop : function(event, ui) {
-        $(this).removeClass("over");
-        dropItem(this, event, ui);
-    },
-    deactivate : function(event, ui) {
-        // reset temporary status coloring
-        // console.log("Deactivate drag")
-        var panels = $(".panel-compact[data-status]");
-        // console.log(panels);
-        panels.each(function(){
-            $(this).removeClass("panel-success panel-warning panel-danger");
-            var status = $(this).attr("data-status");
-            $(this).addClass("panel-" + status);
-        });
-    },
-    activate : function(event, ui) {
-        // console.log("Activate drag")
-        var draggable = ui.draggable;
-        // console.log(draggable)
-        var row = draggable;
-        var itemSubType = row.find("td.item-subtype-cell").text();
-        var itemSize = parseInt(row.find("td.item-size-cell").text(), 10);
-        var supportedSubTypes = $(this).attr("data-subtypes");
-        var minSize = $(this).attr("data-min-size");
-        var maxSize = $(this).attr("data-max-size");
-        var label = $(this).find(".label")
-        var panel = $(this).parent().parent();
-        if (supportedSubTypes.indexOf(itemSubType) > -1 && itemSize >= minSize && itemSize <= maxSize)
-        {
-            // console.log("Item Supported!")
-            panel.removeClass("panel-warning panel-danger panel-success");
-            panel.addClass("panel-success");
-        }
-        else
-        {
-            panel.removeClass("panel-warning panel-danger panel-success");
-            panel.addClass("panel-danger");
-        }
-        $("#item-details-modal").modal("hide");
-        $("#itemport-details-modal").modal("hide");
-    },
-    over : function(event, ui) {
-        $(this).addClass("over");
-    },
-    out : function(event, ui) {
-        $(this).removeClass("over");
-    },
-    accept: function(draggable) {
-        // console.log(draggable)
-        var row = draggable;
-        var itemSubType = row.find("td.item-subtype-cell").text();
-        var itemSize = parseInt(row.find("td.item-size-cell").text(), 10);
-        var supportedSubTypes = $(this).attr("data-subtypes");
-        var minSize = $(this).attr("data-min-size");
-        var maxSize = $(this).attr("data-max-size");
-        var label = $(this).find(".label")
-        var panel = $(this).parent().parent();
-        if (supportedSubTypes.indexOf(itemSubType) > -1 && itemSize >= minSize && itemSize <= maxSize)
-        {
-            // console.log("Item Supported!")
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-}});       
 
 hardpoints.droppable({
     activeClass: "drop-target-valid",
@@ -1518,7 +1451,7 @@ function computeStats()
     // computes stats based on items equipped
     console.log("Computing current stats")
     // get all items equipped
-    var ports = $('.item-port-datablock');
+    var ports = getAllHardpointDatablocks();
     var scannedPorts = [];
     var scannedItems = [];
     var LDS = []
