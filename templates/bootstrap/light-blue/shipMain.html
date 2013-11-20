@@ -177,11 +177,13 @@
                                         data-min-size={{tag.hardpoint.minSize}} 
                                         data-max-size={{tag.hardpoint.maxSize}} 
                                         data-parent={{tag.hardpoint.parentImage}}
-                                        data-port-name={{tag.hardpoint.name}}>
+                                        data-port-name={{tag.hardpoint.name}}
+                                        data-tag-number={{forloop.counter}}>
                                     </div>
                                     <div class="col-md-5 datablock datablock-floating hardpoint-datablock-{{tag.hardpoint.name}} {%for type in tag.hardpoint.supportedTypes.all%}itemtype-{{type.typeName}} {%endfor%}" 
                                         style='display:none;' 
-                                        data-port-name="{{tag.hardpoint.name}}">
+                                        data-port-name="{{tag.hardpoint.name}}"
+                                        data-tag-number={{forloop.counter}}>
                                         <div class="panel panel-compact panel-info" 
                                             data-port-name="{{tag.hardpoint.name}}">
                                             <div class="panel-heading">
