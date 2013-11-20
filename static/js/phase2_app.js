@@ -246,6 +246,14 @@ function submitUserLogout() {
 /***************************************************************
 // Utility Functions
 ***************************************************************/
+function getHardpointTag(hardpointName, tagNumber)
+{
+    return $(".hardpoint-tag-" + hardpointName + "[data-tag-number='" + tagNumber + "']");
+}
+function getHardpointOverlay(hardpointName, tagNumber)
+{
+    return $(".hardpoint-datablock-" + hardpointName + "[data-tag-number='" + tagNumber + "']");
+}
 function getHardpointTags(hardpointName)
 {
     return $(".hardpoint-tag-" + hardpointName);
@@ -258,7 +266,7 @@ function getHardpointDatablock(hardpointName, parentPort, parentItem)
 {
     if (parentPort == undefined)
         return $(".item-port-datablock[data-port-name='" + hardpointName + "']");
-    else:
+    else
         return $(".item-port-datablock[data-port-name='" + hardpointName + "'][data-parent-port='" + parentPort + "'][data-parent-item='" + parentItem + "']");
 }
 function getAllHardpointTags()
@@ -493,34 +501,39 @@ function enterPort(port)
     var offsetLeft = -15;
     var offsetTop = 0;
     // Display datablock overlay in computed postion
-    var datablock = getDatablock(getHardpointName(port))
-    var datablockHeight = datablock.height();
-    var datablockWidth = datablock.width();
-    var tagLeft = port.position().left;
-    var tagTop = port.position().top;
-    var parentWidth = port.parent().width();
-    var parentHeight = port.parent().height();
-    var datablockLeft = tagLeft - ((datablockWidth / 2) + offsetLeft);
-    var datablockTop = tagTop - (datablockHeight + offsetTop);
-    if (datablockLeft - (datablockWidth / 2) < 0)
-    {
-        datablockLeft = 0
-    }
-    if (datablockLeft + (datablockWidth) > (parentWidth-25))
-    {
-        datablockLeft = parentWidth - datablockWidth - 25;
-    }
-    datablock.show(200);
-    datablock.css({"top" : datablockTop + "px", "left" : datablockLeft + "px"});
+    var datablocks = getHardpointOverlays(getHardpointName(port))
+    datablocks.each( function(){
+        console.log("Datablock:", $(this));
+        var datablockHeight = $(this).height();
+        var datablockWidth = $(this).width();
+        var tagLeft = port.position().left;
+        var tagTop = port.position().top;
+        var parentWidth = port.parent().width();
+        var parentHeight = port.parent().height();
+        var datablockLeft = tagLeft - ((datablockWidth / 2) + offsetLeft);
+        var datablockTop = tagTop - (datablockHeight + offsetTop);
+        if (datablockLeft - (datablockWidth / 2) < 0)
+        {
+            datablockLeft = 0
+        }
+        if (datablockLeft + (datablockWidth) > (parentWidth-25))
+        {
+            datablockLeft = parentWidth - datablockWidth - 25;
+        }
+        $(this).show(200);
+        $(this).css({"top" : datablockTop + "px", "left" : datablockLeft + "px"});
+    } );
 }
 
 function leavePort(port)
 {
     port.attr("data-focus", "no");
-    var datablock = getDatablock(getHardpointName(port))
-    setTimeout( function() {
-        hideOverlay($(datablock).parent())
-    }, 500);
+    var overlays = getHardpointOverlays(getHardpointName(port))
+    overlays.each( function(){
+        setTimeout( function() {
+            hideOverlay($(this).parent())
+        }, 500);
+    } );
 }
 
 function enterOverlay(overlay)
@@ -543,9 +556,11 @@ function hideOverlay(overlay)
     // otherwise we hide it
     if (overlay.attr("data-focus") == "yes")
         return;
-    var tag = getHardpointTag(getHardpointName(overlay));
-    if ( tag.attr("data-focus") == "yes" )
-        return;
+    var tags = getHardpointTags(getHardpointName(overlay));
+    tags.each( function(){
+        if ($(this).attr("data-focus") == "yes")
+            return;
+    });
     
     overlay.hide(200);
 }
@@ -557,9 +572,11 @@ function removeItemFromPort(portData)
     var parentPort = portData["parentPort"];
     if (parentPort == undefined)
     {
-        var portTag = getHardpointTag(portName);
+        var portTags = getHardpointTags(portName);
         var portOverlay = getHardpointOverlay(portName);
-        portTag.removeClass("filled");
+        portTags.each( function(){
+           $(this).removeClass("filled");
+        });
 
         // Remove item from label
         portOverlay.removeAttr("data-item-name");
@@ -1250,7 +1267,7 @@ function enableDatablock(element)
 }
 
 var hardpoints = getAllHardpointTags();
-var hardpointDatablocks = getAllHArdpointDatablocks();
+var hardpointDatablocks = getAllHardpointDatablocks();
 
 hardpointDatablocks.droppable({
     tolerance : "intersect",
