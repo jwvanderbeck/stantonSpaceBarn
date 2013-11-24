@@ -539,7 +539,7 @@ $(".datablock-floating").on("mouseleave", function(event){
 });
 
 $(".item-port").on("click", function(event){
-    var portName = $(this).attr("id");
+    var portName = $(this).attr("data-port-name");
     filterByItemPort(portName);
 });
 
