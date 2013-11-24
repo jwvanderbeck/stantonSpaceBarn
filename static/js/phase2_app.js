@@ -571,14 +571,15 @@ function removeItemFromPort(portData)
     if (parentPort == undefined)
     {
         var portTags = getHardpointTags(portName);
-        var portOverlay = getHardpointOverlay(portName);
+        var portOverlays = getHardpointOverlays(portName);
         portTags.each( function(){
            $(this).removeClass("filled");
         });
 
-        // Remove item from label
-        portOverlay.removeAttr("data-item-name");
-        portOverlay.find("span.item-name").text("Nothing Loaded");
+        // Remove item from overlays
+        portOverlays.each( function() {
+           $(this).find("span.item-name").text("Nothing Loaded");
+        });
         var portDatablock = getHardpointDatablock(portName);
     }
     else
@@ -939,9 +940,11 @@ function addItemToPort(portData, itemData)
 
 
     var parentPort = portData["parentPort"];
+    console.log("parentPort", parentPort);
     if (parentPort == undefined)
     {
-        var portTags = getHardpointTag(portName);
+        var portTags = getHardpointTags(portName);
+        console.log("portTag", portTags);
         // var portLabel = $(".item-port-label[data-port-name='" + portName + "']");
         // Mark tag as filled
         portTags.each( function(){
@@ -966,22 +969,14 @@ function addItemToPort(portData, itemData)
     var itemName = itemData["name"];
     portDatablock.find("span.item-name").text(itemDisplayName);
     portDatablock.attr("data-item-name", itemName)
+    var panel = portDatablock.parent().parent();
+    panel.attr("data-state", "filled");
+    panel.attr("data-status", "success");
     // Reset the datablock's coloring
-    var portWells = getHardpointOverlays(portName)
-    portWells.each( function(){
-        var panel = portDatablock.parent().parent();
-        panel.attr("data-state", "filled");
-        panel.attr("data-status", "success");
-        panel = $(this).parent().parent();
-        panel.attr("data-state", "filled");
-        panel.attr("data-status", "success");
-        var panels = $(".panel-compact[data-status]");
-        console.log(panels);
-        panels.each(function(){
-            $(this).removeClass("panel-success panel-warning panel-danger");
-            var status = $(this).attr("data-status");
-            $(this).addClass("panel-" + status);
-        });
+    var portOverlays = getHardpointOverlays(portName)
+    console.log("Overlays", portOverlays);
+    portOverlays.each( function(){
+        $(this).find("span.item-name").text(itemDisplayName);
     });
     // Add ItemPorts that may be on this item
     // TODO
