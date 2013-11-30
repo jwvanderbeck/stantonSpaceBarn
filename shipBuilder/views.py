@@ -45,6 +45,63 @@ def api_root(request, format=None):
         'manufacturers': reverse('manufacturer-list', request=request, format=format),
     })
 
+
+@api_view(('GET',))
+def vehicleItemList(request, format=None):
+    if request.method == 'GET':
+        vehicleItems = VehicleItem.objects.all()
+        data = []
+        for vehicleItem in vehicleItems:
+            vehicleItemData = {
+                "id" : vehicleItem.id,
+                "itemClass" : vehicleItem.itemClass,
+                "name" : vehicleItem.name,
+                "displayName" : vehicleItem.displayName,
+                "itemSize" : vehicleItem.itemSize,
+                "description" : vehicleItem.description
+            }
+            if vehicleItem.manufacturer:
+                vehicleItemData['manufacturer'] = vehicleItem.manufacturer.name
+            if vehicleItem.itemType:
+                vehicleItemData['itemType'] = vehicleItem.itemType.typeName
+            if vehicleItem.itemSubType:
+                vehicleItemData['itemSubType'] = vehicleItem.itemSubType.subTypeName
+
+            stats = vehicleItem.itemStats.all()
+            vehicleItemData["itemStats"] = []
+            for stat in stats:
+                vehicleItemData["itemStats"].append( {stat.name : stat.value} )
+            
+            data.append(vehicleItemData)
+        return Response(data)
+
+@api_view(('GET',))
+def vehicleItemDetail(request, pk, format=None):
+    if request.method == 'GET':
+        vehicleItem = VehicleItem.objects.get(pk=pk)
+        vehicleItemData = {
+            "id" : vehicleItem.id,
+            "itemClass" : vehicleItem.itemClass,
+            "name" : vehicleItem.name,
+            "displayName" : vehicleItem.displayName,
+            "itemSize" : vehicleItem.itemSize,
+            "description" : vehicleItem.description
+        }
+        if vehicleItem.manufacturer:
+            vehicleItemData['manufacturer'] = vehicleItem.manufacturer.name
+        if vehicleItem.itemType:
+            vehicleItemData['itemType'] = vehicleItem.itemType.typeName
+        if vehicleItem.itemSubType:
+            vehicleItemData['itemSubType'] = vehicleItem.itemSubType.subTypeName
+
+        stats = vehicleItem.itemStats.all()
+        vehicleItemData["itemStats"] = []
+        for stat in stats:
+            vehicleItemData["itemStats"].append( {stat.name : stat.value} )
+            
+        return Response(vehicleItemData)
+
+
 @api_view(('GET',))
 def vehicleList(request, format=None):
     if request.method == 'GET':
