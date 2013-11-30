@@ -940,11 +940,9 @@ function addItemToPort(portData, itemData)
 
 
     var parentPort = portData["parentPort"];
-    console.log("parentPort", parentPort);
     if (parentPort == undefined)
     {
         var portTags = getHardpointTags(portName);
-        console.log("portTag", portTags);
         // var portLabel = $(".item-port-label[data-port-name='" + portName + "']");
         // Mark tag as filled
         portTags.each( function(){
@@ -960,7 +958,6 @@ function addItemToPort(portData, itemData)
     {
         var parentItem = portData["parentItem"];
         var portDatablock = getHardpointDatablock(portName,parentPort,parentItem);
-        console.log(portDatablock);
     }
 
     var portDisplayName = portDatablock.parent().parent().find(".panel-heading h5").text();
@@ -973,6 +970,9 @@ function addItemToPort(portData, itemData)
     panel.attr("data-state", "filled");
     panel.attr("data-status", "success");
     // Reset the datablock's coloring
+    panel.removeClass("panel-warning panel-danger panel-success");
+    panel.addClass("panel-success");
+    
     var portOverlays = getHardpointOverlays(portName)
     console.log("Overlays", portOverlays);
     portOverlays.each( function(){
@@ -1400,7 +1400,7 @@ function filterHardpoints(set, value, item)
     *****************************************/
     
     var allHardpoints = $(".panel-compact[data-status]");
-    console.log("value", value)
+    // console.log("value", value)
     if (set == "all")
     {
         allHardpoints.each( function(){
@@ -1435,13 +1435,13 @@ function filterHardpoints(set, value, item)
     {
         allHardpoints.each( function(){
             var panelBody = $(this).find(".panel-body").find('.well');
-            console.log(panelBody);
+            // console.log(panelBody);
             var supportedSubTypes = panelBody.attr("data-subtypes");
             var minSize = panelBody.attr("data-min-size");
             var maxSize = panelBody.attr("data-max-size");
-            console.log(supportedSubTypes);
-            console.log(minSize);
-            console.log(maxSize);
+            // console.log(supportedSubTypes);
+            // console.log(minSize);
+            // console.log(maxSize);
             if (supportedSubTypes.indexOf(item['subtype']) == -1 || item['size'] < minSize || item['size'] > maxSize)
             {
                 if (value)
