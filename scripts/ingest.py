@@ -262,7 +262,6 @@ def ingestItem(dataFile, data):
 			avionicsEntry.save()
 			item.avionics.add(avionicsEntry)
 
-# Ingest Weapons
 allFiles = os.listdir(DATA_PATH)
 for dataFile in allFiles:
 	print dataFile

@@ -476,8 +476,8 @@ class Vehicle(models.Model):
             
 class HardpointTag(models.Model):
     hardpoint = models.ForeignKey('ItemPort', blank = True, null = True);
-    locationX = models.FloatField(default = 0);
-    locationY = models.FloatField(default = 0);
+    locationX = models.FloatField(default = 0)
+    locationY = models.FloatField(default = 0)
 
 class VariantItem(models.Model):
     variant = models.ForeignKey("Variant", blank=True, null=True)
@@ -495,3 +495,25 @@ class Variant(models.Model):
     up_votes = models.PositiveIntegerField(default=0)
     down_votes = models.PositiveIntegerField(default=0)
     views = models.PositiveIntegerField(default = 0)
+
+class GameUpdate(models.Model):
+    name = models.CharField(max_length = 255)
+
+    def __unicode__(self):
+        return u"%s" % (name)
+
+class GameUpdateEntity(models.Model):
+    name = models.CharField(max_length = 255)
+    update = models.ForeignKey('GameUpdate')
+
+    def __unicode__(self):
+        return u"%s(%s)" % (name, update.name)
+
+class GameUpdateChange(models.Model):
+    description = models.TextField()
+    entity = models.ForeignKey('GameUpdateEntity')
+
+    def __unicode__(self):
+        return u"%s(%s):%s" % (entity.name, entity.update.name, description)
+
+
