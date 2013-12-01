@@ -355,33 +355,37 @@ class VehicleItemSubType(models.Model):
 class VehicleItemParams(models.Model):
     name = models.CharField(max_length = 255)
     value = models.FloatField(default = 0.0)
+    parentItem = models.ForeignKey('VehicleItem')
 
     def __unicode__(self):
-        return u"%s:%.2f" % (self.name, self.value)
+        return u"%s - %s:%.2f" % (self.parentItem.name, self.name, self.value)
 
 class VehicleItemPower(models.Model):
     state = models.CharField(max_length = 128)
     # Value couldbe a packed value curve
     value = models.CharField(max_length = 255)
+    parentItem = models.ForeignKey('VehicleItem')
 
     def __unicode__(self):
-        return u"%s - %s" % (self.state, self.value)
+        return u"(%s)%s - %s" % (self.parentItem.name, self.state, self.value)
 
 class VehicleItemHeat(models.Model):
     state = models.CharField(max_length = 128)
     # Value couldbe a packed value curve
     value = models.CharField(max_length = 255)
+    parentItem = models.ForeignKey('VehicleItem')
 
     def __unicode__(self):
-        return u"%s - %s" % (self.state, self.value)
+        return u"(%s)%s - %s" % (self.parentItem.name, self.state, self.value)
 
 class VehicleItemAvionics(models.Model):
     state = models.CharField(max_length = 128)
     # Value couldbe a packed value curve
     value = models.CharField(max_length = 255)
+    parentItem = models.ForeignKey('VehicleItem')
 
     def __unicode__(self):
-        return u"%s - %s" % (self.state, self.value)
+        return u"(%s)%s - %s" % (self.parentItem.name, self.state, self.value)
 
 class VehicleItem(models.Model):
     itemClass = models.PositiveIntegerField(default = 1)
@@ -392,10 +396,6 @@ class VehicleItem(models.Model):
     itemSubType = models.ForeignKey('VehicleItemSubType')
     manufacturer = models.ForeignKey('Manufacturer')
     itemSize = models.PositiveIntegerField(default = 0)
-    itemStats = models.ManyToManyField('VehicleItemParams', blank = True, null = True)
-    power = models.ManyToManyField('VehicleItemPower', blank = True, null = True)
-    heat = models.ManyToManyField('VehicleItemHeat', blank = True, null = True)
-    avionics = models.ManyToManyField('VehicleItemAvionics', blank = True, null = True)
     # Additional fields required for The Barn
     views = models.PositiveIntegerField(default = 0)
 
@@ -500,20 +500,20 @@ class GameUpdate(models.Model):
     name = models.CharField(max_length = 255)
 
     def __unicode__(self):
-        return u"%s" % (name)
+        return u"%s" % (self.name)
 
 class GameUpdateEntity(models.Model):
     name = models.CharField(max_length = 255)
     update = models.ForeignKey('GameUpdate')
 
     def __unicode__(self):
-        return u"%s(%s)" % (name, update.name)
+        return u"%s(%s)" % (self.name, self.update.name)
 
 class GameUpdateChange(models.Model):
     description = models.TextField()
     entity = models.ForeignKey('GameUpdateEntity')
 
     def __unicode__(self):
-        return u"%s(%s):%s" % (entity.name, entity.update.name, description)
+        return u"%s(%s):%s" % (self.entity.name, self.entity.update.name, self.description)
 
 
