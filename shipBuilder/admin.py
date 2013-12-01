@@ -33,3 +33,7 @@ admin.site.register(VehicleItemType)
 admin.site.register(VehicleItemSubType)
 admin.site.register(VehicleImage)
 admin.site.register(HardpointTag)
+
+admin.site.register(GameUpdate)
+admin.site.register(GameUpdateEntity)
+admin.site.register(GameUpdateChange)
