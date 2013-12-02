@@ -5,18 +5,42 @@ from shipBuilder.models import VehicleItemParams, VehicleItemPower, VehicleItemH
 from shipBuilder.models import VehicleItemType, VehicleItemSubType
 from shipBuilder.models import Manufacturer
 from shipBuilder.models import Vehicle, ItemPort, VehicleCategory
+from shipBuilder.models import GameUpdate, GameUpdateChange, GameUpdateEntity
 
 # This script reads in the JSON files produced from scraping the Star Citizen game data, and creates 
 # or updates the data in the shipBuilder database
 
-# parser = argparse.ArgumentParser()
-# parser.add_argument('source')
-# args = parser.parse_args()
-# if args.source:
-# 	DATA_PATH = args.source
-# else:
-DATA_PATH = "/Users/john/Documents/SSB/Parsed Data"
-# DATA_PATH = "/home/jwvanderbeck/sc_parsed_data"
+parser = argparse.ArgumentParser()
+parser.add_argument('module')
+parser.add_argument('build')
+parser.add_argument('source')
+args = parser.parse_args()
+if args.source:
+	DATA_PATH = args.source
+else:
+	DATA_PATH = "/Users/john/Documents/SSB/Parsed Data"
+	# DATA_PATH = "/home/jwvanderbeck/sc_parsed_data"
+
+
+def addGameUpdateEntry(entity, entryType, message):
+	build = args.build
+	module = args.module
+	name = "%s Module Build %s" % (module, build)
+	gameUpdate = GameUpdate.objects.get(name__iexact=name)
+	if not gameUpdate:
+		gameUpdate = GameUpdate(name = name, build = build, module = module)
+		gameUpdate.save()
+
+	if entryType == "changed":
+		description = "CHANGED: %s" % message
+	elif entryType == "new":
+		description = "NEW: %s" % message
+	elif entryType == "removed":
+		description = "REMOVED: %s" % message
+
+	# This update is attached to an entity such as a vehicle or item
+	entry = GameUpdateChange(entity = entity, update = gameUpdate, description = description)
+	entry.save()
 
 # Ingest vehicles
 def ingestVehicle(dataFile, data):
@@ -98,6 +122,42 @@ def ingestVehicle(dataFile, data):
 				for subType in allSubTypes:
 					itemPort.supportedSubTypes.add(subType)					
 
+def saveItemAttribute(item, attribute, value, newItem):
+	if newItem:
+		item[attribute] = value
+		return
+
+	if not value or value == '':
+		return
+
+	oldValue = item[attribute]
+	if not oldValue or oldValue == '':
+		addGameUpdateEntry(item, "new", "'%s' = '%s'" % (attribute, str(newValue)))
+		item[attribute] = value
+		return
+
+	addGameUpdateEntry(item, "changed", "%s changed from '%s' to '%s'" % (attribute, str(newValue), str(newValue)))
+	item[attribute] = value
+
+
+def saveItemPortAttribute(item, itemPort, attribute, value, newPort):
+	if newPort:
+		itemPort[attribute] = value
+		return
+
+	if not value or value == '':
+		return
+
+	oldValue = itemPort[attribute]
+	if not oldValue or oldValue == '':
+		addGameUpdateEntry(item, "new", "ItemPort '%s' '%s' = '%s'" % (itemPort.name, attribute, str(newValue)))
+		itemPort[attribute] = value
+		return
+
+	addGameUpdateEntry(item, "changed", "ItemPort '%s' %s changed from '%s' to '%s'" % (itemPort.name, attribute, str(newValue), str(newValue)))
+	itemPort[attribute] = value
+
+
 def ingestItem(dataFile, data):
 	# Look for the manufacturer
 	if not data['manufacturer']:
@@ -107,43 +167,52 @@ def ingestItem(dataFile, data):
 	if len(manufacturers) == 1:
 		manufacturer = manufacturers[0]
 	elif len(manufacturers) == 0:
+		addGameUpdateEntry(None, "new", "Manufacturer '%s'" % manufacturerName)
 		print"\tCreating %s" % manufacturerName
 		manufacturer = Manufacturer(name=manufacturerName)
 		manufacturer.save()
 	# Look to see if this item exists already
 	itemName = data['name'].replace("&", "_and_")
 	items = VehicleItem.objects.filter(name__iexact=itemName)
+	newItem = False
 	if len(items) == 0:
 		# No item with this name exists, so we need to create a new one
 		print "\tCreating new entry for %s" % itemName
 		# Basic Item Details
-		item = VehicleItem()
+		item = VehicleItem(name = itemName)
+		newItem = True
 	else:
 		# This item already exists, so update its stats
 		item = items[0]
 
-	item.name = itemName
-	item.itemClass = data['class']
+	saveItemAttribute(item, 'itemClass', data['class'], newItem)
+	# item.itemClass = data['class']
 	if data['description']:
-		item.description = data['description']
+		saveItemAttribute(item, 'description', data['description'], newItem)
+		# item.description = data['description']
 	else:
-		item.description = ''
+		saveItemAttribute(item, 'description', '', newItem)
+		# item.description = ''
 	if data['displayname']:
-		item.displayName = data['displayname']
+		saveItemAttribute(item, 'displayName', data['displayname'], newItem)
+		# item.displayName = data['displayname']
 	else:
-		item.displayName = ''
+		saveItemAttribute(item, 'displayName', '', newItem)
+		# item.displayName = ''
 	# Look to see if the type exists already
 	itemTypeName = data['itemtype']
 	if itemTypeName:
 		itemTypes = VehicleItemType.objects.filter(typeName__iexact=itemTypeName)
 		if len(itemTypes) == 0:
-			# Doesn't existm, create new item type
+			# Doesn't exist, create new item type
 			itemType = VehicleItemType(typeName = itemTypeName)
 			itemType.save()
+			addGameUpdateEntry(None, "new", "ItemType '%s'" % itemTypeName)
 		else:
 			# Already existsm, use this one
 			itemType = itemTypes[0]
-		item.itemType = itemType
+		saveItemAttribute(item, 'itemType', itemType, newItem)
+		# item.itemType = itemType
 	# Look to see if the subtype exists already
 	itemSubTypeName = data['itemsubtype']
 	if itemSubTypeName:
@@ -152,27 +221,57 @@ def ingestItem(dataFile, data):
 			# Doesn't existm, create new item type
 			itemSubType = VehicleItemSubType(subTypeName = itemSubTypeName, parent = itemType)
 			itemSubType.save()
+			addGameUpdateEntry(None, "new", "ItemSubType '%s'" % itemSubTypeName)
 		else:
 			# Already existsm, use this one
 			itemSubType = itemSubTypes[0]
-		item.itemSubType = itemSubType
+		saveItemAttribute(item, 'itemSubType', itemSubType, newItem)
+		# item.itemSubType = itemSubType
 
-	item.manufacturer = manufacturer
-	item.itemSize = data['size']
+	saveItemAttribute(item, 'manufacturer', manufacturer, newItem)
+	saveItemAttribute(item, 'itemSize', data['size'], newItem)
+	# item.manufacturer = manufacturer
+	# item.itemSize = data['size']
 	item.save()
+	if newItem:
+		if item.displayName != '':
+			itemName = item.displayName
+		else:
+			itemName = item.name
+		addGameUpdateEntry(item, "new", "VehicleItem '%s'" % itemName)
+
 	# Item Params
+	# Item Params take a bit more work.  For each param we need to:
+	# See if the param already exists based on its NAME
+	#	If it does exist, update its VALUE if needed
+	#	If it does not exist, add it
+	# Then, for each existing Param we need to REMOVE the ones that are no longer valid
 	try:
 		params = data['itemstats']
 	except:
 		params = None
+	# Look for stale params first
 	if params:
-		itemParams = item.itemStats.all().delete()
-		for key in params:
-			itemParam = VehicleItemParams()
-			itemParam.name = key
-			itemParam.value = params[key]
-			itemParam.save()
-			item.itemStats.add(itemParam)
+		currentParams = item.itemStats.all()
+		for param in currentParams:
+			if param.name not in params:
+				# Found stale param
+				addGameUpdateEntry(item, "removed", "VehicleItemParam '%s'" % param.name)
+				print "Removing stale VehicleItemParam %s" % param.name
+				param.delete()
+	# Update / Add Params
+	if params:
+		for param in params:
+			try:
+				itemParam = item.ItemStats.get(name__iexact=param)
+				if itemParam.value != params[param]:
+					addGameUpdateEntry(item, "changed", "VehicleItemParam '%s' changed from '%s' to '%s'" % (param, str(itemParam.value), str(params[param])))
+					itemParam.value = params[param]			
+					itemParam.save()
+			except:
+				addGameUpdateEntry(item, "new", "VehicleItemParam '%s'" % param)
+				itemParam = VehicleItemParam(parentItem = item, name = param, value = params[param])
+				itemParam.save()
 
 	# ItemPorts
 	if "ports" in data:
@@ -184,20 +283,38 @@ def ingestItem(dataFile, data):
 		for port in currentPorts:
 			if not port.name.lower() in portNames:
 				print "Found stale port %s.  Removing." % port.name
+				addGameUpdateEntry(item, "removed", "ItemPort '%s'" % port.name)
 
 		ports = data["ports"]
+		newPort = False
 		for port in ports:
 			try:
 				itemPort = ItemPort.objects.get(name__iexact=port["name"], parentItem__exact=item)
 			except:
 				itemPort = ItemPort(name = port["name"])
-			itemPort.displayName = port["displayname"]
-			itemPort.flags = port["flags"]
-			itemPort.minSize = int(port["minsize"])
-			itemPort.maxSize = int(port["maxsize"])
-			itemPort.name = port["name"]
+				newPort = True
+				addGameUpdateEntry(item, "new", "ItemPort '%s'" % port["name"])
+
+			saveItemPortAttribute(item, itemPort, 'displayName', port["displayname"], newPort)
+			saveItemPortAttribute(item, itemPort, 'flags', port["flags"], newPort)
+			saveItemPortAttribute(item, itemPort, 'minSize', port["minsize"], newPort)
+			saveItemPortAttribute(item, itemPort, 'maxSize', port["maxsize"], newPort)
+			saveItemPortAttribute(item, itemPort, 'name', port["name"], newPort)
+			# itemPort.displayName = port["displayname"]
+			# itemPort.flags = port["flags"]
+			# itemPort.minSize = int(port["minsize"])
+			# itemPort.maxSize = int(port["maxsize"])
+			# itemPort.name = port["name"]
 			itemPort.parentItem = item
 			itemPort.save()
+
+			# First we need to prune out any old supported types that aren't valid anymore
+			currentSupportedTypes = itemPort.supportedTypes.all()
+			for supportedType in currentSupportedTypes:
+				if supportedType.typeName not in port["types"]:
+					# Stale supported type!
+					itemPort.supportedTypes.remove(supportedType)
+					addGameUpdateEntry(item, "rmeoved", "ItemPort '%s' supportedType '%s'" % (itemPort.name, supportedType.typeName))
 			for supportedType in port["types"]:
 				supportedItemType = supportedType["type"]
 				supportedItemSubTypes = supportedType["subtypes"]
@@ -207,6 +324,7 @@ def ingestItem(dataFile, data):
 					itemType = VehicleItemType(typeName=supportedItemType)
 					itemType.save()
 					print "Created new VehicleItemType %s" % supportedItemType
+					addGameUpdateEntry(None, "new", "VehicleItemType '%s'" % supportedItemType)
 				itemPort.supportedTypes.add(itemType)
 				if len(supportedItemSubTypes) > 0:
 					for supportedSubType in supportedItemSubTypes:

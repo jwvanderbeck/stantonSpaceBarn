@@ -337,6 +337,22 @@ class Build(models.Model):
 ## best guesses!
 ######################################################
 
+### Descriptions need to be localized for different languages
+class LocalizedDescriptionManufacturer(models.Model):
+    languageCode = models.CharField(max_length = 5)
+    description = models.TextField()
+    parentEntity = models.ForeignKey("Manufacturer")
+
+class LocalizedDescriptionVehicle(models.Model):
+    languageCode = models.CharField(max_length = 5)
+    description = models.TextField()
+    parentEntity = models.ForeignKey("Vehicle")
+
+class LocalizedDescriptionVehicleItem(models.Model):
+    languageCode = models.CharField(max_length = 5)
+    description = models.TextField()
+    parentEntity = models.ForeignKey("VehicleItem")
+
 ### Vehicle Items
 
 class VehicleItemType(models.Model):
@@ -498,6 +514,8 @@ class Variant(models.Model):
 
 class GameUpdate(models.Model):
     name = models.CharField(max_length = 255)
+    build = models.CharField(max_length = 64)
+    module = models.CharField(max_length = 255)
 
     def __unicode__(self):
         return u"%s" % (self.name)
@@ -511,7 +529,8 @@ class GameUpdateEntity(models.Model):
 
 class GameUpdateChange(models.Model):
     description = models.TextField()
-    entity = models.ForeignKey('GameUpdateEntity')
+    entity = models.ForeignKey('GameUpdateEntity', blank = True, null = True)
+    update = models.ForeignKey('GameUpdate', blank = True, null = True)
 
     def __unicode__(self):
         return u"%s(%s):%s" % (self.entity.name, self.entity.update.name, self.description)
