@@ -1,25 +1,32 @@
 import os, sys, json, argparse
 
-from shipBuilder.models import VehicleItem
-from shipBuilder.models import VehicleItemParams, VehicleItemPower, VehicleItemHeat, VehicleItemAvionics
-from shipBuilder.models import VehicleItemType, VehicleItemSubType
-from shipBuilder.models import Manufacturer
-from shipBuilder.models import Vehicle, ItemPort, VehicleCategory
-from shipBuilder.models import GameUpdate, GameUpdateChange, GameUpdateEntity
+# from shipBuilder.models import VehicleItem
+# from shipBuilder.models import VehicleItemParams, VehicleItemPower, VehicleItemHeat, VehicleItemAvionics
+# from shipBuilder.models import VehicleItemType, VehicleItemSubType
+# from shipBuilder.models import Manufacturer
+# from shipBuilder.models import Vehicle, ItemPort, VehicleCategory
+# from shipBuilder.models import GameUpdate, GameUpdateChange, GameUpdateEntity
+import scripts.ingestion as ingestion
 
 # This script reads in the JSON files produced from scraping the Star Citizen game data, and creates 
 # or updates the data in the shipBuilder database
 
-parser = argparse.ArgumentParser()
-parser.add_argument('module')
-parser.add_argument('build')
-parser.add_argument('source')
-args = parser.parse_args()
-if args.source:
-	DATA_PATH = args.source
-else:
-	DATA_PATH = "/Users/john/Documents/SSB/Parsed Data"
-	# DATA_PATH = "/home/jwvanderbeck/sc_parsed_data"
+# parser = argparse.ArgumentParser()
+# parser.add_argument('module')
+# parser.add_argument('build')
+# parser.add_argument('source')
+# args = parser.parse_args()
+# if args.source:
+# 	DATA_PATH = args.source
+# else:
+# 	DATA_PATH = "/Users/john/Documents/SSB/Parsed Data/Patch_0"
+# 	# DATA_PATH = "/home/jwvanderbeck/sc_parsed_data"
+
+# if not args.module:
+# 	args.module = "Hangar"
+
+# if not args.build:
+# 	args.build = "124.0000"
 
 
 def addGameUpdateEntry(entity, entryType, message):
@@ -308,13 +315,32 @@ def ingestItem(dataFile, data):
 			itemPort.parentItem = item
 			itemPort.save()
 
+			# ItemPort supported types and subtypes
+			# This should probably be broken out into its own methods
+			# Maybe the whole lot of these things need to be turned into classes
+
+			# This builds up a list of type:subtype names.  If there is no specified
+			# subtype, then only the type is used and this means "all" subtypes should be
+			# supported.
+			types = []
+			for supportedType in port['types']:
+				baseName = supportedType['type']
+				if len(supportedType['subtypes']) > 0:
+					for subtype in supportedType['subtypes']:
+						name = baseName + ":" + subtype
+						types.append(name)
+				else:
+					types.append(baseName)
+
+
 			# First we need to prune out any old supported types that aren't valid anymore
 			currentSupportedTypes = itemPort.supportedTypes.all()
 			for supportedType in currentSupportedTypes:
 				if supportedType.typeName not in port["types"]:
 					# Stale supported type!
 					itemPort.supportedTypes.remove(supportedType)
-					addGameUpdateEntry(item, "rmeoved", "ItemPort '%s' supportedType '%s'" % (itemPort.name, supportedType.typeName))
+					addGameUpdateEntry(item, "removed", "ItemPort '%s' supportedType '%s'" % (itemPort.name, supportedType.typeName))
+
 			for supportedType in port["types"]:
 				supportedItemType = supportedType["type"]
 				supportedItemSubTypes = supportedType["subtypes"]
@@ -379,18 +405,28 @@ def ingestItem(dataFile, data):
 			avionicsEntry.value = avionicsBase[state]
 			avionicsEntry.save()
 			item.avionics.add(avionicsEntry)
+def run(*script_args):
+	gameUpdate = ingestion.GameChanges(script_args[0], script_args[1])
+	DATA_PATH = script_args[2]
+	allFiles = os.listdir(DATA_PATH)
+	for dataFile in allFiles:
+		print dataFile
+		if os.path.splitext(dataFile)[-1] == '.json':
+			try:
+				with open(os.path.join(DATA_PATH, dataFile), 'r') as f:
+					data = json.load(f)
+			except:
+				continue
 
-allFiles = os.listdir(DATA_PATH)
-for dataFile in allFiles:
-	print dataFile
-	if os.path.splitext(dataFile)[-1] == '.json':
-		try:
-			with open(os.path.join(DATA_PATH, dataFile), 'r') as f:
-				data = json.load(f)
-		except:
-			continue
-
-		if "itemtype" in data:
-			ingestItem(dataFile, data)
-		else:
-			ingestVehicle(dataFile, data)
+			if "itemtype" in data:
+				newItem = ingestion.VehicleItemData(gameUpdate)
+				newItem.parse(data)
+				newItem.checkChanges(record = True)
+				newItem.saveChanges()
+				# ingestItem(dataFile, data)
+			else:
+				newVehicle = ingestion.VehicleData(gameUpdate)
+				newVehicle.parse(data)
+				newVehicle.checkChanges(record = True)
+				newVehicle.saveChanges()
+				# ingestVehicle(dataFile, data)
