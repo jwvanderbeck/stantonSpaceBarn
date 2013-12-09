@@ -356,31 +356,42 @@ class LocalizedDescriptionVehicleItem(models.Model):
 ### Vehicle Items
 
 class VehicleItemType(models.Model):
-    typeName = models.CharField(max_length = 255)
+    name = models.CharField(max_length = 255, default = "")
+    typeName = models.CharField(max_length = 255, default = "")
+    subTypeName  = models.CharField(max_length = 255, default = "")
 
     def __unicode__(self):
-        return self.typeName
+        return self.name
 
-class VehicleItemSubType(models.Model):
-    subTypeName = models.CharField(max_length = 255)
-    parent = models.ForeignKey('VehicleItemType')
+# class VehicleItemSubType(models.Model):
+#     subTypeName = models.CharField(max_length = 255)
+#     parent = models.ForeignKey('VehicleItemType')
 
-    def __unicode__(self):
-        return self.subTypeName
+#     def __unicode__(self):
+#         return self.subTypeName
 
 class VehicleItemParams(models.Model):
     name = models.CharField(max_length = 255)
     value = models.FloatField(default = 0.0)
-    parentItem = models.ForeignKey('VehicleItem')
+    parentItem = models.ForeignKey('VehicleItem', blank = True, null = True)
 
     def __unicode__(self):
         return u"%s - %s:%.2f" % (self.parentItem.name, self.name, self.value)
+
+class PipeState(models.Model):
+    name = models.CharField(max_length=255)
+    value = models.CharField(max_length=255)
+    parent = models.ForeignKey("VehicleItemPipe", blank = True, null = True)
+
+class VehicleItemPipe(models.Model):
+    name = models.CharField(max_length = 255)
+    stacking = models.BooleanField(default = False)
 
 class VehicleItemPower(models.Model):
     state = models.CharField(max_length = 128)
     # Value couldbe a packed value curve
     value = models.CharField(max_length = 255)
-    parentItem = models.ForeignKey('VehicleItem')
+    parentItem = models.ForeignKey('VehicleItem', blank = True, null = True)
 
     def __unicode__(self):
         return u"(%s)%s - %s" % (self.parentItem.name, self.state, self.value)
@@ -389,7 +400,7 @@ class VehicleItemHeat(models.Model):
     state = models.CharField(max_length = 128)
     # Value couldbe a packed value curve
     value = models.CharField(max_length = 255)
-    parentItem = models.ForeignKey('VehicleItem')
+    parentItem = models.ForeignKey('VehicleItem', blank = True, null = True)
 
     def __unicode__(self):
         return u"(%s)%s - %s" % (self.parentItem.name, self.state, self.value)
@@ -398,19 +409,18 @@ class VehicleItemAvionics(models.Model):
     state = models.CharField(max_length = 128)
     # Value couldbe a packed value curve
     value = models.CharField(max_length = 255)
-    parentItem = models.ForeignKey('VehicleItem')
+    parentItem = models.ForeignKey('VehicleItem', blank = True, null = True)
 
     def __unicode__(self):
         return u"(%s)%s - %s" % (self.parentItem.name, self.state, self.value)
 
 class VehicleItem(models.Model):
     itemClass = models.PositiveIntegerField(default = 1)
-    description = models.TextField(blank = True)
+    description = models.TextField(blank = True, null = True)
     name = models.CharField(max_length = 255)
     displayName = models.CharField(max_length = 255, blank = True)
-    itemType = models.ForeignKey('VehicleItemType')
-    itemSubType = models.ForeignKey('VehicleItemSubType')
-    manufacturer = models.ForeignKey('Manufacturer')
+    itemType = models.ForeignKey('VehicleItemType', blank = True, null = True)
+    manufacturer = models.ForeignKey('Manufacturer', blank = True, null = True)
     itemSize = models.PositiveIntegerField(default = 0)
     # Additional fields required for The Barn
     views = models.PositiveIntegerField(default = 0)
@@ -436,17 +446,16 @@ class ItemPort(models.Model):
     maxSize = models.PositiveIntegerField(default = 1)
     minSize = models.PositiveIntegerField(default = 0)
     supportedTypes = models.ManyToManyField('VehicleItemType', blank = True, null = True) 
-    supportedSubTypes = models.ManyToManyField('VehicleItemSubType', blank = True, null = True)
     parentVehicle = models.ForeignKey('Vehicle', blank = True, null = True)
     parentItem = models.ForeignKey('VehicleItem', blank = True, null = True)
     # Added just in case the game starts using it
     portClass = models.PositiveIntegerField(default = 0)
     # Additional fields required for The Barn
     # 1 = TopRight, 2 = TopLeft, 3 = BottomRightLeft, 4 = BottomRight
-    parentImage = models.PositiveIntegerField(default = 0)
-    image = models.ForeignKey('Image', null = True, blank = True)
-    tagLocationX = models.FloatField(default = 0.0)
-    tagLocationY = models.FloatField(default = 0.0)
+    # parentImage = models.PositiveIntegerField(default = 0)
+    # image = models.ForeignKey('Image', null = True, blank = True)
+    # tagLocationX = models.FloatField(default = 0.0)
+    # tagLocationY = models.FloatField(default = 0.0)
 
     def __unicode__(self):
         if self.displayName and self.displayName != "":
@@ -464,7 +473,7 @@ class VehicleCategory(models.Model):
 class Vehicle(models.Model):
     # Basic fields as required by game model
     vehicleClass = models.PositiveIntegerField(default = 1)
-    category = models.ForeignKey('VehicleCategory')
+    category = models.CharField(max_length=255, default = "Default Vehicle")
     displayName = models.CharField(max_length = 255, blank = True)
     name = models.CharField(max_length = 255)
     # Additional fields required for The Barn
@@ -478,10 +487,6 @@ class Vehicle(models.Model):
     thumbnail = models.URLField(default='', blank = True)
     available = models.BooleanField(default = False)
     manufacturer = models.ForeignKey('Manufacturer', blank = True, null = True)
-    layoutImageTopRight = models.URLField(blank = True)
-    layoutImageTopLeft = models.URLField(blank = True)
-    layoutImageBottomRight = models.URLField(blank = True)
-    layoutImageBottomLeft = models.URLField(blank = True)
 
     def __unicode__(self):
         if self.displayName and self.displayName != "":
@@ -513,26 +518,22 @@ class Variant(models.Model):
     views = models.PositiveIntegerField(default = 0)
 
 class GameUpdate(models.Model):
-    name = models.CharField(max_length = 255)
-    build = models.CharField(max_length = 64)
-    module = models.CharField(max_length = 255)
+    name = models.CharField(max_length = 255, default = "")
+    build = models.CharField(max_length = 64, default = "")
+    module = models.CharField(max_length = 255, default = "Root")
 
     def __unicode__(self):
         return u"%s" % (self.name)
 
-class GameUpdateEntity(models.Model):
-    name = models.CharField(max_length = 255)
-    update = models.ForeignKey('GameUpdate')
-
-    def __unicode__(self):
-        return u"%s(%s)" % (self.name, self.update.name)
-
 class GameUpdateChange(models.Model):
-    description = models.TextField()
-    entity = models.ForeignKey('GameUpdateEntity', blank = True, null = True)
+    description = models.TextField(default = "")
+    entityName = models.CharField(max_length=255, default = "", blank = True, null = True)
     update = models.ForeignKey('GameUpdate', blank = True, null = True)
 
     def __unicode__(self):
-        return u"%s(%s):%s" % (self.entity.name, self.entity.update.name, self.description)
+        if self.entityName:
+            return u"%s(%s):%s" % (self.entityName, self.update.name, self.description)
+        else:
+            return u"(%s):%s" % (self.update.name, self.description)
 
 
