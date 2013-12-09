@@ -47,7 +47,7 @@ if __name__ == "__main__":
 	parser = argparse.ArgumentParser()
 	parser.add_argument("source")
 	parser.add_argument("destination")
-	args = parser.parse_args(["/Users/john/Tresors/Star Citizen Website Data/Scripts", "/Users/john/Tresors/Star Citizen Website Data/Parsed"])
+	args = parser.parse_args(["/Users/john/Documents/SSB/Star Citizen Data/Scripts_Patch_4", "/Users/john/Documents/SSB/Parsed Data/Patch_4"])
 
 	print "Working on %s" % args.source
 	entitiesPath = os.path.join(args.source, ENTITIES_PATH)
