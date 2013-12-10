@@ -170,17 +170,16 @@
                                 <div class="tab-pane fade in{%if forloop.first%} active{%endif%}" id="image-{{image.name|slugify}}">
                                     <image src="{{image.url}}" class="col-lg-12" />
                                     {% for tag in image.tags.all %}
-                                    <div class="item-port hardpoint-tag-{{tag.hardpoint.name}} {%for type in tag.hardpoint.supportedTypes.all%}itemtype-{{type.typeName}} {%endfor%}" 
+                                    <div class="item-port hardpoint-tag-{{tag.hardpoint.name}}" 
                                         style="left:{{tag.locationX}}%;top:{{tag.locationY}}%;" 
-                                        data-types="{%for type in tag.hardpoint.supportedTypes.all%}{{type.typeName}}{%if not forloop.last %},{%endif%}{%endfor%}" 
-                                        data-subtypes="{%for type in tag.hardpoint.supportedSubTypes.all%}{{type.subTypeName}}{%if not forloop.last %},{%endif%}{%endfor%}" 
+                                        data-types="{%for type in tag.hardpoint.supportedTypes.all%}{{type.name}}{%if not forloop.last %},{%endif%}{%endfor%}" 
                                         data-min-size={{tag.hardpoint.minSize}} 
                                         data-max-size={{tag.hardpoint.maxSize}} 
                                         data-parent={{tag.hardpoint.parentImage}}
                                         data-port-name={{tag.hardpoint.name}}
                                         data-tag-number={{forloop.counter}}>
                                     </div>
-                                    <div class="col-md-5 datablock datablock-floating hardpoint-datablock-{{tag.hardpoint.name}} {%for type in tag.hardpoint.supportedTypes.all%}itemtype-{{type.typeName}} {%endfor%}" 
+                                    <div class="col-md-5 datablock datablock-floating hardpoint-datablock-{{tag.hardpoint.name}}" 
                                         style='display:none;' 
                                         data-port-name="{{tag.hardpoint.name}}"
                                         data-tag-number={{forloop.counter}}>
@@ -195,7 +194,7 @@
                                                 </div>
                                             </div>
                                             <div class="panel-footer">
-                                                <p>{%for type in tag.hardpoint.supportedSubTypes.all%}{{type.subTypeName}}{%if not forloop.last %}, {%endif%}{%endfor%}</p>
+                                                <p>{%for type in tag.hardpoint.supportedTypes.all%}{{type.name}}{%if not forloop.last %}, {%endif%}{%endfor%}</p>
                                             </div>
                                         </div>
                                     </div>
@@ -224,10 +223,10 @@
         <!-- {{itemPort.supportedTypes.all}} -->
         <div class="panel panel-compact
         {% for type in itemPort.supportedTypes.all %}
-        {% if "PowerPlant" in type.typeName %}
+        {% if "powerplant" in type.typeName %}
          panel-danger
         {% endif %}
-        {% if "Thruster" in type.typeName %}
+        {% if "thruster" in type.typeName %}
          panel-danger
         {% else %}
          panel-warning
@@ -235,10 +234,10 @@
         {% endfor %}
         " data-state="empty"
         {% for type in itemPort.supportedTypes.all %}
-        {% if "PowerPlant" in type.typeName %}
+        {% if "powerplant" in type.typeName %}
           data-status="danger" data-base-status="danger"
         {% endif %}
-        {% if "Thruster" in type.typeName %}
+        {% if "thruster" in type.typeName %}
           data-status="danger" data-base-status="danger"
         {% else %}
           data-status="warning" data-base-status="warning"
@@ -251,11 +250,10 @@
             <div class="panel-body">
                 <div class="well well-compact item-port-datablock" 
                     data-port-name="{{itemPort.name}}" 
-                    data-parent={{itemPort.parentImage}} 
-                    data-types="{%for type in itemPort.supportedTypes.all%}{{type.typeName}}{%if not forloop.last %},{%endif%}{%endfor%}" 
+                    data-parent="{{itemPort.parentImage}}"
+                    data-types="{%for type in itemPort.supportedTypes.all%}{{type.name}}{%if not forloop.last %},{%endif%}{%endfor%}" 
                     data-min-size={{itemPort.minSize}} 
                     data-max-size={{itemPort.maxSize}} 
-                    data-subtypes="{%for type in itemPort.supportedSubTypes.all%}{{type.subTypeName}}{%if not forloop.last %},{%endif%}{%endfor%}"
                     data-parent-vehicle="{{shipData.name}}">
                     <div class="item-port-datablock-statebuttons">
                         <input id="item-powerstate-{{itemPort.name}}-input" type="hidden" name="item-powerstate" value="Default">
@@ -486,14 +484,6 @@ $('#quick-variant').modal({
 /******************************************************************************
 // Bind Events  
 ******************************************************************************/
-/********* Deprecated and no longer used
-$("a.type-select").on("click", function(e){
-    var anchor = $(this).attr("href");
-    var activeItemType = anchor.split("-")[1];
-    toggleItemPorts(activeItemType);
-});
-*/
-
 Backbone.on("rowclicked", function (model) {
     console.log("Showing item details modal")
     getItemDetails(model.get("name"));

@@ -1182,7 +1182,6 @@ def getBackgridItemList(request, itemTypeName):
         print "Returning items for %s" % (itemTypeName)
         for item in items:
             row = {}
-            row['subtype'] = item.itemSubType.subTypeName
             if item.displayName:
                 row['displayName'] = item.displayName
             else:
@@ -1194,20 +1193,18 @@ def getBackgridItemList(request, itemTypeName):
     assert False        
 
 def isItemCompatibleWithPort(itemData, portData):
-    # Ports with a parentImage of 0 are not shown and thus no item is compatible
-    # if portData.parentImage == 0:
-    #     return False
+    # Check size for quick fallout
     if itemData.itemSize < portData.minSize:
         return False
     if itemData.itemSize > portData.maxSize:
         return False
-    if not itemData.itemType in portData.supportedTypes.all():
-        return False
-
-    if len(portData.supportedSubTypes.all()) == 0:
+    # If we get a perfect type:subtype match then we are good
+    if itemData.itemType in portData.supportedTypes.all():
         return True
-    else:
-        return itemData.itemSubType in portData.supportedSubTypes.all()
+    # No exact match so we need to check if the port supports
+    # all of this type's subtypes
+    if itemData.itemType.name.split(":")[0] in portData.supportedTypes.all():
+        return True
 
 @ensure_csrf_cookie
 def getVehicleItemList(request, itemTypeName=None, itemSubTypeName=None, vehicleName=None):
@@ -1265,8 +1262,7 @@ def getVehicleItemList(request, itemTypeName=None, itemSubTypeName=None, vehicle
                     continue
             print item
             row = {}
-            row['subtype'] = item.itemSubType.subTypeName
-            row['type'] = item.itemType.typeName
+            row['type'] = item.itemType.name
             row['size'] = item.itemSize
             if item.displayName:
                 row['displayName'] = item.displayName
@@ -1359,14 +1355,7 @@ def getVehicleDetails(request):
             supported = []
             # For each supported ItemType
             for itemType in port.supportedTypes.all():
-                # Look for supported ItemSubType with that parent, and add those found
-                supportedSubTypes = port.supportedSubTypes.all().filter(parent__exact=itemType)
-                if len(supportedSubTypes) == 0:
-                    # if none found, add ALL itemSubType with that parent
-                    supportedSubTypes = VehicleItemSubType.objects.all().filter(parent__exact=itemType)
-                supported.extend(supportedSubTypes)
-            for subType in supported:
-                portData['types'].append(subType.subTypeName)
+                portData['types'].append(itemType.name)
             response_data['ports'].append(portData)
 
         return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
@@ -1443,10 +1432,10 @@ def getItemPortDetails(request):
             response_data['name'] = itemPortData.name
         response_data['minsize'] = itemPortData.minSize
         response_data['maxsize'] = itemPortData.maxSize
-        response_data['subtypes'] = []
-        subTypes = itemPortData.supportedSubTypes.all()
-        for subType in subTypes:
-            response_data["subtypes"].append(subType.subTypeName)
+        response_data['types'] = []
+        itemTypes = itemPortData.supportedTypes.all()
+        for itemType in itemTypes:
+            response_data["types"].append(itemType.name)
         return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
 
     assert False   
@@ -1493,25 +1482,24 @@ def getItemDetails(request):
             response_data['itemname'] = item.name
         response_data['itemclass'] = item.itemClass
         response_data['itemsize'] = item.itemSize
-        response_data['itemtype'] = item.itemType.typeName
-        response_data['itemsubtype'] = item.itemSubType.subTypeName
+        response_data['itemtype'] = item.itemType.name
         response_data['description'] = item.description
 
         # VehicleItemStats
-        allStats = item.itemStats.all()
+        allStats = item.vehicleitemparams_set.all()
         response_data['itemstats'] = []
         for stat in allStats:
             response_data['itemstats'].append( {'name' : stat.name, 'value' : stat.value} )
 
         # Supported states
         response_data['power'] = []
-        for state in item.power.all():
+        for state in VehicleItemPower.objects.filter(parentItem__exact=item):
             response_data['power'].append(state.state)
         response_data['heat'] = []
-        for state in item.heat.all():
+        for state in VehicleItemHeat.objects.filter(parentItem__exact=item):
             response_data['heat'].append(state.state)
         response_data['avionics'] = []
-        for state in item.avionics.all():
+        for state in VehicleItemAvionics.objects.filter(parentItem__exact=item):
             response_data['avionics'].append(state.state)
 
         # ItemPorts
@@ -1527,13 +1515,9 @@ def getItemDetails(request):
             portData['minsize'] = port.minSize
             portData['maxsize'] = port.maxSize
             portData['types'] = []
-            portData['subtypes'] = []
-            types = port.supportedTypes.all()
-            for itemType in types:
-                portData["types"].append(itemType.typeName)
-            subTypes = port.supportedSubTypes.all()
-            for subType in subTypes:
-                portData["subtypes"].append(subType.subTypeName)
+            itemTypes = port.supportedTypes.all()
+            for itemType in itemTypes:
+                portData["types"].append(itemType.name)
             response_data["ports"].append(portData)
         return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
     assert False   
@@ -1576,12 +1560,12 @@ def getPipeGraph(request):
         stacking = False
         try:
             if requestData['pipe'].lower() == "power":
-                pipe = item.power
+                pipe = VehicleItemPower.objects.filter(parentItem__exact=item)
             elif requestData['pipe'].lower() == "heat":
                 stacking = True # Heat stacks over time
-                pipe = item.heat
+                pipe = VehicleItemHeat.objects.filter(parentItem__exact=item)
             elif requestData['pipe'].lower() == "avionics":
-                pipe = item.avionics
+                pipe = VehicleItemAvionics.objects.filter(parentItem__exact=item)
             else:
                 response_data = {
                 'success' : False,
@@ -1717,7 +1701,7 @@ def getGraph(request, graphType):
                 except:
                     print "Failed to find item %s" % (itemName)
                     continue
-                if item.itemType.typeName == "PowerPlant":
+                if item.itemType.typeName == "powerplant":
                     try:
                         powerData = item.power.get(state="Default")
                         powerGenerated = powerGenerated + float(powerData.value)

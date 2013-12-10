@@ -197,7 +197,7 @@ function submitUserLogin() {
     $("#user-login").modal('hide');
     var frm = $('#login-form');
     var jsonData = JSON.stringify(frm.serializeArray());
-    console.log(jsonData);
+    // console.log(jsonData);
     $.post('/users/login/', jsonData).done(function(data) {
         if (data['success'] == false)
         {
@@ -214,7 +214,7 @@ function submitNewUser() {
     $("#user-newuser").modal('hide');
     var frm = $('#newuser-form');
     var jsonData = JSON.stringify(frm.serializeArray());
-    console.log(jsonData);
+    // console.log(jsonData);
     $.post('/users/create/', jsonData).done(function(data) {
         if (data['success'] == false)
         {
@@ -228,9 +228,9 @@ function submitNewUser() {
 }
 
 function submitUserLogout() {
-    console.log('logout');
+    // console.log('logout');
     var jsonData = {}
-    console.log(jsonData);
+    // console.log(jsonData);
     $.post('/users/logout/', jsonData).done(function(data) {
         if (data['success'] == false)
         {
@@ -322,9 +322,9 @@ function createGrid(itemTypeName, shipName, element, pageSize)
 var ItemTypeCell = Backgrid.StringCell.extend({
     className : "item-type-cell"
 });
-var ItemSubTypeCell = Backgrid.StringCell.extend({
-    className : "item-subtype-cell"
-});
+// var ItemSubTypeCell = Backgrid.StringCell.extend({
+//     className : "item-subtype-cell"
+// });
 var ItemSizeCell = Backgrid.StringCell.extend({
     className : "item-size-cell"
 });
@@ -356,14 +356,16 @@ function createBackgrid(collection, parentElement){
         renderable: false,
         // The cell type can be a reference of a Backgrid.Cell subclass, any Backgrid.Cell subclass instances like *id* above, or a string
         cell: ItemTypeCell // This is converted to "StringCell" and a corresponding class in the Backgrid package namespace is looked up
-    },{
-        name: "subtype",
-        label: "subtype",
-        editable : false,
-        renderable: false,
-        // The cell type can be a reference of a Backgrid.Cell subclass, any Backgrid.Cell subclass instances like *id* above, or a string
-        cell: ItemSubTypeCell // This is converted to "StringCell" and a corresponding class in the Backgrid package namespace is looked up
-    },{
+    },
+    // {
+    //     name: "subtype",
+    //     label: "subtype",
+    //     editable : false,
+    //     renderable: false,
+    //     // The cell type can be a reference of a Backgrid.Cell subclass, any Backgrid.Cell subclass instances like *id* above, or a string
+    //     cell: ItemSubTypeCell // This is converted to "StringCell" and a corresponding class in the Backgrid package namespace is looked up
+    // },
+    {
         name: "size",
         label: "size",
         editable : false,
@@ -460,40 +462,6 @@ function filterByItemPort(itemPortName)
     }
 }
 
-// DEPRECATED
-// function toggleItemPorts(activeItemType)
-// {
-//     var ports = $(".item-port");
-//     ports.each(function(){
-//         if ($(this).hasClass("itemtype-" + activeItemType))
-//             $(this).show(200);
-//         else
-//             $(this).hide(200);
-//     });
-// }
-
-// function enterPortLabel()
-// {
-//     $(this).addClass("well-white");
-//     var imageNumber = parseInt($(this).attr("data-parent"),10);
-//     // ports wth image 0 are not displayed
-//     if (imageNumber == 0)
-//         return
-//     // select the proper image tab
-//     imageNumber = imageNumber - 1;
-//     $('#main-hardpoint-images li:eq(' + imageNumber + ') a').tab('show'); // Select tab (0-indexed)
-//     // find and highlight the port
-//     var portName = $(this).attr("data-port-name")
-//     $("#" + portName).addClass("highlight")
-// }
-// 
-// function leavePortLabel()
-// {
-//     $(this).removeClass("well-white");
-//     var portName = $(this).attr("data-port-name")
-//     $("#" + portName).removeClass("highlight")
-// }
-
 function enterPort(port)
 {
     port.attr("data-focus", "yes");
@@ -503,7 +471,7 @@ function enterPort(port)
     // Display datablock overlay in computed postion
     var tagNumber = port.attr("data-tag-number");
     var datablock = getHardpointOverlay(getHardpointName(port), tagNumber)
-    console.log("Datablock:", datablock);
+    // console.log("Datablock:", datablock);
     var datablockHeight = datablock.height();
     var datablockWidth = datablock.width();
     var tagLeft = port.position().left;
@@ -552,7 +520,7 @@ function hideOverlay(overlay)
 {
     // If the overlay or tag has focus, we cancel this
     // otherwise we hide it
-    console.log("hideOverlay", overlay);
+    // console.log("hideOverlay", overlay);
     if (overlay.attr("data-focus") == "yes")
         return;
     var tagNumber = overlay.attr("data-tag-number");
@@ -604,7 +572,7 @@ function removeItemFromPort(portData)
 
     // Reset datablock state selection
     parent = portDatablock.find(".item-port-datablock-statebuttons");
-    console.log(parent)
+    // console.log(parent)
     parent.empty();
     $(document.createElement("input")).appendTo(parent).attr("id", "item-powerstate-" + portName + "-input").attr("type", "hidden").attr("name", "item-powerstate").attr("value","Default");
     var parentDiv = $(document.createElement("div")).appendTo(parent).addClass("btn-group");
@@ -625,9 +593,9 @@ function removeItemFromPort(portData)
     });
     // If this item has any ItemPorts, we need to remove those
     // TODO
-    console.log("Removing sub ports");
+    // console.log("Removing sub ports");
     var datablocks = $(".item-port-datablock[data-parent-port='" + portName + "']");
-    console.log("Datablocks", datablocks);
+    // console.log("Datablocks", datablocks);
     datablocks.each(function(){
         console.log("Removing", $(this))
         var div = $(this).parent();
@@ -671,7 +639,7 @@ function getQuickVariant(shipName)
         }
     });
     var jsonData = JSON.stringify(data);
-    console.log(jsonData);
+    // console.log(jsonData);
     $.ajaxSetup({
       async: true
     });
@@ -682,7 +650,7 @@ function getQuickVariant(shipName)
         }
         else
         {
-            console.log(data);
+            // console.log(data);
             var dialog = $('#quick-variant');
             var urlDiv = $("#quickvariant-url");
             var variantURL = data["url"];
@@ -713,23 +681,47 @@ function lineChartOperaHack(){
 
 function isItemCompatibleWithPort(item, port)
 {
-    var portType = port.attr("data-types");
-    var portSubType = port.attr("data-subtypes");
+    // console.log("isItem", item, "compatible with port", port)
+    var portType = port.attr("data-types").split(",");
+    // console.log("portType",portType)
     var portMinSize = parseInt(port.attr("data-min-size"), 10);
     var portMaxSize = parseInt(port.attr("data-max-size"), 10);
-    var itemType = item.get("type");
-    var itemSubType = item.get("subtype");
-    var itemSize = parseInt(item.get("size"), 10);
-    // console.log(itemType, "in", portType);
-    if (portType.indexOf(itemType) == -1 )
-        return false;
-    // console.log(itemSubType, "in", portSubType);
-    if (portSubType.indexOf(itemSubType) == -1 )
-        return false;
+    if (item.get == undefined)
+    {
+        var itemType = item["type"];
+        var itemSize = parseInt(item["size"], 10);
+    }
+    else
+    {
+        var itemType = item.get("type");
+        var itemSize = parseInt(item.get("size"), 10);
+    }
+    // console.log("Checking",itemType, itemSize)
+    // console.log("Checking",portType)
+    // quick drop out if size is wrong
     // console.log(itemSize, "between", portMinSize, "and", portMaxSize);
     if ( itemSize < portMinSize || itemSize > portMaxSize)
+    {
+        // console.log("returning false. Incompatible size")
         return false;
-    return true;   
+    }
+    // if size matches, then we look for a one to one type match on type:subtype
+    if (portType.indexOf(itemType) >= 0 )
+    {
+        // console.log(itemType, "in", portType);
+        return true;
+    }
+    // if that doesn't work, see if the port has any Type with no subtype, which means "all subtypes"
+    mainType = itemType.split(":")[0]
+    if (portType.indexOf(mainType) >= 0)
+    {
+        console.log("Main Type only match")
+        console.log(mainType, "in", portType);
+        return true
+    }
+
+    // console.log("returning false")
+    return false;   
 }
 
 function getItemDetails(itemName) {
@@ -750,13 +742,13 @@ function getItemDetails(itemName) {
         }
         else
         {
+            // console.log(data)
             $("#item-details").show();
             var section = $("#item-details");
             $("#item-details-itemname").text(data['itemname']);
             $("#item-details-itemclass").text(data['itemclass']);
             $("#item-details-itemsize").text(data['itemsize']);
             $("#item-details-itemtype").text(data['itemtype']);
-            $("#item-details-itemsubtype").text(data['itemsubtype']);
             $("#item-details-description").text(data['description']);
             // clear the sub divs so we;re starting fresh
             var weaponbars = $("#item-details-weaponbars");
@@ -796,7 +788,7 @@ function getItemDetails(itemName) {
                 $(document.createElement("p")).appendTo(body).text("Size " + ports[index]["minsize"] + " - " + ports[index]["maxsize"]);
                 
                 $(document.createElement('p')).appendTo(body).text("Supported Items");
-                var types = ports[index]['subtypes'];
+                var types = ports[index]['types'];
                 for (var i = 0; i < types.length; i++)
                 {
                     $(document.createElement('p')).appendTo(body).text(types[i]).addClass("offset1");
@@ -822,6 +814,8 @@ function chartPipe(itemName, pipe, state) {
         if (data['success'] == false)
         {
             console.log("chartPipe failed:", data['response']);
+            // TODO
+            // Fix this.  This hides more than it should
             $("#" + pipe.toLowerCase() + "-chart-line").parent().hide()
         }
         else
@@ -872,8 +866,8 @@ function chartPipe(itemName, pipe, state) {
                     .call(chart);
 
                 nv.utils.windowResize(chart.update);
-                console.log(chartID);
-                console.log("Updating chart");
+                // console.log(chartID);
+                // console.log("Updating chart");
                 setTimeout(chart.update, 300);
                 lineChart = chart;
 
@@ -902,7 +896,7 @@ function getItemPortDetails(portData, shipName) {
         }
     }
     var jsonData = JSON.stringify(jsonData);
-    console.log(jsonData);
+    // console.log(jsonData);
     $.ajaxSetup({
       async: false
     });
@@ -923,7 +917,7 @@ function getItemPortDetails(portData, shipName) {
             $(document.createElement("p")).appendTo(hardpointsDiv).text("Size " + data["minsize"] + " - " + data["maxsize"]);
             
             $(document.createElement('p')).appendTo(hardpointsDiv).text("Supported Items");
-            var types = data['subtypes'];
+            var types = data['types'];
             for (var i = 0; i < types.length; i++)
             {
                 $(document.createElement('p')).appendTo(hardpointsDiv).text(types[i]).addClass("offset1");
@@ -974,7 +968,7 @@ function addItemToPort(portData, itemData)
     panel.addClass("panel-success");
     
     var portOverlays = getHardpointOverlays(portName)
-    console.log("Overlays", portOverlays);
+    // console.log("Overlays", portOverlays);
     portOverlays.each( function(){
         $(this).find("span.item-name").text(itemDisplayName);
     });
@@ -994,12 +988,12 @@ function addItemToPort(portData, itemData)
         else
         {
             var currentSection = portDatablock.parent().parent().parent();
-            console.log("currentSection " + currentSection);
-            console.log("-----");
+            // console.log("currentSection " + currentSection);
+            // console.log("-----");
             if (data["ports"].length > 0)
             {
-                console.log("adding itemports for item");
-                console.log(data["ports"])
+                // console.log("adding itemports for item");
+                // console.log(data["ports"])
                 var overview = $("#hardpoints-overview");
                 ports = data["ports"];
                 for (var index = 0; index < ports.length; index++)
@@ -1026,8 +1020,7 @@ function addItemToPort(portData, itemData)
                         .attr("data-parent-port", portName)
                         .attr("data-min-size", ports[index]["minsize"])
                         .attr("data-max-size", ports[index]["maxsize"])
-                        .attr("data-types", ports[index]["types"].join(","))
-                        .attr("data-subtypes", ports[index]["subtypes"].join(","));
+                        .attr("data-types", ports[index]["types"].join(","));
                     // $(document.createElement("i")).appendTo(well)
                     //     .addClass("icon-remove pull-right icon-large");
                     // $(document.createElement("i")).appendTo(well)
@@ -1081,7 +1074,7 @@ function addItemToPort(portData, itemData)
         {
             // create buttons for the power and avionics states
             // for now we are assuming power/heat have same states
-            console.log("Parent:", portDatablock);
+            // console.log("Parent:", portDatablock);
             if (data["power"].length > 0)
             {
                 var parent = portDatablock.find(".item-port-datablock-statebuttons");
@@ -1157,12 +1150,12 @@ function enableDatablock(element)
     element.parent().parent().find(".glyphicon-remove").on("click", function(event){
         event.stopPropagation();
         var portWell = $(this).parent().parent().parent();
-        console.log(portWell);
+        // console.log(portWell);
         var portName = portWell.attr("data-port-name");
         var parentPort = portWell.attr("data-parent-port");
         var parentItem = portWell.attr("data-parent-item");
         var portData = {"name" : portName, "parentPort":parentPort,"parentItem":parentItem};
-        console.log(portData)
+        // console.log(portData)
         removeItemFromPort(portData);
     });
     element.parent().parent().find(".glyphicon-filter").on("click", function(event){
@@ -1204,14 +1197,16 @@ function enableDatablock(element)
             // console.log("Activate drag")
             var draggable = ui.draggable;
             var row = draggable;
-            var itemSubType = row.find("td.item-subtype-cell").text();
+            var itemType = row.find("td.item-type-cell").text();
             var itemSize = parseInt(row.find("td.item-size-cell").text(), 10);
-            var supportedSubTypes = $(this).attr("data-subtypes");
             var minSize = $(this).attr("data-min-size");
             var maxSize = $(this).attr("data-max-size");
             var label = $(this).find(".label")
             var panel = $(this).parent().parent();
-            if (supportedSubTypes.indexOf(itemSubType) > -1 && itemSize >= minSize && itemSize <= maxSize)
+            var supportedTypes = $(this).attr("data-types");
+            var item = {"size":itemSize,"type":itemType};
+            if (isItemCompatibleWithPort(item, $(this)))
+            // if (supportedTypes.indexOf(itemType) > -1 && itemSize >= minSize && itemSize <= maxSize)
             {
                 // console.log("Item Supported!")
                 panel.removeClass("panel-warning panel-danger panel-success");
@@ -1223,7 +1218,6 @@ function enableDatablock(element)
                 panel.addClass("panel-danger");
             }
             var itemData = {};
-            itemData['subtype'] = itemSubType;
             itemData['size'] = itemSize;
             filterHardpoints("invalid", showInvalid, itemData)
             $("#item-details-modal").modal("hide");
@@ -1239,14 +1233,16 @@ function enableDatablock(element)
         },
     accept: function(draggable) {
         var row = draggable;
-        var itemSubType = row.find("td.item-subtype-cell").text();
+        var itemType = row.find("td.item-type-cell").text();
         var itemSize = parseInt(row.find("td.item-size-cell").text(), 10);
-        var supportedSubTypes = $(this).attr("data-subtypes");
+        var supportedTypes = $(this).attr("data-types");
         var minSize = $(this).attr("data-min-size");
         var maxSize = $(this).attr("data-max-size");
         var label = $(this).find(".label")
         var panel = $(this).parent().parent();
-        if (supportedSubTypes.indexOf(itemSubType) > -1 && itemSize >= minSize && itemSize <= maxSize)
+        var item = {"size" : itemSize, "type" : itemType};
+        if (isItemCompatibleWithPort(item, $(this)))
+        // if (supportedTypes.indexOf(itemType) > -1 && itemSize >= minSize && itemSize <= maxSize)
         {
             // console.log("Item Supported!")
             return true;
@@ -1271,7 +1267,7 @@ hardpointDatablocks.droppable({
     deactivate : function(event, ui) {
         // reset temporary status coloring
         // console.log("Deactivate drag")
-        console.log("Deactivate")
+        // console.log("Deactivate")
         var panels = $(".panel-compact[data-status]");
         filterHardpoints("all");
         filterHardpoints("filled", $("#hardpoints-filter-show-filled").attr("checked"))
@@ -1286,18 +1282,20 @@ hardpointDatablocks.droppable({
         // console.log("Activate drag")
         var draggable = ui.draggable;
         var row = draggable;
-        var itemSubType = row.find("td.item-subtype-cell").text();
+        var itemType = row.find("td.item-type-cell").text();
         var itemSize = parseInt(row.find("td.item-size-cell").text(), 10);
-        var supportedSubTypes = $(this).attr("data-subtypes");
+        var supportedTypes = $(this).attr("data-types");
         var minSize = $(this).attr("data-min-size");
         var maxSize = $(this).attr("data-max-size");
         var label = $(this).find(".label")
         var panel = $(this).parent().parent();
         var showInvalid = $("#hardpoints-filter-show-invalid").attr('checked');
-        console.log("Show Invalid?", showInvalid);
+        // console.log("Show Invalid?", showInvalid);
         var panelParent = panel.parent().parent();
         var allPanels = $(".panel-compact[data-status]");
-        if (supportedSubTypes.indexOf(itemSubType) > -1 && itemSize >= minSize && itemSize <= maxSize)
+        var item = {"size" : itemSize, "type" : itemType};
+        if (isItemCompatibleWithPort(item, $(this)))
+        // if (supportedTypes.indexOf(itemType) > -1 && itemSize >= minSize && itemSize <= maxSize)
         {
             // console.log("Item Supported!")
             panel.removeClass("panel-warning panel-danger panel-success");
@@ -1309,7 +1307,7 @@ hardpointDatablocks.droppable({
             panel.addClass("panel-danger");
         }
         var itemData = {};
-        itemData['subtype'] = itemSubType;
+        itemData['type'] = itemType;
         itemData['size'] = itemSize;
         filterHardpoints("invalid", showInvalid, itemData)
         $("#item-details-modal").modal("hide");
@@ -1325,14 +1323,16 @@ hardpointDatablocks.droppable({
     },
     accept: function(draggable) {
         var row = draggable;
-        var itemSubType = row.find("td.item-subtype-cell").text();
+        var itemType = row.find("td.item-type-cell").text();
         var itemSize = parseInt(row.find("td.item-size-cell").text(), 10);
-        var supportedSubTypes = $(this).attr("data-subtypes");
+        var supportedTypes = $(this).attr("data-types");
         var minSize = $(this).attr("data-min-size");
         var maxSize = $(this).attr("data-max-size");
         var label = $(this).find(".label")
         var panel = $(this).parent().parent();
-        if (supportedSubTypes.indexOf(itemSubType) > -1 && itemSize >= minSize && itemSize <= maxSize)
+        var item = {"size" : itemSize, "type" : itemType};
+        if (isItemCompatibleWithPort(item, $(this)))
+        // if (supportedTypes.indexOf(itemType) > -1 && itemSize >= minSize && itemSize <= maxSize)
         {
             return true;
         }
@@ -1368,18 +1368,15 @@ hardpoints.droppable({
     },
     accept: function(draggable) {
         var row = draggable;
-        var itemSubType = row.find("td.item-subtype-cell").text();
+        var itemType = row.find("td.item-type-cell").text();
         var itemSize = parseInt(row.find("td.item-size-cell").text(), 10);
-        var supportedSubTypes = $(this).attr("data-subtypes");
+        var supportedTypes = $(this).attr("data-types");
         var minSize = $(this).attr("data-min-size");
         var maxSize = $(this).attr("data-max-size");
-        // console.log("Item Sub Type:", itemSubType)
-        // console.log("Supported Sub Types:", supportedSubTypes);
-        // console.log("Item Size:", itemSize);
-        // console.log("Supported Size:", minSize, "-", maxSize);
-        if (supportedSubTypes.indexOf(itemSubType) > -1 && itemSize >= minSize && itemSize <= maxSize)
+        var item = {"size" : itemSize, "type" : itemType};
+        if (isItemCompatibleWithPort(item, $(this)))
+        // if (supportedTypes.indexOf(itemType) > -1 && itemSize >= minSize && itemSize <= maxSize)
         {
-            // console.log("Item Supported!")
             return true;
         }
         return false;
@@ -1435,31 +1432,39 @@ function filterHardpoints(set, value, item)
     {
         allHardpoints.each( function(){
             var panelBody = $(this).find(".panel-body").find('.well');
-            // console.log(panelBody);
-            var supportedSubTypes = panelBody.attr("data-subtypes");
-            var minSize = panelBody.attr("data-min-size");
-            var maxSize = panelBody.attr("data-max-size");
-            // console.log(supportedSubTypes);
-            // console.log(minSize);
-            // console.log(maxSize);
-            if (supportedSubTypes.indexOf(item['subtype']) == -1 || item['size'] < minSize || item['size'] > maxSize)
+            if (isItemCompatibleWithPort(item, panelBody))
+            {
+                $(this).show(200);
+            }
+            else
             {
                 if (value)
                     $(this).show(200);
                 else
                     $(this).hide(200);
             }
-            else
-            {
-                $(this).show(200);
-            }
+            // console.log(panelBody);
+            // var supportedTypes = panelBody.attr("data-types");
+            // var minSize = panelBody.attr("data-min-size");
+            // var maxSize = panelBody.attr("data-max-size");
+            // if (supportedTypes.indexOf(item['type']) == -1 || item['size'] < minSize || item['size'] > maxSize)
+            // {
+            //     if (value)
+            //         $(this).show(200);
+            //     else
+            //         $(this).hide(200);
+            // }
+            // else
+            // {
+            //     $(this).show(200);
+            // }
         });
     }
 }
 function computeStats()
 {
     // computes stats based on items equipped
-    console.log("Computing current stats")
+    // console.log("Computing current stats")
     // get all items equipped
     var ports = getAllHardpointDatablocks();
     var scannedPorts = [];
@@ -1528,7 +1533,7 @@ function computeStats()
             }
             else
             {
-                console.log($("#stats-lds-available-power-bar"));
+                // console.log($("#stats-lds-available-power-bar"));
                 $("#stats-lds-warning-missingpowerplant").show();
                 $("#stats-lds-available-power-label").text(powerConsumed + "/0");
                 $("#stats-lds-available-power-bar").removeClass("progress-bar-success").removeClass("progress-bar-warning").removeClass("progress-bar-danger");
@@ -1544,7 +1549,7 @@ function computeStats()
         {
             if (scannedPorts.indexOf(portName) == -1)
             {
-                console.log("Found equipped item:", itemName)
+                // console.log("Found equipped item:", itemName)
                 scannedPorts.push(portName)
                 scannedItems.push(itemName)
             }
