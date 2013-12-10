@@ -47,7 +47,7 @@ if __name__ == "__main__":
 	parser = argparse.ArgumentParser()
 	parser.add_argument("source")
 	parser.add_argument("destination")
-	args = parser.parse_args(["/Users/john/Documents/SSB/Star Citizen Data/Scripts_Patch_4", "/Users/john/Documents/SSB/Parsed Data/Patch_4"])
+	args = parser.parse_args(["/Users/john/Documents/SSB/Star Citizen Data/Scripts_Patch_8", "/Users/john/Documents/SSB/Parsed Data/Patch_8"])
 
 	print "Working on %s" % args.source
 	entitiesPath = os.path.join(args.source, ENTITIES_PATH)
@@ -249,6 +249,8 @@ if __name__ == "__main__":
 								itemData['itemstats']['rollSpeed'] = rollData.attrib['speed']	
 							if "accel" in rollData.attrib:					
 								itemData['itemstats']['rollAcceleration'] = rollData.attrib['accel']	
+					stats = None
+				elif itemType.lower() == "ordinance":
 					stats = None
 				if stats is not None:
 					for stat in stats:
