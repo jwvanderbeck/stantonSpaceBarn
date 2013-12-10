@@ -319,7 +319,8 @@ class VehicleItemData(object):
             "name" : "name",
             "displayname" : "displayName",
             "class" : "itemClass",
-            "description" : "description"
+            "description" : "description",
+            "size" : "itemSize"
         }
         def __init__(self, gameUpdate):
             self.newModel = False
