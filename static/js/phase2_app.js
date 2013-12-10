@@ -742,13 +742,14 @@ function getItemDetails(itemName) {
         }
         else
         {
-            // console.log(data)
+            console.log(data)
             $("#item-details").show();
             var section = $("#item-details");
             $("#item-details-itemname").text(data['itemname']);
             $("#item-details-itemclass").text(data['itemclass']);
             $("#item-details-itemsize").text(data['itemsize']);
             $("#item-details-itemtype").text(data['itemtype']);
+            console.log("itemtype=", data["itemtype"]);
             $("#item-details-description").text(data['description']);
             // clear the sub divs so we;re starting fresh
             var weaponbars = $("#item-details-weaponbars");
@@ -816,7 +817,7 @@ function chartPipe(itemName, pipe, state) {
             console.log("chartPipe failed:", data['response']);
             // TODO
             // Fix this.  This hides more than it should
-            $("#" + pipe.toLowerCase() + "-chart-line").parent().hide()
+            $("#" + pipe.toLowerCase() + "-chart-header").parent().hide();
         }
         else
         {
