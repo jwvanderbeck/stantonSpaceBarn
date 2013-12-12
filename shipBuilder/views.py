@@ -63,11 +63,9 @@ def vehicleItemList(request, format=None):
             if vehicleItem.manufacturer:
                 vehicleItemData['manufacturer'] = vehicleItem.manufacturer.name
             if vehicleItem.itemType:
-                vehicleItemData['itemType'] = vehicleItem.itemType.typeName
-            if vehicleItem.itemSubType:
-                vehicleItemData['itemSubType'] = vehicleItem.itemSubType.subTypeName
+                vehicleItemData['itemType'] = vehicleItem.itemType.name
 
-            stats = vehicleItem.itemStats.all()
+            stats = VehicleItemParams.objects.filter(parentItem__exact=vehicleItem)
             vehicleItemData["itemStats"] = []
             for stat in stats:
                 vehicleItemData["itemStats"].append( {stat.name : stat.value} )
@@ -90,11 +88,9 @@ def vehicleItemDetail(request, pk, format=None):
         if vehicleItem.manufacturer:
             vehicleItemData['manufacturer'] = vehicleItem.manufacturer.name
         if vehicleItem.itemType:
-            vehicleItemData['itemType'] = vehicleItem.itemType.typeName
-        if vehicleItem.itemSubType:
-            vehicleItemData['itemSubType'] = vehicleItem.itemSubType.subTypeName
+            vehicleItemData['itemType'] = vehicleItem.itemType.name
 
-        stats = vehicleItem.itemStats.all()
+            stats = VehicleItemParams.objects.filter(parentItem__exact=vehicleItem)
         vehicleItemData["itemStats"] = []
         for stat in stats:
             vehicleItemData["itemStats"].append( {stat.name : stat.value} )
@@ -163,18 +159,9 @@ def itemPortList(request, format=None):
             port["maxSize"] = itemPort.maxSize
             port["minSize"] = itemPort.minSize
             port["portClass"] = itemPort.portClass
-            port['supportedSubTypes'] = []
-            supported = []
-            # For each supported ItemType
+            port['supportedTypes'] = []
             for itemType in itemPort.supportedTypes.all():
-                # Look for supported ItemSubType with that parent, and add those found
-                supportedSubTypes = itemPort.supportedSubTypes.all().filter(parent__exact=itemType)
-                if len(supportedSubTypes) == 0:
-                    # if none found, add ALL itemSubType with that parent
-                    supportedSubTypes = VehicleItemSubType.objects.all().filter(parent__exact=itemType)
-                supported.extend(supportedSubTypes)
-            for subType in supported:
-                port['supportedSubTypes'].append(subType.subTypeName)
+                port['supportedTypes'].append(itemType.name)
             data.append(port)
         return Response(data)
 @api_view(('GET',))
@@ -188,18 +175,9 @@ def itemPortDetail(request, pk, format=None):
         port["maxSize"] = itemPort.maxSize
         port["minSize"] = itemPort.minSize
         port["portClass"] = itemPort.portClass
-        port['supportedSubTypes'] = []
-        supported = []
-        # For each supported ItemType
+        port['supportedTypes'] = []
         for itemType in itemPort.supportedTypes.all():
-            # Look for supported ItemSubType with that parent, and add those found
-            supportedSubTypes = itemPort.supportedSubTypes.all().filter(parent__exact=itemType)
-            if len(supportedSubTypes) == 0:
-                # if none found, add ALL itemSubType with that parent
-                supportedSubTypes = VehicleItemSubType.objects.all().filter(parent__exact=itemType)
-            supported.extend(supportedSubTypes)
-        for subType in supported:
-            port['supportedSubTypes'].append(subType.subTypeName)
+            port['supportedTypes'].append(itemType.name)
         return Response(port)
 
 @api_view(('GET',))
