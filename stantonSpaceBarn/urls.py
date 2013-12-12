@@ -47,6 +47,8 @@ urlpatterns = patterns('stantonSpaceBarn.views',
 	
 	url(r'^graphs/get/(?P<graphType>[a-zA-Z0-9_-]+)/$', 'getGraph'),
 	url(r'^itemports/details/$', 'getItemPortDetails'),
+	# API Docs
+	url(r'^api-docs/', include('rest_framework_swagger.urls')),
 
 	# Get all VehicleItem entries
 	url(r'^items/get/$', 'getVehicleItemList'),
