@@ -173,16 +173,16 @@
                                     <div class="item-port hardpoint-tag-{{tag.hardpoint.name}}" 
                                         style="left:{{tag.locationX}}%;top:{{tag.locationY}}%;" 
                                         data-types="{%for type in tag.hardpoint.supportedTypes.all%}{{type.name}}{%if not forloop.last %},{%endif%}{%endfor%}" 
-                                        data-min-size={{tag.hardpoint.minSize}} 
-                                        data-max-size={{tag.hardpoint.maxSize}} 
-                                        data-parent={{tag.hardpoint.parentImage}}
-                                        data-port-name={{tag.hardpoint.name}}
-                                        data-tag-number={{forloop.counter}}>
+                                        data-min-size="{{tag.hardpoint.minSize}}"
+                                        data-max-size="{{tag.hardpoint.maxSize}}"
+                                        data-parent="{{tag.hardpoint.parentImage}}"
+                                        data-port-name="{{tag.hardpoint.name}}"
+                                        data-tag-number="{{forloop.counter}}">
                                     </div>
                                     <div class="col-md-5 datablock datablock-floating hardpoint-datablock-{{tag.hardpoint.name}}" 
                                         style='display:none;' 
                                         data-port-name="{{tag.hardpoint.name}}"
-                                        data-tag-number={{forloop.counter}}>
+                                        data-tag-number="{{forloop.counter}}">
                                         <div class="panel panel-compact panel-info" 
                                             data-port-name="{{tag.hardpoint.name}}">
                                             <div class="panel-heading">
@@ -618,11 +618,5 @@ setUserState(true);
 {% else %}
 setUserState(false);
 {% endif %}
-
-// var $container = $('#hardpoints-container');
-// $container.masonry({
-//   columnWidth: 200,
-//   itemSelector: '.panel'
-// });
 
 {% endblock ready-script %}
