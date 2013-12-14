@@ -193,7 +193,7 @@ def userLogin(request):
     if request.is_ajax():
         try:
             data = simplejson.loads(request.body)
-            print data
+            # print data
         except:
             response_data = {
             'success' : False,
@@ -236,7 +236,7 @@ def userCreate(request):
     if request.is_ajax():
         try:
             data = simplejson.loads(request.body)
-            print data
+            # print data
         except:
             response_data = {
             'success' : False,
@@ -369,12 +369,12 @@ def updateVariant(variantData, variantID):
     shield = getItemByID(variantData['shield'])
     cargo_mod = getItemByID(variantData['cargo_mod'])
     hardpoints = []
-    print variantData['hardpoints']
+    # print variantData['hardpoints']
     for item in variantData['hardpoints']:
         itemID = getItemByID(item)
         hardpoints.append(itemID)
-        print itemID
-    print hardpoints
+        # print itemID
+    # print hardpoints
     engine_mods = []
     for item in variantData['engine_mods']:
         engine_mods.append(getItemByID(item));
@@ -404,7 +404,7 @@ def updateVariant(variantData, variantID):
 
     shipHardpoints = Hardpoint.objects.filter(ship__name__iexact=variantData['ship']).order_by('id')
     index = 0;
-    print 'Hardpoints ', hardpoints
+    # print 'Hardpoints ', hardpoints
     for hardpoint in shipHardpoints:
         item = hardpoints[index]
         newHardpoint = BuildHardpoint(build=variant, hardpoint=hardpoint, item=item)
@@ -457,12 +457,12 @@ def makeVariant(variantData, saveVariant = False, user = None):
     shield = getItemByID(variantData['shield'])
     cargo_mod = getItemByID(variantData['cargo_mod'])
     hardpoints = []
-    print variantData['hardpoints']
+    # print variantData['hardpoints']
     for item in variantData['hardpoints']:
         itemID = getItemByID(item)
         hardpoints.append(itemID)
-        print itemID
-    print hardpoints
+        # print itemID
+    # print hardpoints
     engine_mods = []
     for item in variantData['engine_mods']:
         engine_mods.append(getItemByID(item));
@@ -519,7 +519,7 @@ def makeVariant(variantData, saveVariant = False, user = None):
 
 @ensure_csrf_cookie
 def quickVariant(request, shipName, variantURL = 0):
-    print "quickVariant", shipName, variantURL
+    # print "quickVariant", shipName, variantURL
     # If this is an AJAX request, then it means we need to build a quick variant URL rather than display one
     # v0 URL encoding:
     #   0-[00]*-[00][00][00]*-[00][00]*
@@ -550,7 +550,7 @@ def quickVariant(request, shipName, variantURL = 0):
     # then the version is assumed to be v0.  This functionality is present to allow both V0 and V1 to exist at the 
     # same time for testing V1 while V0 is still being used.
     if request.is_ajax():
-        print "Received AJAX call"
+        # print "Received AJAX call"
         try:
             data = simplejson.loads(request.body)
         except:
@@ -560,13 +560,13 @@ def quickVariant(request, shipName, variantURL = 0):
             'response' : 'Unable to parse JSON object.'
             }
             return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
-        print data
+        # print data
         if not "version" in data:
             version = 0
 
         if "version" in data:
             version = data["version"]
-        print "Building quick variant URL version %d" % version
+        # print "Building quick variant URL version %d" % version
         if version == 0:
             shipName = None
             hardpoints = None
@@ -637,7 +637,7 @@ def quickVariant(request, shipName, variantURL = 0):
 
             return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
         elif version == 1:
-            print "Version 1"
+            # print "Version 1"
             # What we need:
             #   Name of ship
             #   list of dicts, with name of hardpoint, and name of item
@@ -682,10 +682,6 @@ def quickVariant(request, shipName, variantURL = 0):
                         portData = ItemPort.objects.get(name__iexact=portName, parentVehicle__exact=vehicleData)
                     itemData = VehicleItem.objects.get(name__iexact=itemName)
                 except Exception as e:
-                    print "----------------"
-                    print e
-                    print "----------------"
-
                     response_data = {
                     'url' : 'Z',
                     'success' : False,
@@ -789,7 +785,7 @@ def quickVariant(request, shipName, variantURL = 0):
             return HttpResponse("<h1>Unable to load Quick Variant</h1><p>Failed to find specified ship</p>")
 
         itemGroups = variantDetails[1:]
-        print itemGroups
+        # print itemGroups
         ports = []
         items = []
         variantData = []
@@ -800,7 +796,7 @@ def quickVariant(request, shipName, variantURL = 0):
                 itemID = itemLuts.urlToID(IDSplit[1])
                 parentPortID = None
                 parentItemID = None
-                print portID, itemID
+                # print portID, itemID
             elif len(IDSplit[0]) == 6:
                 portID = itemLuts.urlToID(IDSplit[0][4:6])
                 parentPortID = itemLuts.urlToID(IDSplit[0][2:4])
@@ -816,7 +812,7 @@ def quickVariant(request, shipName, variantURL = 0):
                 portData = ItemPort.objects.get(pk=portID)
                 itemData = VehicleItem.objects.get(pk=itemID)
             except Exception as e:
-                print e
+                pass
             if parentPortData:
                 variantData.append({"port" : portData, "item" : itemData, "parentPort" : parentPortData, "parentItem" : parentItemData})
             else:
@@ -911,12 +907,12 @@ def variantDetailPhase2(request, buildID):
 
 def submitVariant(request):
     if request.method == 'POST':
-        print(request.user)
+        # print(request.user)
         data = request.POST
         # data = simplejson.loads(request.raw_post_data)
-        print(data)
+        # print(data)
         # Validate that all require keys are available
-        print "Validating keys"
+        # print "Validating keys"
         valid = True
         requiredKeys = ['name', 'role', 'ship', 'hardpoint_items', 'hull_mods', 'engine_mods', 'engine_intake', 'powerplant', 'main_thruster', 'shield', 'cargo_mod']
         for requiredKey in requiredKeys:
@@ -925,7 +921,7 @@ def submitVariant(request):
                 break;
 
         if not valid:
-            print "Missing a required key"
+            # print "Missing a required key"
             raise Http404()
 
         hardpoint_items = stringToIntArray(data['hardpoint_items'])
@@ -962,21 +958,21 @@ def submissionForms(request):
 
 @ensure_csrf_cookie
 def submissionFormShip(request):
-    print 'ship submission'
-    print request.body
+    # print 'ship submission'
+    # print request.body
     response_data = {}
     if request.is_ajax():
-        print "Ajax"
+        # print "Ajax"
         try:
             requestData = simplejson.loads(request.body)
-            print "JSON Data:"
-            print requestData
+            # print "JSON Data:"
+            # print requestData
             data = {}
             for index in requestData:
                 data[index['name']] = index['value']
-            print data
+            # print data
         except:
-            print "json parse failed"
+            # print "json parse failed"
             response_data = {
             'success' : False,
             'response' : 'Unable to parse JSON object.'
@@ -1001,21 +997,21 @@ def submissionFormShip(request):
 
 @ensure_csrf_cookie
 def submissionFormData(request):
-    print "Generic submission"
-    print request.body
+    # print "Generic submission"
+    # print request.body
     response_data = {}
     if request.is_ajax():
-        print "Ajax"
+        # print "Ajax"
         try:
             requestData = simplejson.loads(request.body)
-            print "JSON Data:"
-            print requestData
+            # print "JSON Data:"
+            # print requestData
             data = {}
             for index in requestData:
                 data[index['name']] = index['value']
-            print data
+            # print data
         except:
-            print "json parse failed"
+            # print "json parse failed"
             response_data = {
             'success' : False,
             'response' : 'Unable to parse JSON object.'
@@ -1133,7 +1129,7 @@ def extrapolateStateValues(state, duration=30, metric=0, stacking=False):
         return []
 
     stateValue = state.value
-    print stateValue
+    # print stateValue
     values = []
     if "," in stateValue:
         # The value is packed to store varying values at different times
@@ -1142,7 +1138,7 @@ def extrapolateStateValues(state, duration=30, metric=0, stacking=False):
         stateValues = {}
         for chunk in chunks:
             stateValues[int(chunk.split(":")[0])] = int(chunk.split(":")[1])
-        print stateValues
+        # print stateValues
         if not stacking:
             currentVPS = 0
             for i in range(0, duration + 1, 1):
@@ -1206,19 +1202,19 @@ def getBackgridItemList(request, itemTypeName):
         try:
             itemType = VehicleItemType.objects.get(typeName__iexact=itemTypeName)
         except:
-            print "Unable to find itemType"
+            # print "Unable to find itemType"
             response_data = [{}]
             return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
 
         try:
             items = VehicleItem.objects.all().filter(itemType__exact=itemType).order_by('name')
         except:
-            print "Unable to find any items"
+            # print "Unable to find any items"
             response_data = [{}]
             return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
 
         response_data = []
-        print "Returning items for %s" % (itemTypeName)
+        # print "Returning items for %s" % (itemTypeName)
         for item in items:
             row = {}
             if item.displayName:
@@ -1254,38 +1250,38 @@ def getVehicleItemList(request, itemTypeName=None, itemSubTypeName=None, vehicle
 
         if itemTypeName and itemSubTypeName:
             try:
-                print "Looking for items of type %s, and subtype %s" % (itemTypeName, itemSubTypeName)
+                # print "Looking for items of type %s, and subtype %s" % (itemTypeName, itemSubTypeName)
                 items = VehicleItem.objects.all().filter(itemType__exact=itemTypeName, itemSubType__iexact=itemSubTypeName)
             except:
-                print "Unable to find items"
+                # print "Unable to find items"
                 response_data = [{}]
                 return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
         elif itemTypeName:
-            print "Looking for items of type %s" % (itemTypeName)
+            # print "Looking for items of type %s" % (itemTypeName)
             try:
                 items = VehicleItem.objects.all().filter(itemType__typeName__iexact=itemTypeName)
             except Exception as e:
-                print "Unable to find items"
-                print e
+                # print "Unable to find items"
+                # print e
                 response_data = [{}]
                 return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
         else:
-            print "Looking for all items"
+            # print "Looking for all items"
             try:
                 items = VehicleItem.objects.all()
             except:
-                print "Unable to find items"
+                # print "Unable to find items"
                 response_data = [{}]
                 return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
 
         vehicleData = None
         if vehicleName:
-            print "Looking for items compatible with %s" % vehicleName
+            # print "Looking for items compatible with %s" % vehicleName
             # Get the vehicle data
             try:
                 vehicleData = Vehicle.objects.get(name__iexact=vehicleName)
             except:
-                print "Unable to find Vehicle"
+                # print "Unable to find Vehicle"
                 response_data = [{}]
                 return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
 
@@ -1299,7 +1295,7 @@ def getVehicleItemList(request, itemTypeName=None, itemSubTypeName=None, vehicle
                         break
                 if not valid:
                     continue
-            print item
+            # print item
             row = {}
             row['type'] = item.itemType.name
             row['size'] = item.itemSize
@@ -1323,7 +1319,7 @@ def getBackgridVehicleList(request):
         try:
             vehicles = Vehicle.objects.all()
         except:
-            print "Unable to find any vehicles"
+            # print "Unable to find any vehicles"
             response_data = [{}]
             return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
 
@@ -1348,10 +1344,10 @@ def getVehicleDetails(request):
     if request.is_ajax():
         try:
             requestData = simplejson.loads(request.body)
-            print "JSON Data:"
-            print requestData
+            # print "JSON Data:"
+            # print requestData
         except:
-            print "json parse failed"
+            # print "json parse failed"
             response_data = {
             'success' : False,
             'response' : 'Unable to parse JSON object.',
@@ -1362,8 +1358,8 @@ def getVehicleDetails(request):
         try:
             vehicle = Vehicle.objects.get(name__iexact=requestData['name'])
         except Exception as e:
-            print "Unable to find the specified vehicle"
-            print e
+            # print "Unable to find the specified vehicle"
+            # print e
             response_data = {
             'success' : False,
             'response' : 'Unable to find vehicle.',
@@ -1409,10 +1405,10 @@ def getItemPortDetails(request):
     if request.is_ajax():
         try:
             requestData = simplejson.loads(request.body)
-            print "JSON Data:"
-            print requestData
+            # print "JSON Data:"
+            # print requestData
         except:
-            print "json parse failed"
+            # print "json parse failed"
             response_data = {
             'success' : False,
             'response' : 'Unable to parse JSON object.',
@@ -1424,7 +1420,7 @@ def getItemPortDetails(request):
             try:
                 vehicleData = Vehicle.objects.get(name__iexact = requestData["vehicleName"])
             except:
-                print "Unable to find the specified vehicle"
+                # print "Unable to find the specified vehicle"
                 response_data = {
                 'success' : False,
                 'response' : 'Unable to find vehicle.',
@@ -1434,7 +1430,7 @@ def getItemPortDetails(request):
             try:
                 itemPortData = ItemPort.objects.get(name__iexact=requestData["portName"], parentVehicle=vehicleData)
             except:
-                print "Unable to find the specified itemport"
+                # print "Unable to find the specified itemport"
                 response_data = {
                 'success' : False,
                 'response' : 'Unable to find itemport.',
@@ -1444,7 +1440,7 @@ def getItemPortDetails(request):
             try:
                 itemData = VehicleItem.objects.get(name__iexact = requestData["itemName"])
             except:
-                print "Unable to find the specified item"
+                # print "Unable to find the specified item"
                 response_data = {
                 'success' : False,
                 'response' : 'Unable to find item.',
@@ -1454,7 +1450,7 @@ def getItemPortDetails(request):
             try:
                 itemPortData = ItemPort.objects.get(name__iexact=requestData["portName"], parentItem=itemData)
             except:
-                print "Unable to find the specified itemport"
+                # print "Unable to find the specified itemport"
                 response_data = {
                 'success' : False,
                 'response' : 'Unable to find itemport.',
@@ -1464,7 +1460,7 @@ def getItemPortDetails(request):
 
         response_data = {}
         # Basic details
-        print itemPortData
+        # print itemPortData
         if itemPortData.displayName:
             response_data['name'] = itemPortData.displayName
         else:
@@ -1487,10 +1483,10 @@ def getItemDetails(request):
     if request.is_ajax():
         try:
             requestData = simplejson.loads(request.body)
-            print "JSON Data:"
-            print requestData
+            # print "JSON Data:"
+            # print requestData
         except:
-            print "json parse failed"
+            # print "json parse failed"
             response_data = {
             'success' : False,
             'response' : 'Unable to parse JSON object.',
@@ -1501,7 +1497,7 @@ def getItemDetails(request):
         try:
             item = VehicleItem.objects.get(name__iexact=requestData['itemName'])
         except:
-            print "Unable to find the specified item"
+            # print "Unable to find the specified item"
             response_data = {
             'success' : False,
             'response' : 'Unable to find item.',
@@ -1514,7 +1510,7 @@ def getItemDetails(request):
 
         response_data = {}
         # Basic details
-        print item
+        # print item
         if item.displayName:
             response_data['itemname'] = item.displayName
         else:
@@ -1568,10 +1564,10 @@ def getPipeGraph(request):
     if request.is_ajax():
         try:
             requestData = simplejson.loads(request.body)
-            print "JSON Data:"
-            print requestData
+            # print "JSON Data:"
+            # print requestData
         except:
-            print "json parse failed"
+            # print "json parse failed"
             response_data = {
             'success' : False,
             'response' : 'Unable to parse JSON object.',
@@ -1582,7 +1578,7 @@ def getPipeGraph(request):
 
         # Retrieve the specified item
         try:
-            print "Looking for %s" % (requestData['itemName'])
+            # print "Looking for %s" % (requestData['itemName'])
             items = VehicleItem.objects.all().filter(name__iexact=requestData['itemName'])
             item = items[0]
         except Exception as e:
@@ -1591,8 +1587,8 @@ def getPipeGraph(request):
             'response' : 'Unable to find specified item.',
             'data' : [{"values":[]}]
             }
-            print response_data
-            print e
+            # print response_data
+            # print e
             return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
 
         # Get the proper pipe
@@ -1611,7 +1607,7 @@ def getPipeGraph(request):
                 'response' : 'Invalid pipe requested.',
                 'data' : [{"values":[]}]
                 }
-                print response_data
+                # print response_data
                 return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
         except:
                 response_data = {
@@ -1619,7 +1615,7 @@ def getPipeGraph(request):
                 'response' : 'Failed to load pipe data.',
                 'data' : [{"values":[]}]
                 }
-                print response_data
+                # print response_data
                 return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
 
 
@@ -1629,7 +1625,7 @@ def getPipeGraph(request):
             'response' : 'Unable to find specified pipe.',
             'data' : [{"values":[]}]
             }
-            print response_data
+            # print response_data
             return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
 
         if not "state" in requestData:
@@ -1638,7 +1634,7 @@ def getPipeGraph(request):
             'response' : 'No state requested.',
             'data' : [{"values":[]}]
             }
-            print response_data
+            # print response_data
             return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
 
         requestedState = requestData['state']
@@ -1648,7 +1644,7 @@ def getPipeGraph(request):
                 try:
                     state = pipe.get(state=stateName)
                 except: 
-                    print "Unable to find state %s.  Ignoring" % stateName
+                    # print "Unable to find state %s.  Ignoring" % stateName
                     state = None
                 if state:
                     requestedStates.append(state)
@@ -1658,7 +1654,7 @@ def getPipeGraph(request):
             try:
                 state = pipe.get(state=requestedState)
             except: 
-                print "Unable to find state %s.  Ignoring" % requestedState
+                # print "Unable to find state %s.  Ignoring" % requestedState
                 state = None
             if state:
                 requestedStates.append(state)
@@ -1669,7 +1665,7 @@ def getPipeGraph(request):
             'response' : 'No valid states found.',
             'data' : [{"values":[]}]
             }
-            print response_data
+            # print response_data
             return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
 
         # At this point we should have a list of all pipe states
@@ -1700,7 +1696,7 @@ def getPipeGraph(request):
         'negative'  : negativeValues,
         'data' : data
         }
-        print response_data
+        # print response_data
         return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
 
     else:
@@ -1714,10 +1710,10 @@ def getGraph(request, graphType):
     if request.is_ajax():
         try:
             requestData = simplejson.loads(request.body)
-            print "JSON Data:"
-            print requestData
+            # print "JSON Data:"
+            # print requestData
         except:
-            print "json parse failed"
+            # print "json parse failed"
             response_data = {
             'success' : False,
             'response' : 'Unable to parse JSON object.',
@@ -1729,7 +1725,7 @@ def getGraph(request, graphType):
             # Takes in a json list of dictionaries IE
             # [ {"item1" : "state1"}, {"item2":"state2"}]
             # and returns the totoal amount of power generated, and the total amount of power consumed
-            print "Computing graph data for available-power"
+            # print "Computing graph data for available-power"
             powerConsumed = 0.0
             powerGenerated = 0.0
             for entry in requestData["items"]:
@@ -1845,7 +1841,7 @@ def saveVariantPhase2(request, shipName):
             'response' : 'Unable to parse JSON object.'
             }
             return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
-        print data
+        # print data
 
         # What we need:
         #   Name of ship
@@ -1948,9 +1944,9 @@ def saveVariantPhase2(request, shipName):
         variant.save()
         # Create each VariantItem needed
         for item in variantData["items"]:
-            print
-            print "Processing item"
-            print item
+            # print
+            # print "Processing item"
+            # print item
             variantItem = VariantItem(variant = variant, item = item["item"], port = item["port"])
             if "parentItem" in item:
                 variantItem.parentItem = item["parentItem"]
@@ -1974,27 +1970,22 @@ def displayVariant(request, variantID):
         return HttpResponse("<h1>Unable to load Variant</h1><p>Failed to find specified variant</p>")
 
     itemGroups = VariantItem.objects.filter(variant__exact=variant)
-    print itemGroups
     ports = []
     items = []
     variantData = []
     for itemGroup in itemGroups:
-        try:
-            if itemGroup.parentPort:
-                parentPortData = itemGroup.parentPort
-                parentItemData = itemGroup.parentItem
-            else:
-                parentPortData = None
-                parentItemData = None
-            portData = itemGroup.port
-            itemData = itemGroup.item
-        except Exception as e:
-            print e
+        if itemGroup.parentPort:
+            parentPortData = itemGroup.parentPort
+            parentItemData = itemGroup.parentItem
+        else:
+            parentPortData = None
+            parentItemData = None
+        portData = itemGroup.port
+        itemData = itemGroup.item
         if parentPortData:
             variantData.append({"port" : portData, "item" : itemData, "parentPort" : parentPortData, "parentItem" : parentItemData})
         else:
             variantData.append({"port" : portData, "item" : itemData})
-    print variantData
     vehicleData = variant.baseVehicle
     loginForm = AuthenticationForm()
     createUserForm = UserCreationForm()
