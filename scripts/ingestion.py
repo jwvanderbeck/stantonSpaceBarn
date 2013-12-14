@@ -412,14 +412,15 @@ class VehicleItemData(object):
                         print changeDescription
             # Complex properties
             # Manufacturer
-            try:
-                modelManufacturer = Manufacturer.objects.get(name__iexact = self.manufacturer)
-            except ObjectDoesNotExist:
-                changeDescription = "ADDED: Manufacturer '%s'" % (self.manufacturer)
-                if record and self.gameUpdate:
-                    self.gameUpdate.saveChanges(None, changeDescription)
-                else:
-                    print changeDescription
+            if self.manufacturer:
+                try:
+                    modelManufacturer = Manufacturer.objects.get(name__iexact = self.manufacturer)
+                except ObjectDoesNotExist:
+                    changeDescription = "ADDED: Manufacturer '%s'" % (self.manufacturer)
+                    if record and self.gameUpdate:
+                        self.gameUpdate.saveChanges(None, changeDescription)
+                    else:
+                        print changeDescription
             # ItemPorts
             if self._itemPorts:
                 for port in self._itemPorts:
@@ -623,12 +624,13 @@ class VehicleItemData(object):
                 value = self.properties[key]
                 self._existingModel.__setattr__(modelKey, value)
             self._existingModel.save()
-            # Manufacturer
-            try:
-                modelManufacturer = Manufacturer.objects.get(name__iexact = self.manufacturer)
-            except ObjectDoesNotExist:
-                modelManufacturer = Manufacturer(name = self.manufacturer)
-                modelManufacturer.save()
+            if self.manufacturer:
+                # Manufacturer
+                try:
+                    modelManufacturer = Manufacturer.objects.get(name__iexact = self.manufacturer)
+                except ObjectDoesNotExist:
+                    modelManufacturer = Manufacturer(name = self.manufacturer)
+                    modelManufacturer.save()
             # ItemPorts
             if self._itemPorts:
                 for port in self._itemPorts:
