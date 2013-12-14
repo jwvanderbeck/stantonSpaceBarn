@@ -19,3 +19,7 @@ admin.site.register(HardpointTag)
 
 admin.site.register(GameUpdate)
 admin.site.register(GameUpdateChange)
+
+admin.site.register(Variant)
+admin.site.register(VariantItem)
+
