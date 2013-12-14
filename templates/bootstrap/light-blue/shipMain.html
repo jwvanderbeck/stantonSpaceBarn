@@ -590,6 +590,11 @@ $("#system-action-quickvariant").on("click", function(event){
     getQuickVariant("{{shipData.name}}");
 });
 
+$("#system-action-savenewvariant").on("click", function(event){
+    event.preventDefault();
+    saveNewVariant("{{shipData.name}}");
+});
+
 $("button.noop").click(function(event){
     $(this).parent().parent().find("input").val($(this).val());
     event.stopPropagation();

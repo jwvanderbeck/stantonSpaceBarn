@@ -666,6 +666,47 @@ function getQuickVariant(shipName)
         }
     });
 }
+function saveNewVariant(shipName)
+{
+    var data = {}
+    // ship name is dynamically added by django
+    data["ports"] = [];
+    data["variantName"] = "Test Variant";
+    data["role"] = "Test Role";
+    data["version"] = 1;
+
+    // get all items equipped
+    var ports = getAllHardpointDatablocks();
+    ports.each(function() {
+        var itemName = $(this).attr("data-item-name");
+        var portName = $(this).attr("data-port-name");
+        var parentPort = $(this).attr("data-parent-port");
+        var parentItem = $(this).attr("data-parent-item");
+        if (itemName != undefined)
+        {
+            if (parentItem != undefined)
+                data["ports"].push({"portName" : portName, "itemName" : itemName, "parentItem" : parentItem, "parentPort" : parentPort});
+            else
+                data["ports"].push({"portName" : portName, "itemName" : itemName});
+        }
+    });
+    var jsonData = JSON.stringify(data);
+    console.log(jsonData);
+    $.ajaxSetup({
+      async: true
+    });
+    $.post('/create-variant/' + shipName + '/', jsonData).done(function(data) {
+        if (data['success'] == false)
+        {
+            console.log("Failed to get QuickVariant:", data['response']);
+        }
+        else
+        {
+            console.log("Variant created")
+            console.log(data);
+        }
+    });
+}
 /******************************************************************************
 // Main Functions
 ******************************************************************************/
@@ -1206,6 +1247,7 @@ function enableDatablock(element)
             var panel = $(this).parent().parent();
             var supportedTypes = $(this).attr("data-types");
             var item = {"size":itemSize,"type":itemType};
+            var showInvalid = $("#hardpoints-filter-show-invalid").attr('checked');
             if (isItemCompatibleWithPort(item, $(this)))
             // if (supportedTypes.indexOf(itemType) > -1 && itemSize >= minSize && itemSize <= maxSize)
             {
@@ -1220,6 +1262,7 @@ function enableDatablock(element)
             }
             var itemData = {};
             itemData['size'] = itemSize;
+            itemData["type"] = itemType;
             filterHardpoints("invalid", showInvalid, itemData)
             $("#item-details-modal").modal("hide");
             $("#itemport-details-modal").modal("hide");
@@ -1399,6 +1442,7 @@ function filterHardpoints(set, value, item)
     
     var allHardpoints = $(".panel-compact[data-status]");
     // console.log("value", value)
+    // console.log("item", item)
     if (set == "all")
     {
         allHardpoints.each( function(){

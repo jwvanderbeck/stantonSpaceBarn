@@ -14,6 +14,7 @@ from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.core.mail import send_mail
+from django.core.exceptions import ObjectDoesNotExist
 
 def stringToIntArray(s):
     intArray = []
@@ -869,6 +870,44 @@ def variantDetail(request, buildID):
     # !!!!!!!!!!!!!
     return render_to_response('buildDetail.html', renderContext, context_instance=RequestContext(request))
 
+@ensure_csrf_cookie
+def variantDetailPhase2(request, buildID):
+
+    build = Build.objects.get(pk=buildID)
+    if not build:
+        raise Http404()
+
+    # Get all hardpoints
+    ship = build.ship
+    # hardpoints = Hardpoint.objects.filter(ship__id=ship.id).order_by('tag_location_y')
+    buildHardpoints = BuildHardpoint.objects.filter(build__id=buildID)
+    buildEngineMods = BuildEngineMod.objects.filter(build__id=buildID)
+    buildHullMods = BuildHullMod.objects.filter(build__id=buildID)
+    images = Image.objects.filter(ship__id=ship.id)
+    if len(images) == 0:
+        raise Http404() 
+    allItems = Item.objects.all()
+    submitBuildForm = SubmitBuildForm( initial={'role' : build.role, 'name' : build.name} )
+    loginForm = AuthenticationForm()
+    createUserForm = UserCreationForm()
+    renderContext = {
+    'variantData_hardpoints'    : buildHardpoints,
+    'variantData_engine_mods'   : buildEngineMods,
+    'variantData_hull_mods'     : buildHullMods,
+    'variantData_build'         : build,
+    'item_list'                 : allItems,
+    'image_list'                : images,
+    'shipname'                  : ship.name,
+    'ship'                      : ship,
+    'saveVariantForm'           : submitBuildForm,
+    'loginForm'                 : loginForm,
+    'createUserForm'            : createUserForm
+    }
+
+    # The bit here about context_instance=RequestContext(request) is ABSOLUTELY VITAL 
+    # as it is what enables the resulting rendered view to contain the CSRF token!
+    # !!!!!!!!!!!!!
+    return render_to_response('buildDetail.html', renderContext, context_instance=RequestContext(request))
 
 def submitVariant(request):
     if request.method == 'POST':
@@ -1793,3 +1832,176 @@ def testView(request):
     # as it is what enables the resulting rendered view to contain the CSRF token!
     # !!!!!!!!!!!!!
     return render_to_response('bootstrap/light-blue/accountMain.html', renderContext, context_instance=RequestContext(request))
+
+@ensure_csrf_cookie
+def saveVariantPhase2(request, shipName):
+    if request.is_ajax():
+        try:
+            data = simplejson.loads(request.body)
+        except:
+            response_data = {
+            'variantID' : 0,
+            'success' : False,
+            'response' : 'Unable to parse JSON object.'
+            }
+            return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
+        print data
+
+        # What we need:
+        #   Name of ship
+        #   Name of variant
+        #   Desired Role
+        #   list of dicts, with name of hardpoint, and name of item
+        #   EG
+        #   data["shipName"] = "oj_350r"
+        #   data["ports"] = [ {"portName" : "nose_slot", "itemName" : "mass_driver"} ]
+        #   optionally a port record can contain parentPort and parentItem IDs for ports
+        #   that are on items.
+
+        if "variantName" not in data:
+            response_data = {
+            'variantID' : 0,
+            'success' : False,
+            'response' : 'Missing variant name'
+            }
+            return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
+        if "role" not in data:
+            response_data = {
+            'variantID' : 0,
+            'success' : False,
+            'response' : 'Missing variant role'
+            }
+            return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
+        # Store the variant's basic data
+        variantData = {
+            "name"      : data["variantName"],
+            "role"      : data["role"],
+            "items"     : []
+        }
+        # Find the vehicle for this variant
+        try:
+            vehicleData = Vehicle.objects.get(name__iexact=shipName)
+        except:
+            response_data = {
+            'variantID' : 0,
+            'success' : False,
+            'response' : 'Failed to load data for vehicle %s' % shipName
+            }
+            return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
+        # Save the base vehicle in our data
+        variantData["baseVehicle"] = vehicleData
+        # Iterate through all the ports and items and verify each is valid
+        # If they are then add them to the data
+        # If any are invalid we will skip them and save the variant
+        # with as many as are valid, but inform the user
+        warnings = False
+        itemWarnings = []
+        for port in data["ports"]:
+            portName = port["portName"]
+            itemName = port["itemName"]
+            if "parentPort" in port:
+                parentPort = port["parentPort"]
+            else:
+                parentPort = None
+            if "parentItem" in port:
+                parentItem = port["parentItem"]
+            else:
+                parentItem = None
+
+            try:
+                if parentItem and parentPort:
+                    parentItemData = VehicleItem.objects.get(name__iexact=parentItem);
+                    portData = ItemPort.objects.get(name__iexact=portName, parentItem__exact=parentItemData)
+                    parentPortData = ItemPort.objects.get(name__iexact=parentPort, parentVehicle__exact=vehicleData)
+                else:
+                    portData = ItemPort.objects.get(name__iexact=portName, parentVehicle__exact=vehicleData)
+                    itemData = VehicleItem.objects.get(name__iexact=itemName)
+                item = {
+                    "port" : portData,
+                    "item" : itemData
+                }
+                if parentItem and parentPort:
+                    item["parentItem"] = parentItemData
+                    item["parentPort"] = parentPortData
+                variantData["items"].append(item)
+            except ObjectDoesNotExist:
+                warnings = True
+                warning = {
+                    "portName" : portName,
+                    "itemName" : portItem
+                }
+                if parentItem:
+                    warning["parentItem"] = parentItem
+                if parentPort:
+                    warning["parentPort"] = parentPort
+                itemWarnings.append(warning)
+
+        # At this point we should have a variantData structure with everything we need to actually create
+        # and save the variant
+        # Create the Variant model object
+        variant = Variant(
+                baseVehicle = variantData["baseVehicle"],
+                name = variantData["name"],
+                role = variantData["role"],
+                created_by = request.user
+            )
+        variant.save()
+        # Create each VariantItem needed
+        for item in variantData["items"]:
+            print
+            print "Processing item"
+            print item
+            variantItem = VariantItem(variant = variant, item = item["item"], port = item["port"])
+            if "parentItem" in item:
+                variantItem.parentItem = item["parentItem"]
+            if "parentPort" in item:
+                variantItem.parentPort = item["parentPort"]
+            variantItem.save()
+
+        response_data = {
+            'variantID' : variant.id,
+            'success' : True,
+            "warnings" : warnings,
+            "warningData" : itemWarnings,
+            'response' : 'ok'
+        }
+        return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
+
+def displayVariant(request, variantID):
+    try:
+        variant = Variant.objects.get(pk=variantID)
+    except:
+        return HttpResponse("<h1>Unable to load Variant</h1><p>Failed to find specified variant</p>")
+
+    itemGroups = VariantItem.objects.filter(variant__exact=variant)
+    print itemGroups
+    ports = []
+    items = []
+    variantData = []
+    for itemGroup in itemGroups:
+        try:
+            if itemGroup.parentPort:
+                parentPortData = itemGroup.parentPort
+                parentItemData = itemGroup.parentItem
+            else:
+                parentPortData = None
+                parentItemData = None
+            portData = itemGroup.port
+            itemData = itemGroup.item
+        except Exception as e:
+            print e
+        if parentPortData:
+            variantData.append({"port" : portData, "item" : itemData, "parentPort" : parentPortData, "parentItem" : parentItemData})
+        else:
+            variantData.append({"port" : portData, "item" : itemData})
+    print variantData
+    vehicleData = variant.baseVehicle
+    loginForm = AuthenticationForm()
+    createUserForm = UserCreationForm()
+    renderContext = {
+        'shipData'          : vehicleData,
+        'variantData'       : variantData,
+        'loginForm'         : loginForm,
+        'createUserForm'    : createUserForm
+    }
+    return render_to_response('bootstrap/light-blue/variant.html', renderContext, context_instance=RequestContext(request))
