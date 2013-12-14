@@ -183,6 +183,8 @@ function setUserState(loggedIn)
         $("#user-actions-login").hide(200);
         $("#user-actions-logout").show(200);
         $("#user-actions-newuser").hide(200);
+        $("#system-actions-savenewvariant").show(200);
+        $("#system-actions-updatevariant").show(200);
     }
     else
     {
@@ -190,6 +192,8 @@ function setUserState(loggedIn)
         $("#user-actions-login").show(200);
         $("#user-actions-logout").hide(200);
         $("#user-actions-newuser").show(200);
+        $("#system-actions-savenewvariant").hide(200);
+        $("#system-actions-updatevariant").hide(200);
     }
 }
 
