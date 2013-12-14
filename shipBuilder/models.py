@@ -386,6 +386,7 @@ class PipeState(models.Model):
 class VehicleItemPipe(models.Model):
     name = models.CharField(max_length = 255)
     stacking = models.BooleanField(default = False)
+    parentItem = models.ForeignKey('VehicleItem', blank = True, null = True)
 
 class VehicleItemPower(models.Model):
     state = models.CharField(max_length = 128)
@@ -487,6 +488,7 @@ class Vehicle(models.Model):
     thumbnail = models.URLField(default='', blank = True)
     available = models.BooleanField(default = False)
     manufacturer = models.ForeignKey('Manufacturer', blank = True, null = True)
+    defaultVariant = models.ForeignKey('Variant', blank = True, null = True)
 
     def __unicode__(self):
         if self.displayName and self.displayName != "":
@@ -502,10 +504,10 @@ class HardpointTag(models.Model):
 
 class VariantItem(models.Model):
     variant = models.ForeignKey("Variant", blank=True, null=True)
-    item = models.CharField(max_length = 255, blank=True)
-    port = models.CharField(max_length = 255, blank=True)
-    parentPort = models.CharField(max_length = 255, blank=True)
-    parentItem = models.CharField(max_length = 255, blank=True)
+    item = models.ForeignKey("VehicleItem", blank=True, null = True, related_name = "variantItem")
+    port = models.ForeignKey("ItemPort", blank=True, null = True, related_name = "variantPort")
+    parentPort = models.ForeignKey("ItemPort", blank=True, null = True, related_name = "variantParentPort")
+    parentItem = models.ForeignKey("VehicleItem", blank=True, null = True, related_name = "variantParentItem")
 
 class Variant(models.Model):
     baseVehicle = models.ForeignKey('Vehicle', blank=True, null=True)
