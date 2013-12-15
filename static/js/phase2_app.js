@@ -1450,7 +1450,7 @@ function filterHardpoints(set, value, item)
     if (set == "all")
     {
         allHardpoints.each( function(){
-           $(this).show(0); 
+           $(this).parent().show(0); 
         });
     }
     else if (set == "filled")
@@ -1459,9 +1459,9 @@ function filterHardpoints(set, value, item)
             if ( $(this).attr('data-state') == 'filled' )
             {
                 if (value)
-                    $(this).show(200);
+                    $(this).parent().show(200);
                 else
-                    $(this).hide(200);
+                    $(this).parent().hide(200);
             }
         });
     }
@@ -1471,9 +1471,9 @@ function filterHardpoints(set, value, item)
             if ( $(this).attr('data-state') == 'empty' )
             {
                 if (value)
-                    $(this).show(200);
+                    $(this).parent().show(200);
                 else
-                    $(this).hide(200);
+                    $(this).parent().hide(200);
             }
         });
     }
@@ -1483,14 +1483,14 @@ function filterHardpoints(set, value, item)
             var panelBody = $(this).find(".panel-body").find('.well');
             if (isItemCompatibleWithPort(item, panelBody))
             {
-                $(this).show(200);
+                $(this).parent().show(200);
             }
             else
             {
                 if (value)
-                    $(this).show(200);
+                    $(this).parent().show(200);
                 else
-                    $(this).hide(200);
+                    $(this).parent().hide(200);
             }
             // console.log(panelBody);
             // var supportedTypes = panelBody.attr("data-types");
