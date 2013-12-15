@@ -1738,16 +1738,19 @@ def getGraph(request, graphType):
                     continue
                 if item.itemType.typeName == "powerplant":
                     try:
-                        powerData = item.power.get(state="Default")
+                        powerData = VehicleItemPower.objects.get(parentItem__exact = item, state="Default")
                         powerGenerated = powerGenerated + float(powerData.value)
-                    except:
-                        print "Failed to get Default state for PowerPlant %s" % (itemName)
+                    except ObjectDoesNotExist:
+                        pass
+                        # print "Failed to get Default state for PowerPlant %s" % (itemName)
                 else:
                     try:
-                        powerData = item.power.get(state=itemState)
+                        powerData = VehicleItemPower.objects.get(parentItem__exact = item, state=itemState)
+                        # powerData = item.power.get(state=itemState)
                         powerConsumed = powerConsumed + float(powerData.value)
-                    except:
-                        print "Failed to get %s state for item %s" % (itemState, itemName)
+                    except ObjectDoesNotExist:
+                        pass
+                        # print "Failed to get %s state for item %s" % (itemState, itemName)
             response_data = {
             'success' : True,
             'response' : 'Power usage.',
