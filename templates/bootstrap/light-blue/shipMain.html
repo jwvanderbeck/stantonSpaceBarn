@@ -71,6 +71,59 @@
     </div>
 </div>
 
+<div class="modal fade" id="new-variant">
+    <div class="modal-dialog">
+        <div class="modal-content" tabindex="-1" role="dialog">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">X</button>
+                <h3>Create New Variant</h3>
+            </div>
+            <div class="modal-body">
+                <h4>Please choose a Name and Role for your new variant</h4>
+                <h5>NOTE: We reserve the right to delete any variant named in a vulgar or offensive manner</h5>
+                <form name='newvariant-form' id='newvariant-form' method='POST' action='/create-variant/'>
+                {{ variantForm.as_p }}
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" aria-hidden="true" onclick='saveNewVariant("{{shipData.name}}")'>Submit</button>
+                <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="update-variant">
+    <div class="modal-dialog">
+        <div class="modal-content" tabindex="-1" role="dialog">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">X</button>
+                <h3>Update Variant</h3>
+            </div>
+            <div class="modal-body">
+                <h4>If you desire, you may change the name of the Variant or its Role</h4>
+                <h5>NOTE: We reserve the right to delete any variant named in a vulgar or offensive manner</h5>
+                <form name='updatevariant-form' id='newvariant-form' method='POST' action='/create-variant/'>
+                <p><label for="id_updaterole">Role:</label> <select id="id_updaterole" name="role">
+                <option value="Interdiction">Interdiction</option>
+                <option value="Exploration">Exploration</option>
+                <option value="Piracy">Piracy</option>
+                <option value="Transport">Transport</option>
+                <option value="Racing">Racing</option>
+                <option value="Escort">Escort</option>
+                <option value="Bounty Hunting">Bounty Hunting</option>
+                </select></p>
+                <p><label for="id_updatename">Name:</label> <input id="id_updatename" maxlength="30" name="name" type="text" /></p>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" aria-hidden="true" onclick='updateNewVariant("{{shipData.name}}", {{variant.id}})'>Submit</button>
+                <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="modal fade" id="item-details-modal">
     <div class="modal-dialog">
         <div class="modal-content" tabindex="-1" role="dialog">
@@ -592,7 +645,7 @@ $("#system-action-quickvariant").on("click", function(event){
 
 $("#system-action-savenewvariant").on("click", function(event){
     event.preventDefault();
-    saveNewVariant("{{shipData.name}}");
+    $("#new-variant").modal("show");
 });
 
 $("button.noop").click(function(event){
@@ -614,6 +667,8 @@ $("#hardpoints-filter-show-filled").change(function(){
 });
 //$("#hardpoints-filter-show-invalid").attr("checked", "true");
 
+// Handle ENTER on forms
+$('input,select').keypress(function(event) { return event.keyCode != 13; });
 computeStats();
 $("#hardpoints-filter-show-filled").attr("checked", "true");
 $("#hardpoints-filter-show-empty").attr("checked", "true");
