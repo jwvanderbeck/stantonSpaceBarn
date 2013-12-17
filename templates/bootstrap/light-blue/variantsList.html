@@ -1,0 +1,38 @@
+{% extends "bootstrap/light-blue/listBase.html" %}
+{% load static %}
+{% block head %}
+{{block.super}}
+{% endblock head %}
+
+{% block sidebar %}
+{{block.super}}
+{% endblock sidebar %}
+
+{% block page-header %}Variants{% endblock page-header %}
+
+{% block main-content %}
+{% for variant in variant_list %}
+<div class="col-lg-3">
+	<div class="panel panel-info">
+        <div class="panel-heading">
+            <h4><a href="/phase2/variant/{{variant.id}}">{{variant.name}}</a> ({{variant.role}})</h4>
+        </div>
+        <div class="panel-body">
+            <a href="/phase2/variant/{{variant.id}}"><image src="{{variant.baseVehicle.thumbnail}}" class="img-responsive" /></a>
+        </div>
+       	<div class="panel-footer">
+       		{{ variant.baseVehicle.displayName }}
+       	</div>
+    </div>
+</div>
+{% endfor %}
+{% endblock main-content %}
+
+{% block ready-script %}
+{% if user.is_authenticated %}
+setUserState(true);
+{% else %}
+setUserState(false);
+{% endif %}
+
+{% endblock ready-script %}
