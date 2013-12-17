@@ -425,6 +425,7 @@ class VehicleItem(models.Model):
     itemSize = models.PositiveIntegerField(default = 0)
     # Additional fields required for The Barn
     views = models.PositiveIntegerField(default = 0)
+    disabled = models.BooleanField(default = False)
 
     def __unicode__(self):
         return u"%s" % (self.name)
@@ -457,6 +458,7 @@ class ItemPort(models.Model):
     # image = models.ForeignKey('Image', null = True, blank = True)
     # tagLocationX = models.FloatField(default = 0.0)
     # tagLocationY = models.FloatField(default = 0.0)
+    disabled = models.BooleanField(default = False)
 
     def __unicode__(self):
         if self.displayName and self.displayName != "":
@@ -501,6 +503,7 @@ class HardpointTag(models.Model):
     hardpoint = models.ForeignKey('ItemPort', blank = True, null = True);
     locationX = models.FloatField(default = 0)
     locationY = models.FloatField(default = 0)
+    disabled = models.BooleanField(default = False)
 
 class VariantItem(models.Model):
     variant = models.ForeignKey("Variant", blank=True, null=True)
@@ -537,5 +540,12 @@ class GameUpdateChange(models.Model):
             return u"%s(%s):%s" % (self.entityName, self.update.name, self.description)
         else:
             return u"(%s):%s" % (self.update.name, self.description)
+
+class Hangar(models.Model):
+    hangarVehicles = models.ManyToManyField('Vehicle', blank = True, null = True)
+    hangarVehicleItems = models.ManyToManyField('VehicleItem', blank = True, null = True)
+    hangarVariants = models.ManyToManyField('Variant', blank = True, null = True)
+    hangarFavorites = models.ManyToManyField('Variant', blank = True, null = True, related_name="favorites")
+    hangarFriends = models.ManyToManyField(User, blank = True, null = True)
 
 
