@@ -619,6 +619,7 @@ class VehicleItemData(object):
 
 
         def saveChanges(self):
+            self._existingModel.disabled = False
             for key in self.properties:
                 modelKey = self.BASIC_PROPERTIES[key]
                 value = self.properties[key]
