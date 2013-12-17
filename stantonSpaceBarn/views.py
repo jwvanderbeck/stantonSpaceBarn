@@ -1061,7 +1061,7 @@ def weaponDetails(request, itemName):
 @ensure_csrf_cookie
 def weaponList(request):
     # Get the item
-    allItems = VehicleItem.objects.all().filter()
+    allItems = VehicleItem.objects.all().filter(disabled=False)
 
     renderContext = {
         'items'         : allItems
@@ -1207,7 +1207,7 @@ def getBackgridItemList(request, itemTypeName):
             return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
 
         try:
-            items = VehicleItem.objects.all().filter(itemType__exact=itemType).order_by('name')
+            items = VehicleItem.objects.all().filter(itemType__exact=itemType,disabled=False).order_by('name')
         except:
             # print "Unable to find any items"
             response_data = [{}]
@@ -1251,7 +1251,7 @@ def getVehicleItemList(request, itemTypeName=None, itemSubTypeName=None, vehicle
         if itemTypeName and itemSubTypeName:
             try:
                 # print "Looking for items of type %s, and subtype %s" % (itemTypeName, itemSubTypeName)
-                items = VehicleItem.objects.all().filter(itemType__exact=itemTypeName, itemSubType__iexact=itemSubTypeName)
+                items = VehicleItem.objects.all().filter(itemType__exact=itemTypeName, itemSubType__iexact=itemSubTypeName, disabled=False)
             except:
                 # print "Unable to find items"
                 response_data = [{}]
@@ -1259,7 +1259,7 @@ def getVehicleItemList(request, itemTypeName=None, itemSubTypeName=None, vehicle
         elif itemTypeName:
             # print "Looking for items of type %s" % (itemTypeName)
             try:
-                items = VehicleItem.objects.all().filter(itemType__typeName__iexact=itemTypeName)
+                items = VehicleItem.objects.all().filter(itemType__typeName__iexact=itemTypeName, disabled=False)
             except Exception as e:
                 # print "Unable to find items"
                 # print e
@@ -1268,7 +1268,7 @@ def getVehicleItemList(request, itemTypeName=None, itemSubTypeName=None, vehicle
         else:
             # print "Looking for all items"
             try:
-                items = VehicleItem.objects.all()
+                items = VehicleItem.objects.all(disabled=False)
             except:
                 # print "Unable to find items"
                 response_data = [{}]
@@ -1769,11 +1769,13 @@ def shipLayout(request, shipName):
     shipData.save()
     loginForm = AuthenticationForm()
     createUserForm = UserCreationForm()
+    submitBuildForm = SubmitBuildForm()
 
     renderContext = {
         'shipData'      : shipData,
         'loginForm'     : loginForm,
-        'createUserForm': createUserForm
+        'createUserForm': createUserForm,
+        'variantForm'   : submitBuildForm
     }
 
     return render_to_response('bootstrap/light-blue/shipMain.html', renderContext, context_instance=RequestContext(request))
@@ -1798,6 +1800,18 @@ def phase2ShipList(request):
     # as it is what enables the resulting rendered view to contain the CSRF token!
     # !!!!!!!!!!!!!
     return render_to_response('bootstrap/light-blue/shipList.html', renderContext, context_instance=RequestContext(request))
+
+def phase2VariantList(request):
+    variants = Variant.objects.all().order_by("-creation_date")
+
+    renderContext = {
+    'variant_list'      : variants
+    }
+
+    # The bit here about context_instance=RequestContext(request) is ABSOLUTELY VITAL 
+    # as it is what enables the resulting rendered view to contain the CSRF token!
+    # !!!!!!!!!!!!!
+    return render_to_response('bootstrap/light-blue/variantsList.html', renderContext, context_instance=RequestContext(request))
 
 def testView(request):
     shipName = '300i'  
@@ -1833,7 +1847,7 @@ def testView(request):
     return render_to_response('bootstrap/light-blue/accountMain.html', renderContext, context_instance=RequestContext(request))
 
 @ensure_csrf_cookie
-def saveVariantPhase2(request, shipName):
+def createOrUpdateVariant(request):
     if request.is_ajax():
         try:
             data = simplejson.loads(request.body)
@@ -1856,15 +1870,34 @@ def saveVariantPhase2(request, shipName):
         #   data["ports"] = [ {"portName" : "nose_slot", "itemName" : "mass_driver"} ]
         #   optionally a port record can contain parentPort and parentItem IDs for ports
         #   that are on items.
-
-        if "variantName" not in data:
+        shipName = data["shipName"]
+        if not shipName:
+            response_data = {
+            'variantID' : 0,
+            'success' : False,
+            'response' : 'Missing vehicle name'
+            }
+            return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
+        variantName = None
+        variantRole = None
+        variantID = None
+        if "variantID" in data:
+            variantID = int(data["variantID"])
+        print data["formData"]
+        for entry in data["formData"]:
+            print entry
+            if entry["name"] == "name":
+                variantName = entry["value"]
+            elif entry["name"] == "role":
+                variantRole = entry["value"]
+        if not variantName:
             response_data = {
             'variantID' : 0,
             'success' : False,
             'response' : 'Missing variant name'
             }
             return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
-        if "role" not in data:
+        if not variantRole:
             response_data = {
             'variantID' : 0,
             'success' : False,
@@ -1873,8 +1906,8 @@ def saveVariantPhase2(request, shipName):
             return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
         # Store the variant's basic data
         variantData = {
-            "name"      : data["variantName"],
-            "role"      : data["role"],
+            "name"      : variantName,
+            "role"      : variantRole,
             "items"     : []
         }
         # Find the vehicle for this variant
@@ -1938,13 +1971,18 @@ def saveVariantPhase2(request, shipName):
         # At this point we should have a variantData structure with everything we need to actually create
         # and save the variant
         # Create the Variant model object
-        variant = Variant(
-                baseVehicle = variantData["baseVehicle"],
-                name = variantData["name"],
-                role = variantData["role"],
-                created_by = request.user
-            )
-        variant.save()
+        if variantID:
+            variant = Variant.objects.get(variantID)
+            VariantItem.objects.filter(variant__exact=variant).delete()
+            variant.save()
+        else:
+            variant = Variant(
+                    baseVehicle = variantData["baseVehicle"],
+                    name = variantData["name"],
+                    role = variantData["role"],
+                    created_by = request.user
+                )
+            variant.save()
         # Create each VariantItem needed
         for item in variantData["items"]:
             # print
@@ -1992,10 +2030,13 @@ def displayVariant(request, variantID):
     vehicleData = variant.baseVehicle
     loginForm = AuthenticationForm()
     createUserForm = UserCreationForm()
+    submitBuildForm = SubmitBuildForm()
     renderContext = {
         'shipData'          : vehicleData,
         'variantData'       : variantData,
         'loginForm'         : loginForm,
-        'createUserForm'    : createUserForm
+        'createUserForm'    : createUserForm,
+        'variantForm'       : submitBuildForm,
+        'variant'           : variant
     }
     return render_to_response('bootstrap/light-blue/variant.html', renderContext, context_instance=RequestContext(request))
