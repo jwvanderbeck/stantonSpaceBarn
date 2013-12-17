@@ -183,8 +183,34 @@ function setUserState(loggedIn)
         $("#user-actions-login").hide(200);
         $("#user-actions-logout").show(200);
         $("#user-actions-newuser").hide(200);
-        $("#system-actions-savenewvariant").show(200);
-        $("#system-actions-updatevariant").show(200);
+        showUpdateVariant = false
+        showCreateVariant = false
+        showQuickVariant = false
+
+        if (window.location.href.indexOf("/variant/") > -1)
+        {
+            showUpdateVariant = true
+            showCreateVariant = true
+            showQuickVariant = true
+        }
+        if (window.location.href.indexOf("/ship/") > -1)
+        {
+            showCreateVariant = true
+            showQuickVariant = true
+        }
+
+        if (showUpdateVariant)
+            $("#system-actions-updatevariant").show(200);
+        else
+            $("#system-actions-updatevariant").hide(0);
+        if (showCreateVariant)
+            $("#system-actions-savenewvariant").show(200);
+        else
+            $("#system-actions-savenewvariant").hide(0);
+        if (showQuickVariant)
+            $("#system-actions-quickvariant").show(200);
+        else
+            $("#system-actions-quickvariant").hide(0);
     }
     else
     {
@@ -674,11 +700,17 @@ function saveNewVariant(shipName)
 {
     var data = {}
     // ship name is dynamically added by django
+    data["shipName"] = shipName;
     data["ports"] = [];
-    data["variantName"] = "Test Variant";
-    data["role"] = "Test Role";
+    // data["variantName"] = "Test Variant";
+    // data["role"] = "Test Role";
     data["version"] = 1;
 
+    $("#new-variant").modal('hide');
+    var frm = $('#newvariant-form');
+    var formData = frm.serializeArray();
+    console.log(formData);
+    data["formData"] = formData;
     // get all items equipped
     var ports = getAllHardpointDatablocks();
     ports.each(function() {
@@ -699,14 +731,64 @@ function saveNewVariant(shipName)
     $.ajaxSetup({
       async: true
     });
-    $.post('/create-variant/' + shipName + '/', jsonData).done(function(data) {
+    $.post('phase2/save-variant/', jsonData).done(function(data) {
         if (data['success'] == false)
         {
-            console.log("Failed to get QuickVariant:", data['response']);
+            console.log("Failed to create variant:", data['response']);
         }
         else
         {
             console.log("Variant created")
+            console.log(data);
+            url = "/phase2/variant/" + data["variantID"]
+            window.location.href = url;
+        }
+    });
+}
+function updateVariant(shipName, variantID)
+{
+    var data = {}
+    // ship name is dynamically added by django
+    data["shipName"] = shipName;
+    data["variantID"] = variantID;
+    data["ports"] = [];
+    // data["variantName"] = "Test Variant";
+    // data["role"] = "Test Role";
+    data["version"] = 1;
+
+    $("#update-variant").modal('hide');
+    var frm = $('#updatevariant-form');
+    var formData = frm.serializeArray();
+    console.log(formData);
+    data["formData"] = formData;
+    // get all items equipped
+    var ports = getAllHardpointDatablocks();
+    ports.each(function() {
+        var itemName = $(this).attr("data-item-name");
+        var portName = $(this).attr("data-port-name");
+        var parentPort = $(this).attr("data-parent-port");
+        var parentItem = $(this).attr("data-parent-item");
+        if (itemName != undefined)
+        {
+            if (parentItem != undefined)
+                data["ports"].push({"portName" : portName, "itemName" : itemName, "parentItem" : parentItem, "parentPort" : parentPort});
+            else
+                data["ports"].push({"portName" : portName, "itemName" : itemName});
+        }
+    });
+    var jsonData = JSON.stringify(data);
+    console.log(jsonData);
+    $.ajaxSetup({
+      async: true
+    });
+    $.post('phase2/save-variant/', jsonData).done(function(data) {
+        if (data['success'] == false)
+        {
+            console.log("Failed to update variant:", data['response']);
+        }
+        else
+        {
+            console.log("Variant update")
             console.log(data);
         }
     });
