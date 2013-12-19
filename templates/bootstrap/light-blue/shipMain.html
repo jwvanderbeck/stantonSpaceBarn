@@ -103,7 +103,7 @@
             <div class="modal-body">
                 <h4>If you desire, you may change the name of the Variant or its Role</h4>
                 <h5>NOTE: We reserve the right to delete any variant named in a vulgar or offensive manner</h5>
-                <form name='updatevariant-form' id='newvariant-form' method='POST' action='/create-variant/'>
+                <form name='updatevariant-form' id='updatevariant-form' method='POST' action='/create-variant/'>
                 <p><label for="id_updaterole">Role:</label> <select id="id_updaterole" name="role">
                 <option value="Interdiction">Interdiction</option>
                 <option value="Exploration">Exploration</option>
@@ -117,7 +117,7 @@
                 </form>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-primary" aria-hidden="true" onclick='updateNewVariant("{{shipData.name}}", {{variant.id}})'>Submit</button>
+                <button class="btn btn-primary" aria-hidden="true" onclick='updateVariant("{{shipData.name}}", {{variant.id}})'>Submit</button>
                 <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
             </div>
         </div>
@@ -678,5 +678,5 @@ setUserState(true);
 {% else %}
 setUserState(false);
 {% endif %}
-
+enableUpdateVariant(false);
 {% endblock ready-script %}

@@ -1,4 +1,5 @@
 var isUserLoggedIn = false;
+var variantOwner = "";
 // Make this dynamic in the future
 var ITEM_TYPES = "Avionics,Battery,Container,Cooler,Display,Radar,PowerPlant,Thruster,Weapon".split(",");
 
@@ -179,10 +180,10 @@ function setUserState(loggedIn)
 {
     if (loggedIn)
     {
-        $("#my-hangar").show(200);
-        $("#user-actions-login").hide(200);
-        $("#user-actions-logout").show(200);
-        $("#user-actions-newuser").hide(200);
+        $("#my-hangar").show(0);
+        $("#user-actions-login").hide(0);
+        $("#user-actions-logout").show(0);
+        $("#user-actions-newuser").hide(0);
         showUpdateVariant = false
         showCreateVariant = false
         showQuickVariant = false
@@ -200,26 +201,27 @@ function setUserState(loggedIn)
         }
 
         if (showUpdateVariant)
-            $("#system-actions-updatevariant").show(200);
+            $("#system-actions-updatevariant").show(0);
         else
             $("#system-actions-updatevariant").hide(0);
         if (showCreateVariant)
-            $("#system-actions-savenewvariant").show(200);
+            $("#system-actions-savenewvariant").show(0);
         else
             $("#system-actions-savenewvariant").hide(0);
         if (showQuickVariant)
-            $("#system-actions-quickvariant").show(200);
+            $("#system-actions-quickvariant").show(0);
         else
             $("#system-actions-quickvariant").hide(0);
     }
     else
     {
-        $("#my-hangar").hide(200);
-        $("#user-actions-login").show(200);
-        $("#user-actions-logout").hide(200);
-        $("#user-actions-newuser").show(200);
-        $("#system-actions-savenewvariant").hide(200);
-        $("#system-actions-updatevariant").hide(200);
+        $("#my-hangar").hide(0);
+        $("#user-actions-login").show(0);
+        $("#user-actions-logout").hide(0);
+        $("#user-actions-newuser").show(0);
+        $("#system-actions-savenewvariant").hide(0);
+        $("#system-actions-updatevariant").hide(0);
+        $("#system-actions-quickvariant").hide(0);
     }
 }
 
@@ -235,7 +237,13 @@ function submitUserLogin() {
         }
         else
         {
+            console.log(data);
             setUserState(true);
+            console.log(variantOwner);
+            if (variantOwner == data["username"])
+                enableUpdateVariant(true);
+            else
+                enableUpdateVariant(false);
         }
     });            
 }
@@ -252,7 +260,12 @@ function submitNewUser() {
         }
         else
         {
+            console.log(data);
             setUserState(true);
+            if (variantOwner == data["username"])
+                enableUpdateVariant(true);
+            else
+                enableUpdateVariant(false);
         }
     });            
 }
@@ -276,6 +289,13 @@ function submitUserLogout() {
 /***************************************************************
 // Utility Functions
 ***************************************************************/
+function enableUpdateVariant(value)
+{
+    if (value)
+        $("#system-actions-updatevariant").removeClass("disabled")
+    else
+        $("#system-actions-updatevariant").addClass("disabled")
+}
 function getHardpointTag(hardpointName, tagNumber)
 {
     return $(".hardpoint-tag-" + hardpointName + "[data-tag-number='" + tagNumber + "']");
@@ -731,7 +751,7 @@ function saveNewVariant(shipName)
     $.ajaxSetup({
       async: true
     });
-    $.post('phase2/save-variant/', jsonData).done(function(data) {
+    $.post('/phase2/save-variant/', jsonData).done(function(data) {
         if (data['success'] == false)
         {
             console.log("Failed to create variant:", data['response']);
@@ -781,7 +801,7 @@ function updateVariant(shipName, variantID)
     $.ajaxSetup({
       async: true
     });
-    $.post('phase2/save-variant/', jsonData).done(function(data) {
+    $.post('/phase2/save-variant/', jsonData).done(function(data) {
         if (data['success'] == false)
         {
             console.log("Failed to update variant:", data['response']);

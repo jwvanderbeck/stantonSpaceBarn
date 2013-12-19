@@ -70,5 +70,15 @@ $("#system-action-updatevariant").on("click", function(event){
     $("#update-variant").modal("show");
 });
 
+{% if user.is_authenticated %}
+variantOwner = "{{variant.created_by.username}}";
+if ("{{variant.created_by.username}}" == "{{user.username}}")
+    enableUpdateVariant(true)
+else
+    enableUpdateVariant(false)
+{% else %}
+enableUpdateVariant(false);
+{% endif %}
+
 
 {% endblock ready-script %}
