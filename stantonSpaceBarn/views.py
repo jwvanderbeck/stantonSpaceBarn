@@ -1233,13 +1233,18 @@ def isItemCompatibleWithPort(itemData, portData):
         return False
     if itemData.itemSize > portData.maxSize:
         return False
+    portTypes = []
+    for portType in portData.supportedTypes.all():
+        portTypes.append(portType.name)
     # If we get a perfect type:subtype match then we are good
-    if itemData.itemType in portData.supportedTypes.all():
+    if itemData.itemType.name in portTypes:
         return True
     # No exact match so we need to check if the port supports
     # all of this type's subtypes
-    if itemData.itemType.name.split(":")[0] in portData.supportedTypes.all():
+    if itemData.itemType.name.split(":")[0] in portTypes:
         return True
+
+    return False
 
 @ensure_csrf_cookie
 def getVehicleItemList(request, itemTypeName=None, itemSubTypeName=None, vehicleName=None):
@@ -1250,38 +1255,39 @@ def getVehicleItemList(request, itemTypeName=None, itemSubTypeName=None, vehicle
 
         if itemTypeName and itemSubTypeName:
             try:
-                # print "Looking for items of type %s, and subtype %s" % (itemTypeName, itemSubTypeName)
+                print "Looking for items of type %s, and subtype %s" % (itemTypeName, itemSubTypeName)
                 items = VehicleItem.objects.all().filter(itemType__exact=itemTypeName, itemSubType__iexact=itemSubTypeName, disabled=False)
             except:
-                # print "Unable to find items"
+                print "Unable to find items"
                 response_data = [{}]
                 return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
         elif itemTypeName:
-            # print "Looking for items of type %s" % (itemTypeName)
+            print "Looking for items of type %s" % (itemTypeName)
             try:
                 items = VehicleItem.objects.all().filter(itemType__typeName__iexact=itemTypeName, disabled=False)
+                # print items
             except Exception as e:
-                # print "Unable to find items"
-                # print e
+                print "Unable to find items"
+                print e
                 response_data = [{}]
                 return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
         else:
-            # print "Looking for all items"
+            print "Looking for all items"
             try:
                 items = VehicleItem.objects.all(disabled=False)
             except:
-                # print "Unable to find items"
+                print "Unable to find items"
                 response_data = [{}]
                 return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
 
         vehicleData = None
         if vehicleName:
-            # print "Looking for items compatible with %s" % vehicleName
+            print "Looking for items compatible with %s" % vehicleName
             # Get the vehicle data
             try:
                 vehicleData = Vehicle.objects.get(name__iexact=vehicleName)
             except:
-                # print "Unable to find Vehicle"
+                print "Unable to find Vehicle"
                 response_data = [{}]
                 return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
 
@@ -1291,6 +1297,7 @@ def getVehicleItemList(request, itemTypeName=None, itemSubTypeName=None, vehicle
                 valid = False
                 for port in vehicleData.itemport_set.all():
                     if isItemCompatibleWithPort(item, port):
+                        print item
                         valid = True
                         break
                 if not valid:
@@ -1814,31 +1821,31 @@ def phase2VariantList(request):
     return render_to_response('bootstrap/light-blue/variantsList.html', renderContext, context_instance=RequestContext(request))
 
 def testView(request):
-    shipName = '300i'  
+    # shipName = '300i'  
     # Get all hardpoints
-    hardpoints = Hardpoint.objects.filter(ship__name__iexact=shipName).order_by('tag_location_y')
-    items = Item.objects.all()
-    images = Image.objects.filter(ship__name__iexact=shipName)
-    item_types = ItemType.objects.filter(hardpoint_type=True)
+    # hardpoints = Hardpoint.objects.filter(ship__name__iexact=shipName).order_by('tag_location_y')
+    # items = Item.objects.all()
+    # images = Image.objects.filter(ship__name__iexact=shipName)
+    # item_types = ItemType.objects.filter(hardpoint_type=True)
     submitBuildForm = SubmitBuildForm()
     loginForm = AuthenticationForm()
     createUserForm = UserCreationForm()
-    vehicles = Vehicle.objects.all()
-    itemPorts = ItemPort.objects.all().filter(parentVehicle__exact=vehicles[0])
-    if len(images) == 0:
-        raise Http404() 
+    # vehicles = Vehicle.objects.all()
+    # itemPorts = ItemPort.objects.all().filter(parentVehicle__exact=vehicles[0])
+    # if len(images) == 0:
+    #     raise Http404() 
     renderContext = {
-    'hardpoint_list'    : hardpoints,
-    'item_list'         : items,
-    'image_list'        : images,
-    'shipname'          : shipName,
-    'ship'              : images[0].ship,
-    'itemtype_list'     : item_types,
+    # 'hardpoint_list'    : hardpoints,
+    # 'item_list'         : items,
+    # 'image_list'        : images,
+    # 'shipname'          : shipName,
+    # 'ship'              : images[0].ship,
+    # 'itemtype_list'     : item_types,
     'saveVariantForm'           : submitBuildForm,
     'loginForm'                 : loginForm,
-    'createUserForm'            : createUserForm,
-    'port_list'         : itemPorts,
-    'vehicle_list'      : vehicles
+    'createUserForm'            : createUserForm
+    # 'port_list'         : itemPorts,
+    # 'vehicle_list'      : vehicles
     }
 
     # The bit here about context_instance=RequestContext(request) is ABSOLUTELY VITAL 
@@ -1972,8 +1979,10 @@ def createOrUpdateVariant(request):
         # and save the variant
         # Create the Variant model object
         if variantID:
-            variant = Variant.objects.get(variantID)
+            variant = Variant.objects.get(pk__exact=variantID)
             VariantItem.objects.filter(variant__exact=variant).delete()
+            variant.name = variantData["name"]
+            variant.role = variantData["role"]
             variant.save()
         else:
             variant = Variant(
