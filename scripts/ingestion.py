@@ -347,7 +347,8 @@ class VehicleItemData(object):
                 self.newModel = True
             # Parse more complex properties
             # Manufacturer
-            self.manufacturer = self.rawData["manufacturer"]
+            self.manufacturer = self.rawData['manufacturer'].replace('_', ' ').replace('and', '&')
+            # self.manufacturer = self.rawData["manufacturer"]
             # ItemPorts
             if "ports" in self.rawData:
                 self._itemPorts = []

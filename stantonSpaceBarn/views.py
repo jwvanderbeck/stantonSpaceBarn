@@ -1820,6 +1820,57 @@ def phase2VariantList(request):
     # !!!!!!!!!!!!!
     return render_to_response('bootstrap/light-blue/variantsList.html', renderContext, context_instance=RequestContext(request))
 
+def gameUpdateList(request):
+    updates = GameUpdate.objects.all().order_by("-creation_date")
+
+    loginForm = AuthenticationForm()
+    createUserForm = UserCreationForm()
+    renderContext = {
+    'loginForm'         : loginForm,
+    'createUserForm'    : createUserForm,
+    'updates_list'      : updates
+    }
+
+    # The bit here about context_instance=RequestContext(request) is ABSOLUTELY VITAL 
+    # as it is what enables the resulting rendered view to contain the CSRF token!
+    # !!!!!!!!!!!!!
+    return render_to_response('bootstrap/light-blue/gameUpdateList.html', renderContext, context_instance=RequestContext(request))
+
+def gameUpdate(request, pk):
+    update = GameUpdate.objects.get(pk=pk)
+    changes = GameUpdateChange.objects.filter(update=update).order_by("-creation_date").order_by("entityName")
+
+    loginForm = AuthenticationForm()
+    createUserForm = UserCreationForm()
+    renderContext = {
+    'update'            : update,
+    'loginForm'         : loginForm,
+    'createUserForm'    : createUserForm,
+    'changes'           : changes
+    }
+
+    # The bit here about context_instance=RequestContext(request) is ABSOLUTELY VITAL 
+    # as it is what enables the resulting rendered view to contain the CSRF token!
+    # !!!!!!!!!!!!!
+    return render_to_response('bootstrap/light-blue/gameUpdate.html', renderContext, context_instance=RequestContext(request))
+
+def gameUpdatesByEntity(request, entityName):
+    changes = GameUpdateChange.objects.filter(entityName=entityName).order_by("-creation_date")
+
+    loginForm = AuthenticationForm()
+    createUserForm = UserCreationForm()
+    renderContext = {
+    'entityName'        : entityName,
+    'loginForm'         : loginForm,
+    'createUserForm'    : createUserForm,
+    'changes'           : changes
+    }
+
+    # The bit here about context_instance=RequestContext(request) is ABSOLUTELY VITAL 
+    # as it is what enables the resulting rendered view to contain the CSRF token!
+    # !!!!!!!!!!!!!
+    return render_to_response('bootstrap/light-blue/gameUpdateByEntity.html', renderContext, context_instance=RequestContext(request))
+
 def testView(request):
     # shipName = '300i'  
     # Get all hardpoints
@@ -1851,7 +1902,7 @@ def testView(request):
     # The bit here about context_instance=RequestContext(request) is ABSOLUTELY VITAL 
     # as it is what enables the resulting rendered view to contain the CSRF token!
     # !!!!!!!!!!!!!
-    return render_to_response('bootstrap/light-blue/accountMain.html', renderContext, context_instance=RequestContext(request))
+    return render_to_response('metronic/admin/layout_blank_page.html', renderContext, context_instance=RequestContext(request))
 
 @ensure_csrf_cookie
 def createOrUpdateVariant(request):
