@@ -526,6 +526,7 @@ class GameUpdate(models.Model):
     name = models.CharField(max_length = 255, default = "")
     build = models.CharField(max_length = 64, default = "")
     module = models.CharField(max_length = 255, default = "Root")
+    creation_date = models.DateTimeField(auto_now_add=True)
 
     def __unicode__(self):
         return u"%s" % (self.name)
@@ -534,6 +535,7 @@ class GameUpdateChange(models.Model):
     description = models.TextField(default = "")
     entityName = models.CharField(max_length=255, default = "", blank = True, null = True)
     update = models.ForeignKey('GameUpdate', blank = True, null = True)
+    creation_date = models.DateTimeField(auto_now_add=True)
 
     def __unicode__(self):
         if self.entityName:
