@@ -47,7 +47,7 @@ if __name__ == "__main__":
 	parser = argparse.ArgumentParser()
 	parser.add_argument("source")
 	parser.add_argument("destination")
-	args = parser.parse_args(["/Users/john/Documents/SSB/Star Citizen Data/Scripts_Patch_9", "/Users/john/Documents/SSB/Parsed Data/Patch_9"])
+	args = parser.parse_args(["/Users/john/Documents/SSB/Star Citizen Data/Scripts_Patch_10", "/Users/john/Documents/SSB/Parsed Data/Patch_10"])
 
 	print "Working on %s" % args.source
 	entitiesPath = os.path.join(args.source, ENTITIES_PATH)
@@ -170,17 +170,27 @@ if __name__ == "__main__":
 				# ItemType
 				itemData['itemtype'] = getParam(params, 'vehicleItemType')
 				if not itemData['itemtype']:
+					itemData['itemtype'] = getParam(params, 'itemType')
+				if not itemData['itemtype']:
+					print "\t\t\t\t[ERROR] No item type found!"
 					continue
 				itemData['itemsubtype'] = getParam(params, 'vehicleItemSubType')
+				if not itemData['itemsubtype']:
+					itemData['itemsubtype'] = getParam(params, 'itemSubType')
 				# Size
 				itemData['size'] = getIntParam(params, 'vehicleItemSize')
+				if not itemData['size']:
+					itemData['size'] = getIntParam(params, 'itemSize')
 				itemData['class'] = getIntParam(params, 'vehicleItemClass')
-				# Manufacturer (We try two params because it looks like RSI mispelled this!)
+				if not itemData['class']:
+					itemData['class'] = getIntParam(params, 'itemClass')
 				itemData['manufacturer'] = getParam(params, 'vehicleItemManufactor')
 				if not itemData['manufacturer']:
-					itemData['manufacturer'] = getParam(params, 'vehicleItemManufacturer')
+					itemData['manufacturer'] = getParam(params, 'itemManufactor')
 				# Description
 				itemData['description'] = getParam(params, 'vehicleItemDescription')
+				if not itemData['description']:
+					itemData['description'] = getParam(params, 'itemDescription')
 				# Item Stats
 				itemData['itemstats'] = {}
 				itemType = itemData['itemtype']
@@ -278,7 +288,7 @@ if __name__ == "__main__":
 						itemPort = port
 						portData = {}
 						portData['name'] = getAttribute(port, 'name')
-						print "Found port %s" % portData['name']
+						# print "Found port %s" % portData['name']
 						# Display name
 						portData['displayname'] = getAttribute(itemPort, 'display_name')
 						if not portData['displayname']:
@@ -349,6 +359,7 @@ if __name__ == "__main__":
 				# print itemData
 				outputFile = os.path.join(args.destination, itemData['name'] + ".json")
 				jsonData = json.dumps(itemData, sort_keys=True, indent=4, separators=(',',':'))
+				print "\t\t\t\tSaving..."
 				with open(outputFile, "w") as f:
 					f.write(jsonData)
 
