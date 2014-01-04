@@ -46,68 +46,68 @@ def api_root(request, format=None):
     })
 
 
+# @api_view(('GET',))
+# def vehicleItemList(request, format=None):
+#     if request.method == 'GET':
+#         vehicleItems = VehicleItem.objects.all()
+#         data = []
+#         for vehicleItem in vehicleItems:
+#             vehicleItemData = {
+#                 "id" : vehicleItem.id,
+#                 "itemClass" : vehicleItem.itemClass,
+#                 "name" : vehicleItem.name,
+#                 "displayName" : vehicleItem.displayName,
+#                 "itemSize" : vehicleItem.itemSize,
+#                 "description" : vehicleItem.description
+#             }
+#             if vehicleItem.manufacturer:
+#                 vehicleItemData['manufacturer'] = vehicleItem.manufacturer.name
+#             if vehicleItem.itemType:
+#                 vehicleItemData['itemType'] = vehicleItem.itemType.name
+
+#             stats = VehicleItemParams.objects.filter(parentItem__exact=vehicleItem)
+#             vehicleItemData["itemStats"] = []
+#             for stat in stats:
+#                 vehicleItemData["itemStats"].append( {stat.name : stat.value} )
+            
+#             data.append(vehicleItemData)
+#         return Response(data)
+
 @api_view(('GET',))
 def vehicleItemList(request, format=None):
+    # provider_key = '9e875d96b2e006b1a4b6066beb6bd88a'
+    # app_id = '744b4bbf'
+    # app_key = '5332ca71f6c95528aa4cebf4d776d313'
     if request.method == 'GET':
+        # client = ThreeScalePY.ThreeScaleAuthRep(provider_key)
+        # if client.authrep(app_id, app_key):
         vehicleItems = VehicleItem.objects.all()
         data = []
         for vehicleItem in vehicleItems:
             vehicleItemData = {
                 "id" : vehicleItem.id,
-                "itemClass" : vehicleItem.itemClass,
+                # "itemClass" : vehicleItem.itemClass,
                 "name" : vehicleItem.name,
                 "displayName" : vehicleItem.displayName,
-                "itemSize" : vehicleItem.itemSize,
+                # "itemSize" : vehicleItem.itemSize,
                 "description" : vehicleItem.description
             }
-            if vehicleItem.manufacturer:
-                vehicleItemData['manufacturer'] = vehicleItem.manufacturer.name
-            if vehicleItem.itemType:
-                vehicleItemData['itemType'] = vehicleItem.itemType.name
+            # if vehicleItem.manufacturer:
+            #     vehicleItemData['manufacturer'] = vehicleItem.manufacturer.name
+            # if vehicleItem.itemType:
+            #     vehicleItemData['itemType'] = vehicleItem.itemType.typeName
+            # if vehicleItem.itemSubType:
+            #     vehicleItemData['itemSubType'] = vehicleItem.itemSubType.subTypeName
 
-            stats = VehicleItemParams.objects.filter(parentItem__exact=vehicleItem)
-            vehicleItemData["itemStats"] = []
-            for stat in stats:
-                vehicleItemData["itemStats"].append( {stat.name : stat.value} )
-            
+            # stats = vehicleItem.itemStats.all()
+            # vehicleItemData["itemStats"] = []
+            # for stat in stats:
+            #     vehicleItemData["itemStats"].append( {stat.name : stat.value} )
+
             data.append(vehicleItemData)
         return Response(data)
-
-@api_view(('GET',))
-def vehicleItemList(request, format=None):
-    provider_key = '9e875d96b2e006b1a4b6066beb6bd88a'
-    app_id = '744b4bbf'
-    app_key = '5332ca71f6c95528aa4cebf4d776d313'
-    if request.method == 'GET':
-        client = ThreeScalePY.ThreeScaleAuthRep(provider_key)
-        if client.authrep(app_id, app_key):
-            vehicleItems = VehicleItem.objects.all()
-            data = []
-            for vehicleItem in vehicleItems:
-                vehicleItemData = {
-                    "id" : vehicleItem.id,
-                    "itemClass" : vehicleItem.itemClass,
-                    "name" : vehicleItem.name,
-                    "displayName" : vehicleItem.displayName,
-                    "itemSize" : vehicleItem.itemSize,
-                    "description" : vehicleItem.description
-                }
-                if vehicleItem.manufacturer:
-                    vehicleItemData['manufacturer'] = vehicleItem.manufacturer.name
-                if vehicleItem.itemType:
-                    vehicleItemData['itemType'] = vehicleItem.itemType.typeName
-                if vehicleItem.itemSubType:
-                    vehicleItemData['itemSubType'] = vehicleItem.itemSubType.subTypeName
-
-                stats = vehicleItem.itemStats.all()
-                vehicleItemData["itemStats"] = []
-                for stat in stats:
-                    vehicleItemData["itemStats"].append( {stat.name : stat.value} )
-
-                data.append(vehicleItemData)
-            return Response(data)
-        else:
-            return Response({"reason" : client.build_response().get_reason()}, status=status.HTTP_401_UNAUTHORIZED)
+        # else:
+        #     return Response({"reason" : client.build_response().get_reason()}, status=status.HTTP_401_UNAUTHORIZED)
 
 @api_view(('GET',))
 def vehicleItemDetail(request, pk, format=None):
@@ -142,20 +142,20 @@ def vehicleList(request, format=None):
         for vehicle in vehicles:
             vehicleData = {
                 "id" : vehicle.id,
-                "vehicleClass" : vehicle.vehicleClass,
+                # "vehicleClass" : vehicle.vehicleClass,
                 "name" : vehicle.name,
                 "displayName" : vehicle.displayName,
-                "upgradeSlots" : vehicle.upgradeSlots,
-                "maximumCrew" : vehicle.maximum_crew,
-                "emptyMass" : vehicle.empty_mass,
-                "length" : vehicle.length,
-                "width" : vehicle.width,
-                "height" : vehicle.height
+                # "upgradeSlots" : vehicle.upgradeSlots,
+                # "maximumCrew" : vehicle.maximum_crew,
+                # "emptyMass" : vehicle.empty_mass,
+                # "length" : vehicle.length,
+                # "width" : vehicle.width,
+                # "height" : vehicle.height
             }
-            if vehicle.category:
-                vehicleData['category'] = vehicle.category.name
-            if vehicle.manufacturer:
-                vehicleData['manufacturer'] = vehicle.manufacturer.name
+            # if vehicle.category:
+            #     vehicleData['category'] = vehicle.category
+            # if vehicle.manufacturer:
+            #     vehicleData['manufacturer'] = vehicle.manufacturer.name
             
             data.append(vehicleData)
         return Response(data)
@@ -176,7 +176,7 @@ def vehicleDetail(request, pk, format=None):
             "height" : vehicle.height
         }
         if vehicle.category:
-            vehicleData['category'] = vehicle.category.name
+            vehicleData['category'] = vehicle.category
         if vehicle.manufacturer:
             vehicleData['manufacturer'] = vehicle.manufacturer.name
 
@@ -192,12 +192,12 @@ def itemPortList(request, format=None):
             port["id"] = itemPort.id
             port["displayName"] = itemPort.displayName
             port["name"] = itemPort.name
-            port["maxSize"] = itemPort.maxSize
-            port["minSize"] = itemPort.minSize
-            port["portClass"] = itemPort.portClass
-            port['supportedTypes'] = []
-            for itemType in itemPort.supportedTypes.all():
-                port['supportedTypes'].append(itemType.name)
+            # port["maxSize"] = itemPort.maxSize
+            # port["minSize"] = itemPort.minSize
+            # port["portClass"] = itemPort.portClass
+            # port['supportedTypes'] = []
+            # for itemType in itemPort.supportedTypes.all():
+            #     port['supportedTypes'].append(itemType.name)
             data.append(port)
         return Response(data)
 @api_view(('GET',))
