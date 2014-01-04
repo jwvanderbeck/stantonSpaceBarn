@@ -1197,24 +1197,18 @@ def getBackgridItemList(request, itemTypeName):
     # JSON callable function to retrive a list of
     # items in Backgrid table format
     if request.is_ajax():
+        print "getBackgridItemList", itemTypeName
 
         # Find all items that match the given ItemType
         try:
-            itemType = VehicleItemType.objects.get(typeName__iexact=itemTypeName)
-        except:
-            # print "Unable to find itemType"
-            response_data = [{}]
-            return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
-
-        try:
-            items = VehicleItem.objects.all().filter(itemType__exact=itemType,disabled=False).order_by('name')
-        except:
-            # print "Unable to find any items"
+            items = VehicleItem.objects.all().filter(itemType__typeName__iexact=itemTypeName).order_by('name')
+        except ObjectDoesNotExist:
+            print "Unable to find any items"
             response_data = [{}]
             return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
 
         response_data = []
-        # print "Returning items for %s" % (itemTypeName)
+        print "Returning items for %s" % (itemTypeName)
         for item in items:
             row = {}
             if item.displayName:
