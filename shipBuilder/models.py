@@ -435,10 +435,9 @@ class VehicleImage(models.Model):
     url = models.URLField(default = '')
     name = models.CharField(max_length = 255, default = '')
     ship = models.ForeignKey('Vehicle')
-    tags = models.ManyToManyField('HardpointTag', blank = True, null = True)
     
     def __unicode__(self):
-        return self.name
+        return u"(%s)%s" % (self.ship.displayName, self.name)
 
 class ItemPort(models.Model):
     # Basic fields as required by game model
@@ -504,6 +503,10 @@ class HardpointTag(models.Model):
     locationX = models.FloatField(default = 0)
     locationY = models.FloatField(default = 0)
     disabled = models.BooleanField(default = False)
+    parentImage = models.ForeignKey('VehicleImage', blank = True, null = True)
+
+    def __unicode__(self):
+        return u"(%s)%s" % (self.parentImage, self.hardpoint)
 
 class VariantItem(models.Model):
     variant = models.ForeignKey("Variant", blank=True, null=True)
