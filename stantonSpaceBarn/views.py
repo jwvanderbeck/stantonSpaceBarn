@@ -1896,7 +1896,7 @@ def testView(request):
     # The bit here about context_instance=RequestContext(request) is ABSOLUTELY VITAL 
     # as it is what enables the resulting rendered view to contain the CSRF token!
     # !!!!!!!!!!!!!
-    return render_to_response('metronic/admin/layout_blank_page.html', renderContext, context_instance=RequestContext(request))
+    return render_to_response('metronic/admin/databanks_items.html', renderContext, context_instance=RequestContext(request))
 
 @ensure_csrf_cookie
 def createOrUpdateVariant(request):
