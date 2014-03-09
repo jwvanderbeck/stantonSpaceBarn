@@ -15,6 +15,8 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.core.mail import send_mail
 from django.core.exceptions import ObjectDoesNotExist
+import logging
+import pdb
 
 def stringToIntArray(s):
     intArray = []
@@ -1242,6 +1244,7 @@ def isItemCompatibleWithPort(itemData, portData):
 
 @ensure_csrf_cookie
 def getVehicleItemList(request, itemTypeName=None, itemSubTypeName=None, vehicleName=None):
+    print "getVehicleItemLis"
     # JSON callable function to retrive a list of
     # items in Backgrid table format based on the specified
     # Parameters
@@ -1268,7 +1271,7 @@ def getVehicleItemList(request, itemTypeName=None, itemSubTypeName=None, vehicle
         else:
             print "Looking for all items"
             try:
-                items = VehicleItem.objects.all(disabled=False)
+                items = VehicleItem.objects.all()
             except:
                 print "Unable to find items"
                 response_data = [{}]
@@ -1286,6 +1289,7 @@ def getVehicleItemList(request, itemTypeName=None, itemSubTypeName=None, vehicle
                 return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
 
         response_data = []
+        print "Scanning items"
         for item in items:
             if vehicleData:
                 valid = False
@@ -1297,16 +1301,90 @@ def getVehicleItemList(request, itemTypeName=None, itemSubTypeName=None, vehicle
                 if not valid:
                     continue
             # print item
-            row = {}
-            row['type'] = item.itemType.name
-            row['size'] = item.itemSize
+            row = []
+            row.append(item.itemType.name)
+            row.append(item.itemSize)
+            # row['type'] = item.itemType.name
+            # row['size'] = item.itemSize
             if item.displayName:
-                row['displayName'] = item.displayName
+                # row['displayName'] = item.displayName
+                row.append(item.displayName)
             else:
-                row['displayName'] = item.name
-            row['name'] = item.name
+                # row['displayName'] = item.name
+                row.append(item.name)
+            # row['name'] = item.name
+            row.append(item.name)
             response_data.append(row)
-        return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
+            response = {"aaData":response_data}
+        print simplejson.dumps(response)
+        return HttpResponse(simplejson.dumps(response), content_type="application/json")
+    else:
+        if itemTypeName and itemSubTypeName:
+            try:
+                print "Looking for items of type %s, and subtype %s" % (itemTypeName, itemSubTypeName)
+                items = VehicleItem.objects.all().filter(itemType__exact=itemTypeName, itemSubType__iexact=itemSubTypeName, disabled=False)
+            except:
+                print "Unable to find items"
+                response_data = [{}]
+                return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
+        elif itemTypeName:
+            print "Looking for items of type %s" % (itemTypeName)
+            try:
+                items = VehicleItem.objects.all().filter(itemType__typeName__iexact=itemTypeName, disabled=False)
+                # print items
+            except Exception as e:
+                print "Unable to find items"
+                print e
+                response_data = [{}]
+                return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
+        else:
+            print "Looking for all items"
+            try:
+                items = VehicleItem.objects.all()
+            except ObjectDoesNotExist:
+                print "Unable to find items"
+                response_data = [{}]
+                return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
+
+        vehicleData = None
+        if vehicleName:
+            print "Looking for items compatible with %s" % vehicleName
+            # Get the vehicle data
+            try:
+                vehicleData = Vehicle.objects.get(name__iexact=vehicleName)
+            except:
+                print "Unable to find Vehicle"
+                response_data = [{}]
+                return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
+        response_data = []
+        print "Scanning items"
+        for item in items:
+            if vehicleData:
+                valid = False
+                for port in vehicleData.itemport_set.all():
+                    if isItemCompatibleWithPort(item, port):
+                        print item
+                        valid = True
+                        break
+                if not valid:
+                    continue
+            # print item
+            row = []
+            row.append(item.itemType.name)
+            row.append(item.itemSize)
+            # row['type'] = item.itemType.name
+            # row['size'] = item.itemSize
+            if item.displayName:
+                # row['displayName'] = item.displayName
+                row.append(item.displayName)
+            else:
+                # row['displayName'] = item.name
+                row.append(item.name)
+            # row['name'] = item.name
+            row.append(item.name)
+            response_data.append(row)
+            response = {"aaData":response_data}
+        print simplejson.dumps(response)
 
     assert False        
 
@@ -1780,6 +1858,25 @@ def shipLayout(request, shipName):
     }
 
     return render_to_response('bootstrap/light-blue/shipMain.html', renderContext, context_instance=RequestContext(request))
+
+@ensure_csrf_cookie
+def shipLayoutTest(request, shipName):
+    shipData = Vehicle.objects.get(name__iexact=shipName)
+    shipData.views = shipData.views + 1
+    shipData.save()
+    loginForm = AuthenticationForm()
+    createUserForm = UserCreationForm()
+    submitBuildForm = SubmitBuildForm()
+
+    renderContext = {
+        'shipData'      : shipData,
+        'loginForm'     : loginForm,
+        'createUserForm': createUserForm,
+        'variantForm'   : submitBuildForm
+    }
+    logger = logging.getLogger("shipBuilder")
+    logger.debug("Test")
+    return render_to_response('metronic/admin/shipMain_test.html', renderContext, context_instance=RequestContext(request))
 
 def phase2(request):
     renderContext = {
