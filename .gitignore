@@ -22,3 +22,5 @@ scripts/new_data.py
 stantonSpaceBarn/settings.py
 
 *.jpg
+
+.idea/
