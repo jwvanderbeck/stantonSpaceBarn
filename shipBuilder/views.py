@@ -243,6 +243,22 @@ def itemPortListByVehicle(request, pk, format=None):
                 port['supportedSubTypes'].append(subType.subTypeName)
             data.append(port)
         return Response(data)        
+
+
+@api_view(('GET',))
+def itemTypeList(request, format=None):
+    if request.method == 'GET':
+        itemTypes = VehicleItemType.objects.all()
+        data = []
+        for itemType in itemTypes:
+            typeData = {}
+            typeData["id"] = itemType.id
+            typeData["name"] = itemType.name
+            typeData["typeName"] = itemType.typeName
+            typeData["subTypeName"] = itemType.subTypeName
+            data.append(typeData)
+        return Response(data)
+
 # @api_view(['GET'])
 # def hardpointListByClass(request, hardpoint_class, format=None):
 #   if request.method == 'GET':
