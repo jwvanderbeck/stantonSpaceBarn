@@ -380,7 +380,8 @@ class VehicleItemData(object):
                 self.pipes = {}
                 pipes = self.rawData["pipes"]
                 for pipe in pipes:
-                    self.pipes[pipe] = pipes[pipe]
+                    if len(pipes[pipe]) > 0:
+                        self.pipes[pipe] = pipes[pipe]
             else:
                 self.pipes = None
             return True
@@ -672,7 +673,7 @@ class VehicleItemData(object):
             # database fragmentation, but pipes are such a pain in the ass to
             # do properly, so i'm being lazy.  In the grand scheme of things
             # I don't think it will be a huge problem.  And if it is I can
-            # revist this
+            # revisit this
             if self.pipes:
                 self._existingModel.vehicleitempower_set.all().delete()
                 self._existingModel.vehicleitemheat_set.all().delete()
