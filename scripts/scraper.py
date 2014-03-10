@@ -328,6 +328,8 @@ if __name__ == "__main__":
                     stats = None
                 elif itemType.lower() == "ammobox":
                     stats = None
+                elif itemType.lower() == "aimodule":
+                    stats = None
                 if stats is not None:
                     for stat in stats:
                         try:
