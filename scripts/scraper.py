@@ -47,7 +47,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("source")
     parser.add_argument("destination")
-    args = parser.parse_args(["/Users/john/Documents/SSB/Star Citizen Data/Scripts_Patch_11", "/Users/john/Documents/SSB/Parsed Data/Patch_11.1"])
+    args = parser.parse_args(["/Users/john/Documents/SSB/Star Citizen Data/Scripts_Patch_11", "/Users/john/Documents/SSB/Parsed Data/Patch_11"])
 
     print "Working on %s" % args.source
     entitiesPath = os.path.join(args.source, ENTITIES_PATH)
@@ -86,6 +86,13 @@ if __name__ == "__main__":
             shipData['name'] = root.attrib['name']
             shipData['category'] = getAttribute(root, 'category')
             shipData['displayname'] = getAttribute(root, 'displayname')
+            shipData['mass'] = 0.0
+            partsWithMass = root.findall('.//Part[@mass]')
+            if len(partsWithMass) > 0:
+                for partWithMass in partsWithMass:
+                    mass = float(partWithMass.attrib['mass'])
+                    shipData['mass'] = shipData['mass'] + mass
+            print "Ship Mass: %f" % shipData['mass']
             if 'classname' in root.attrib:
                 classname = root.attrib['classname']
                 try:
@@ -162,6 +169,21 @@ if __name__ == "__main__":
                         mainpart = modification.findall(".//Elem[@idRef='idHullPartName']")
                     if len(mainpart) > 0:
                         modData["name"] = mainpart[0].attrib["value"]
+                    # Alter mass if neccesary
+                    partsWithMassChanges = modification.findall(".//Elem[@name='mass']")
+                    if len(partsWithMassChanges) > 0:
+                        print "*** NOTE Modification changes mass! ***"
+                        for partWithMassChange in partsWithMassChanges:
+                            newMass = partWithMassChange.attrib['value']
+                            partID = partWithMassChange.attrib['idRef']
+                            # Find the part with that ID
+                            part = root.findall(".//ItemPort[@id='%s']" % part)
+                            if part:
+                                oldMass = part.attrib['mass']
+                                if oldMass:
+                                    difference = oldMass - newMass
+                                    modData['mass'] = modData['mass'] - difference
+                        print "New Mass: %f" % modData['mass']
                     # Disable any itemports that should be disabled.
                     # This is a bit trickier, due to the way the game does it, and i'm not sure but I think
                     # this will change in the future.  It doesn't seem like it will work for all situations
@@ -255,6 +277,13 @@ if __name__ == "__main__":
                 itemData['description'] = getParam(params, 'vehicleItemDescription')
                 if not itemData['description']:
                     itemData['description'] = getParam(params, 'itemDescription')
+                # Item Mass
+                mass = getParam(params, 'mass')
+                if not mass:
+                    itemData['mass'] = 0.0
+                else:
+                    itemData['mass'] = mass
+                print "Item mass", itemData['mass']
                 # Item Stats
                 itemData['itemstats'] = {}
                 itemType = itemData['itemtype']

@@ -423,6 +423,8 @@ class VehicleItem(models.Model):
     itemType = models.ForeignKey('VehicleItemType', blank = True, null = True)
     manufacturer = models.ForeignKey('Manufacturer', blank = True, null = True)
     itemSize = models.PositiveIntegerField(default = 0)
+    mass = models.FloatField(default = 0)
+    hitpoints = models.BigIntegerField(default = 0)
     # Additional fields required for The Barn
     views = models.PositiveIntegerField(default = 0)
     disabled = models.BooleanField(default = False)
@@ -482,7 +484,7 @@ class Vehicle(models.Model):
     views = models.PositiveIntegerField(default = 0)
     upgradeSlots = models.PositiveIntegerField(default = 0)
     maximum_crew = models.PositiveIntegerField(default = 1)
-    empty_mass = models.BigIntegerField(default = 0)
+    empty_mass = models.FloatField(default = 0)
     length = models.FloatField(default = 0)
     width = models.FloatField(default = 0)
     height = models.FloatField(default = 0)

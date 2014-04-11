@@ -221,7 +221,8 @@ class VehicleData(object):
             "name" : "name",
             "displayname" : "displayName",
             "class" : "vehicleClass",
-            "category" : "category"
+            "category" : "category",
+            "mass" : "empty_mass"
         }
         def __init__(self, gameUpdate):
             self.newModel = False
@@ -320,7 +321,8 @@ class VehicleItemData(object):
             "displayname" : "displayName",
             "class" : "itemClass",
             "description" : "description",
-            "size" : "itemSize"
+            "size" : "itemSize",
+            "mass" : "mass"
         }
         def __init__(self, gameUpdate):
             self.newModel = False
