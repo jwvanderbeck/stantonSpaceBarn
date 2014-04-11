@@ -1868,11 +1868,23 @@ def shipLayoutTest(request, shipName):
     createUserForm = UserCreationForm()
     submitBuildForm = SubmitBuildForm()
 
+    # Get all types and subtypes for filtering on the item browser
+    # to do this we need to build a list of all subtypes for a given main type and skip empty ones
+    itemTypes = {}
+    allItemTypes = VehicleItemType.objects.all()
+    for itemType in allItemTypes:
+        if itemType.typeName and itemType.subTypeName:
+            if itemType.typeName in itemTypes:
+                itemTypes[itemType.typeName].append(itemType.subTypeName)
+            else:
+                itemTypes[itemType.typeName] = [itemType.subTypeName]
+
     renderContext = {
         'shipData'      : shipData,
         'loginForm'     : loginForm,
         'createUserForm': createUserForm,
-        'variantForm'   : submitBuildForm
+        'variantForm'   : submitBuildForm,
+        'itemTypes'     : itemTypes
     }
     logger = logging.getLogger("shipBuilder")
     logger.debug("Test")

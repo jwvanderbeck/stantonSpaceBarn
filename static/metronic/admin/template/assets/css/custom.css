@@ -19,3 +19,7 @@
 .panel-info {
     background-color: rgb(45,48,69);
 }
+
+td {
+    white-space: nowrap;
+}
