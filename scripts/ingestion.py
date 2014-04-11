@@ -221,7 +221,8 @@ class VehicleData(object):
             "name" : "name",
             "displayname" : "displayName",
             "class" : "vehicleClass",
-            "category" : "category"
+            "category" : "category",
+            "mass" : "empty_mass"
         }
         def __init__(self, gameUpdate):
             self.newModel = False
@@ -320,7 +321,8 @@ class VehicleItemData(object):
             "displayname" : "displayName",
             "class" : "itemClass",
             "description" : "description",
-            "size" : "itemSize"
+            "size" : "itemSize",
+            "mass" : "mass"
         }
         def __init__(self, gameUpdate):
             self.newModel = False
@@ -380,7 +382,8 @@ class VehicleItemData(object):
                 self.pipes = {}
                 pipes = self.rawData["pipes"]
                 for pipe in pipes:
-                    self.pipes[pipe] = pipes[pipe]
+                    if len(pipes[pipe]) > 0:
+                        self.pipes[pipe] = pipes[pipe]
             else:
                 self.pipes = None
             return True
@@ -672,7 +675,7 @@ class VehicleItemData(object):
             # database fragmentation, but pipes are such a pain in the ass to
             # do properly, so i'm being lazy.  In the grand scheme of things
             # I don't think it will be a huge problem.  And if it is I can
-            # revist this
+            # revisit this
             if self.pipes:
                 self._existingModel.vehicleitempower_set.all().delete()
                 self._existingModel.vehicleitemheat_set.all().delete()

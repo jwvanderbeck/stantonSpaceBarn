@@ -69,20 +69,30 @@ if __name__ == "__main__":
             if ext.lower() != ".xml":
                 continue
             print "\t\t%s" % xmlFile
-            try:
-                xmlDoc = ElementTree.parse(os.path.join(shipsPath, xmlFile))
-            except:
-                print "\t\t\t[ERROR] Failed to properly read in XML data. Skipping."
-                continue
+            xmlDoc = ElementTree.parse(os.path.join(shipsPath, xmlFile))
             if not xmlDoc:
                 print "\t\t\t[ERROR] Failed to properly read in XML data. Skipping."
                 continue
             root = xmlDoc.getroot()
             # Basic ship data
+            # CIG Changed how variants work.  Originally there was a separate XML definition for ach variant
+            # but now it is one XML definition for the entire line.  IE 300 line, or Hornet line.  At the end
+            # of that file is a section <Modifications> that defines all the variants.
+            # To work with this new system we first build up a "base" definition, then iterate through each
+            # "Modification" and make a definition for that modification.  We then save that out as a separate
+            # file.
+            # This still feels unfinished on CIGs part, so will need to keep an eye on how things shake out
             shipData = {}
             shipData['name'] = root.attrib['name']
             shipData['category'] = getAttribute(root, 'category')
             shipData['displayname'] = getAttribute(root, 'displayname')
+            shipData['mass'] = 0.0
+            partsWithMass = root.findall('.//Part[@mass]')
+            if len(partsWithMass) > 0:
+                for partWithMass in partsWithMass:
+                    mass = float(partWithMass.attrib['mass'])
+                    shipData['mass'] = shipData['mass'] + mass
+            print "Ship Mass: %f" % shipData['mass']
             if 'classname' in root.attrib:
                 classname = root.attrib['classname']
                 try:
@@ -136,11 +146,83 @@ if __name__ == "__main__":
                     portData['types'].append(itemTypeData)
                 shipData['ports'].append(portData)
             # print shipData
-            outputFile = os.path.join(args.destination, shipData['name'] + ".json")
-            jsonData = json.dumps(shipData, sort_keys=True, indent=4, separators=(',',':'))
-            with open(outputFile, "w") as f:
-                f.write(jsonData)
-
+            # Now that we have a base definition, we need to loop through all the modifications for the actual ship data
+            # If there are no modifications, then the base definition is used as the only ship variant
+            modifications = root.find("Modifications")
+            if modifications is not None and len(modifications) > 0:
+                print "\t\t\t[DEBUG] Modifications found for this ship.  Iterating through all variants"
+                for modification in modifications:
+                    print "\t\t\t[DEBUG] Processing Variant: %s" % modification.attrib['name']
+                    outputFile = os.path.join(args.destination, shipData["name"] + "_mod_" + modification.attrib['name'] + ".json")
+                    # We make a copy of the origina base ship data and now modify it as needed based on the
+                    # Modification definition
+                    modData = dict(shipData)
+                    modData['ports'] = shipData['ports'][:]
+                    # Change the displayname
+                    displaynames = modification.findall(".//Elem[@name='displayname']")
+                    if len(displaynames) > 0:
+                        print displaynames[0].attrib
+                        modData["displayname"] = displaynames[0].attrib["value"]
+                    # Change the internal name
+                    mainpart = modification.findall(".//Elem[@idRef='idMainPart']")
+                    if len(mainpart) == 0:
+                        mainpart = modification.findall(".//Elem[@idRef='idHullPartName']")
+                    if len(mainpart) > 0:
+                        modData["name"] = mainpart[0].attrib["value"]
+                    # Alter mass if neccesary
+                    partsWithMassChanges = modification.findall(".//Elem[@name='mass']")
+                    if len(partsWithMassChanges) > 0:
+                        print "*** NOTE Modification changes mass! ***"
+                        for partWithMassChange in partsWithMassChanges:
+                            newMass = partWithMassChange.attrib['value']
+                            partID = partWithMassChange.attrib['idRef']
+                            # Find the part with that ID
+                            part = root.findall(".//ItemPort[@id='%s']" % part)
+                            if part:
+                                oldMass = part.attrib['mass']
+                                if oldMass:
+                                    difference = oldMass - newMass
+                                    modData['mass'] = modData['mass'] - difference
+                        print "New Mass: %f" % modData['mass']
+                    # Disable any itemports that should be disabled.
+                    # This is a bit trickier, due to the way the game does it, and i'm not sure but I think
+                    # this will change in the future.  It doesn't seem like it will work for all situations
+                    # but we will see.  Anyway the way CIG does it is that the modification elements point to other
+                    # entries in the base definition through "id".  It basically specifies the id of the element
+                    # to modify, the name of that element's attribute that is to be changed, and finally the new
+                    # value.  This will, currently, lead us to a "SharedItem" or "SharedAutoWeapon" entry in the
+                    # base definition.  But that isn't enough.  THAT entry though will lead us back to an actual
+                    # itemport, and that is the itemport we need to remove if the original modification value is ""
+                    #
+                    # In summary, if there is a modification entry with name = part, and value = "", then we find
+                    # the correlating itemport and remove it.
+                    partmods = modification.findall(".//Elem[@name='part']")
+                    # print partmods
+                    if len(partmods) > 0:
+                        for partmod in partmods:
+                            # print partmod.attrib
+                            if partmod.attrib['value'] == "":
+                                itemportroot = root.findall(".//ItemPort[@id='%s']" % partmod.attrib['idRef'])
+                                # print itemportroot
+                                if len(itemportroot) > 0:
+                                    portname = itemportroot[0].attrib['part']
+                                    removeport = -1
+                                    for i,port in enumerate(modData['ports']):
+                                        # print port
+                                        if port['name'] == portname:
+                                            # print "\t\t\t[DEBUG] Variant removes port", port
+                                            removeport = i
+                                    if removeport > -1:
+                                        modData['ports'].pop(removeport)
+                    jsonData = json.dumps(modData, sort_keys=True, indent=4, separators=(',', ':'))
+                    with open(outputFile, "w") as f:
+                        f.write(jsonData)
+            else:
+                print "\t\t\t[DEBUG] No modifications found for this ship.  Scraping base data"
+                outputFile = os.path.join(args.destination, shipData['name'] + ".json")
+                jsonData = json.dumps(shipData, sort_keys=True, indent=4, separators=(',', ':'))
+                with open(outputFile, "w") as f:
+                    f.write(jsonData)
     # Items - Weapons
     itemsPath = os.path.join(entitiesPath, ITEMS_PATH) #, "Weapons")
     if not os.path.isdir(itemsPath):
@@ -195,6 +277,13 @@ if __name__ == "__main__":
                 itemData['description'] = getParam(params, 'vehicleItemDescription')
                 if not itemData['description']:
                     itemData['description'] = getParam(params, 'itemDescription')
+                # Item Mass
+                mass = getParam(params, 'mass')
+                if not mass:
+                    itemData['mass'] = 0.0
+                else:
+                    itemData['mass'] = mass
+                print "Item mass", itemData['mass']
                 # Item Stats
                 itemData['itemstats'] = {}
                 itemType = itemData['itemtype']
