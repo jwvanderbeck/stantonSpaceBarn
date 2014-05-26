@@ -625,90 +625,6 @@ function hideOverlay(overlay)
     overlay.hide(200);
 }
 
-function removeItemFromPort(portData)
-{
-    // Get the port tag, datablock, and label elements
-    var portName = portData["name"];
-    var parentPort = portData["parentPort"];
-    if (parentPort == undefined)
-    {
-        var portTags = getHardpointTags(portName);
-        var portOverlays = getHardpointOverlays(portName);
-        portTags.each( function(){
-           $(this).removeClass("filled");
-        });
-
-        // Remove item from overlays
-        portOverlays.each( function() {
-           $(this).find("span.item-name").text("Nothing Loaded");
-        });
-        var portDatablock = getHardpointDatablock(portName);
-    }
-    else
-    {
-        var parentItem = portData["parentItem"];
-        var portDatablock = getHardpointDatablock(portName, parentPort, parentItem)
-    }
-    var itemName = portDatablock.attr("data-item-name");
-
-    // Remove item from datablock
-    portDatablock.removeAttr("data-item-name");
-    portDatablock.find("span.item-name").text("Nothing Loaded");
-    
-    // Set the proper states, coloring, etc
-    var container = portDatablock.parent().parent();
-    container.attr("data-state", "empty");
-    var baseStatus = container.attr("data-base-status");
-    container.removeClass("panel-" + baseStatus);
-    container.attr("data-status", baseStatus);
-    container.addClass("panel-" + baseStatus);
-    
-
-    // Reset datablock state selection
-    parent = portDatablock.find(".item-port-datablock-statebuttons");
-    // console.log(parent)
-    parent.empty();
-    $(document.createElement("input")).appendTo(parent).attr("id", "item-powerstate-" + portName + "-input").attr("type", "hidden").attr("name", "item-powerstate").attr("value","Default");
-    var parentDiv = $(document.createElement("div")).appendTo(parent).addClass("btn-group");
-    parentDiv.attr("id", "port-powerstate-" + portName);
-    parentDiv.attr("data-toggle", "buttons-radio").attr("data-target", "item-powerstate-" + portName + "-input")
-    var button = $(document.createElement("button")).appendTo(parentDiv)
-        .addClass("btn btn-xs btn-info active")
-        .attr("data-toggle-class","btn-info")
-        .attr("data-toggle-passive-class", "btn-inverse")
-        .attr("type", "button")
-        .attr("name", "port-powerstate")
-        .attr("value", "Default");
-    button.text("Default");
-    button.click(function(event){
-        $(this).parent().parent().find("input").val($(this).val());
-        event.stopPropagation();
-        computeStats();
-    });
-    // If this item has any ItemPorts, we need to remove those
-    // TODO
-    // console.log("Removing sub ports");
-    var datablocks = $(".item-port-datablock[data-parent-port='" + portName + "']");
-    // console.log("Datablocks", datablocks);
-    datablocks.each(function(){
-        console.log("Removing", $(this))
-        var div = $(this).parent();
-        var panel = div.parent();
-        var widget = panel.parent();
-        console.log("div", div);
-        console.log("panel", panel);
-        console.log("widget", widget);
-        widget.remove();
-        // if (section.children().length == 0)
-        //     section.remove();
-    });
-    // update hardpoint filters
-    filterHardpoints("all");
-    filterHardpoints("filled", $("#hardpoints-filter-show-filled").attr("checked"))
-    filterHardpoints("empty", $("#hardpoints-filter-show-empty").attr("checked"))
-    // Recompute all stats now that this item has been removed
-    computeStats();
-}
 
 function getQuickVariant(shipName)
 {
@@ -1117,6 +1033,87 @@ function getItemPortDetails(portData, shipName) {
         }
     });
 }
+
+function removeItemFromPort(portData)
+{
+    // Get the port tag, datablock, and label elements
+    var portName = portData["name"];
+    var parentPort = portData["parentPort"];
+    if (parentPort == undefined)
+    {
+        var portOverlays = getHardpointOverlays(portName);
+        // Remove item from overlays
+        portOverlays.each( function() {
+           $(this).find("h4").text("Empty Hardpoint: Click here to select an item");
+        });
+        var portDatablock = getHardpointDatablock(portName);
+    }
+    else
+    {
+        var parentItem = portData["parentItem"];
+        var portDatablock = getHardpointDatablock(portName, parentPort, parentItem)
+    }
+    var itemName = portDatablock.attr("data-item-name");
+
+    // Remove item from datablock
+    portDatablock.removeAttr("data-item-name");
+    portDatablock.find("span.item-name").text("Nothing Loaded");
+    
+    // Set the proper states, coloring, etc
+    var container = portDatablock.parent().parent();
+    container.attr("data-state", "empty");
+    var baseStatus = container.attr("data-base-status");
+    container.removeClass("panel-" + baseStatus);
+    container.attr("data-status", baseStatus);
+    container.addClass("panel-" + baseStatus);
+    
+
+    // Reset datablock state selection
+    parent = portDatablock.find(".item-port-datablock-statebuttons");
+    // console.log(parent)
+    parent.empty();
+    $(document.createElement("input")).appendTo(parent).attr("id", "item-powerstate-" + portName + "-input").attr("type", "hidden").attr("name", "item-powerstate").attr("value","Default");
+    var parentDiv = $(document.createElement("div")).appendTo(parent).addClass("btn-group");
+    parentDiv.attr("id", "port-powerstate-" + portName);
+    parentDiv.attr("data-toggle", "buttons-radio").attr("data-target", "item-powerstate-" + portName + "-input")
+    var button = $(document.createElement("button")).appendTo(parentDiv)
+        .addClass("btn btn-xs btn-info active")
+        .attr("data-toggle-class","btn-info")
+        .attr("data-toggle-passive-class", "btn-inverse")
+        .attr("type", "button")
+        .attr("name", "port-powerstate")
+        .attr("value", "Default");
+    button.text("Default");
+    button.click(function(event){
+        $(this).parent().parent().find("input").val($(this).val());
+        event.stopPropagation();
+        computeStats();
+    });
+    // If this item has any ItemPorts, we need to remove those
+    // TODO
+    // console.log("Removing sub ports");
+    var datablocks = $(".item-port-datablock[data-parent-port='" + portName + "']");
+    // console.log("Datablocks", datablocks);
+    datablocks.each(function(){
+        console.log("Removing", $(this))
+        var div = $(this).parent();
+        var panel = div.parent();
+        var widget = panel.parent();
+        console.log("div", div);
+        console.log("panel", panel);
+        console.log("widget", widget);
+        widget.remove();
+        // if (section.children().length == 0)
+        //     section.remove();
+    });
+    // update hardpoint filters
+    filterHardpoints("all");
+    filterHardpoints("filled", $("#hardpoints-filter-show-filled").attr("checked"))
+    filterHardpoints("empty", $("#hardpoints-filter-show-empty").attr("checked"))
+    // Recompute all stats now that this item has been removed
+    computeStats();
+}
+
 function addItemToPort(portData, itemData)
 {
     var portName = portData["name"];
@@ -1739,6 +1736,24 @@ function equipItem() {
     $("#item_browser_dialog").modal("hide");
 }
 
+
+function unequipHardpoint() {
+    var portName = $("#item_browser_dialog_table").attr("data-current-port");
+    var parentPort = $("#item_browser_dialog_table").attr("data-current-parent-port");
+    var oTable = $("#item_browser_dialog_table").dataTable({"bRetrieve":true});
+    var selectedTR = oTable.$("tr.browser-item-selected")[0];
+    var data = oTable.fnGetData(selectedTR)
+    console.log("Port:", portName)
+    console.log("Data:", data)
+    var portData = {"name" : portName};
+    if (parentPort && parentPort != "") {
+        portData["parentPort"] = parentPort;
+        portData["parentItem"] = getHardpointDatablock(parentPort).attr("data-item-name")
+    }
+    removeItemFromPort(portData);
+    $("#equip-item-button").addClass("disabled")
+    $("#item_browser_dialog").modal("hide");
+}
 
 function fetchItems(url) {
     $("#item_browser_dialog_table").dataTable( {
