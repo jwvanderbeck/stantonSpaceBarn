@@ -148,6 +148,10 @@ function getItemIdForDatablock(datablockID)
     else
         return val
 }
+function getItemNameForDatablock(datablock)
+{
+    return datablock.attr("data-item-name");
+}
 /**********************************************************
 // Given a source element with data attributes,
 // this function will fill in the proper description
@@ -1769,6 +1773,26 @@ function fetchItems(url) {
         "fnInitComplete": function(oSettings, json) {
             console.log(json)
             var oTable = this
+            // Select current item if one exists
+            var portName = $("#item_browser_dialog_table").attr("data-current-port");
+            var parentPort = $("#item_browser_dialog_table").attr("data-current-parent-port");
+            var parentName = $("#item_browser_dialog_table").attr("data-current-parent-name");
+            if (parentName && parentName != "") {
+                var datablock = getHardpointDatablock(portName, parentPort, parentName)
+            }
+            else {
+                var datablock = getHardpointDatablock(portName)
+            }
+            equippedItem = getItemNameForDatablock(datablock)
+            console.log("equipped item = ", equippedItem)
+            oTable.$('tr').each(function(){
+                var data = oTable.fnGetData(this)
+                if (data[6] == equippedItem) {
+                    $(this).addClass("browser-item-selected")
+                }
+            })
+
+
             // Setup click functionlity
             oTable.$('tr').click(function(){
                 oTable.$("tr.browser-item-selected").removeClass("browser-item-selected")
@@ -1808,3 +1832,37 @@ function fetchItems(url) {
          }    
     });
 }
+
+function openHardpoint(port, shipName) {
+    var portName = port.attr("data-port-name");
+    var parentName = port.attr("data-parent-item");
+    var parentPort = port.attr("data-parent-port");
+    var url = ""
+    $("#item_browser_dialog_table").attr("data-current-port", portName)
+    $("#item_browser_dialog_table").attr("data-current-parent-port", parentPort)
+    $("#item_browser_dialog_table").attr("data-current-parent-item", parentName)
+    if (parentName && parentName != "") {
+        var datablock = getHardpointDatablock(portName, parentPort, parentName)
+    }
+    else {
+        var datablock = getHardpointDatablock(portName)
+    }
+    equippedItem = getItemNameForDatablock(datablock)
+    console.log(datablock)
+    console.log(equippedItem)
+    if (equippedItem == undefined || equippedItem == "") {
+        $("#equip-item-button").addClass("disabled")
+    }
+    $("#item_browser_dialog").modal("show");
+    if (parentName && parentName != "") {
+        url = '/items/get/compatible-with-itemport/' + parentName+ '/' + port.attr("data-port-name") + "/"
+    }
+    else {
+        url = '/items/get/compatible-with-vehicleport/' + shipName + '/' + port.attr("data-port-name") + "/";
+    }
+    console.log(url)
+    setTimeout(function(){
+        fetchItems(url)},
+        100)
+    
+};

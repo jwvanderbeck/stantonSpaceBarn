@@ -536,43 +536,13 @@ $(function() {
 });
 
 $("#hardpoints-overview").on("click", ".item-port-datablock", function(event){
-    var port = $(this);
-    var portName = $(this).attr("data-port-name");
-    var parentName = $(this).attr("data-parent-item");
-    var parentPort = $(this).attr("data-parent-port");
-    console.log("PARENT PORT ", parentPort)
-    var url = ""
-    $("#item_browser_dialog_table").attr("data-current-port", portName)
-    $("#item_browser_dialog_table").attr("data-current-parent-port", parentPort)
-    $("#equip-item-button").addClass("disabled")
-    $("#item_browser_dialog").modal("show");
-    if (parentName && parentName != "") {
-        url = '/items/get/compatible-with-itemport/' + parentName+ '/' + port.attr("data-port-name") + "/"
-    }
-    else {
-        url = '/items/get/compatible-with-vehicleport/{{shipData.name}}/' + port.attr("data-port-name") + "/";
-    }
-    console.log(url)
-    setTimeout(function(){
-        fetchItems(url)},
-        100)
+    openHardpoint($(this), "{{shipData.name}}")
 });
 
 $(".datablock").on("click", function(event){
-    var port = $(this);
-    $("#item_browser_dialog").modal("show");
-    var portName = $(this).attr("data-port-name");
-    $("#item_browser_dialog_table").attr("data-current-port", portName)
-    $("#item_browser_dialog").modal("show");
-    $("#equip-item-button").addClass("disabled")
-    setTimeout(function(){
-        fetchItems('/items/get/compatible-with-vehicleport/{{shipData.name}}/' + port.attr("data-port-name") + "/")},
-        100)
+    openHardpoint($(this), "{{shipData.name}}")
 });
 
-
-
-                
 {% comment %}
 $(".datablock-floating").on("mouseenter", function(event){
     var datablock = $(this);
