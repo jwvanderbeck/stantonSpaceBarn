@@ -1170,6 +1170,7 @@ function addItemToPort(portData, itemData)
             var currentSection = portDatablock.parent().parent().parent();
             // console.log("currentSection " + currentSection);
             // console.log("-----");
+            console.log("ITEM DETAILS DATA: ", data)
             if (data["ports"].length > 0)
             {
                 console.log("adding itemports for item");
@@ -1773,6 +1774,7 @@ function fetchItems(url) {
                 oTable.$("tr.browser-item-selected").removeClass("browser-item-selected")
                 var data = oTable.fnGetData(this)
                 $(this).addClass("browser-item-selected")
+                $("#equip-item-button").removeClass("disabled")
             })
             // tooltips
             console.log(oTable.$('[data-tooltip-url]'))

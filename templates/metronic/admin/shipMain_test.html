@@ -56,7 +56,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-danger">Un-Equip Hardpoint</button>
-                <button type="button" class="btn green" onclick="equipItem()">Equip Selected</button>
+                <button type="button" id="equip-item-button" class="btn green disabled" onclick="equipItem()">Equip Selected</button>
                 <button type="button" class="btn default" data-dismiss="modal">Close</button>
             </div>
         </div>
@@ -544,6 +544,7 @@ $("#hardpoints-overview").on("click", ".item-port-datablock", function(event){
     var url = ""
     $("#item_browser_dialog_table").attr("data-current-port", portName)
     $("#item_browser_dialog_table").attr("data-current-parent-port", parentPort)
+    $("#equip-item-button").addClass("disabled")
     $("#item_browser_dialog").modal("show");
     if (parentName && parentName != "") {
         url = '/items/get/compatible-with-itemport/' + parentName+ '/' + port.attr("data-port-name") + "/"
@@ -563,6 +564,7 @@ $(".datablock").on("click", function(event){
     var portName = $(this).attr("data-port-name");
     $("#item_browser_dialog_table").attr("data-current-port", portName)
     $("#item_browser_dialog").modal("show");
+    $("#equip-item-button").addClass("disabled")
     setTimeout(function(){
         fetchItems('/items/get/compatible-with-vehicleport/{{shipData.name}}/' + port.attr("data-port-name") + "/")},
         100)
