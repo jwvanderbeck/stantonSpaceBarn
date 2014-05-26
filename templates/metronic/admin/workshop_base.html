@@ -261,7 +261,7 @@ Purchase: http://themeforest.net/item/metronic-responsive-admin-dashboard-templa
 <script src='{% static "js/phase2_app.js" %}'></script>
 
 <script>
-    jQuery(document).ready(function() {
+    jQuery(window).load(function() {
         {% block ready-script %}
         Metronic.init(); // init metronic core components
         Layout.init(); // init current layout

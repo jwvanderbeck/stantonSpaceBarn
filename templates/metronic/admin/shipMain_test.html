@@ -253,7 +253,7 @@
                             </ul>
                             <div id="layout-images-content" class="tab-content">
                                 {% for image in shipData.vehicleimage_set.all %}
-                                <div class="tab-pane fade in{%if forloop.first%} active{%endif%} layout-images-tab" id="image-{{image.name|slugify}}" style="position:relative;">
+                                <div class="tab-pane fade in{%if forloop.first%} active{%endif%} layout-images-tab" id="image-{{image.name|slugify}}" style="position:relative;" height="1000">
                                     <image src="{{image.url}}" class="img-responsive" style="margin:auto;"/>
                                     {% for tag in image.hardpointtag_set.all %}
                                     <div class="item-port hardpoint-tag-{{tag.hardpoint.name}}" 

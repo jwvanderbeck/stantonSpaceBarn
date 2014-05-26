@@ -292,6 +292,7 @@ function submitUserLogout() {
 function createLine(parent, x1, y1, x2, y2, hardpointID, master) {
     var containerLeft = parent.offset().left;
     var containerTop = parent.offset().top;
+    console.log(master)
     var parentWidth = master.width();
     var parentHeight = master.height();
     console.log(parentWidth, parentHeight);
