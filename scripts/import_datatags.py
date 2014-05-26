@@ -21,6 +21,9 @@ def process(rawData):
     print "Importing DataTags for Vehicle %s" % rawData["vehicleName"]
     try:
         image = vehicleData.vehicleimage_set.get(name__iexact=rawData["imageName"], ship=vehicleData)
+        image.ship = vehicleData
+        image.url = "https://www.stantonspacebarn.com/static/images/orthos/" + rawData["vehicleName"].lower() + "/" + rawData["imageName"].lower() + ".png"
+        image.save()        
     except ObjectDoesNotExist:
         print "VehicleImage %s does not exist.  Creating." % (rawData["imageName"])
         image = VehicleImage(name=rawData["imageName"], ship=vehicleData, url="https://www.stantonspacebarn.com/static/images/orthos/" + rawData["vehicleName"].lower() + "/" + rawData["imageName"].lower() + ".png")
