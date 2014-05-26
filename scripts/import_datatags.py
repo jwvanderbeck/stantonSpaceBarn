@@ -23,7 +23,7 @@ def process(rawData):
         image = vehicleData.vehicleimage_set.get(name__iexact=rawData["imageName"], ship=vehicleData)
     except ObjectDoesNotExist:
         print "VehicleImage %s does not exist.  Creating." % (rawData["imageName"])
-        image = VehicleImage(name=rawData["imageName"], ship=vehicleData, url="http://www.stantonspacebarn.com/static/images/orthos/" + rawData["vehicleName"].lower() + "/" + rawData["imageName"].lower() + ".png")
+        image = VehicleImage(name=rawData["imageName"], ship=vehicleData, url="https://www.stantonspacebarn.com/static/images/orthos/" + rawData["vehicleName"].lower() + "/" + rawData["imageName"].lower() + ".png")
         image.save()
     HardpointTag.objects.filter(parentImage=image).delete()
     for key in rawData["hardpoints"]:
