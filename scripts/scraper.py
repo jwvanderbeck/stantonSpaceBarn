@@ -16,7 +16,8 @@ INVALID_ITEMTYPES = [
     "display",
     "light",
     "avionics",
-    "ammobox"
+    "ammobox",
+    "visor"
 ]
 
 def getAttribute(element, attributeName):
