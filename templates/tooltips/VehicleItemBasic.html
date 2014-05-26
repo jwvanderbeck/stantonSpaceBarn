@@ -1,0 +1,17 @@
+<h4>{{itemData.displayName}}</h4>
+<h4>{{itemData.manufacturer.name}}</h4>
+<p>{{itemData.description|wordwrap:100}}</p>
+<hr/>
+{% if itemData.itemType.subTypeName %}
+	<p>{{itemData.itemType.typeName|title}} -> {{itemData.itemType.subTypeName|title}}</p>
+{% else %}
+	<p>{{itemData.itemType.typeName|title}}</p>
+{% endif %}
+<p><b>Size</b> {{itemData.itemSize}}, <b>Mass</b> {{itemData.mass}}kg</p>
+
+{% if itemData.itemStats.all|length > 0 %}
+	<hr/>
+	{% for stat in itemData.itemStats.all %}
+		{% if forloop.first %}<p>{% endif %}<b>{{stat.name}}</b> {{stat.value}}{% if not forloop.last %} -- {% else %}</p>{% endif %}
+	{% endfor %}
+{% endif %}

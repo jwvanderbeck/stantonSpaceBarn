@@ -289,6 +289,42 @@ function submitUserLogout() {
 /***************************************************************
 // Utility Functions
 ***************************************************************/
+function createLine(parent, x1, y1, x2, y2, hardpointID, master) {
+    var containerLeft = parent.offset().left;
+    var containerTop = parent.offset().top;
+    var parentWidth = master.width();
+    var parentHeight = master.height();
+    console.log(parentWidth, parentHeight);
+    var datablockWidth = 252;
+    var datablockHeight = 52;
+    var tagSize = 22;
+    // calculate real pixels from % values
+    realX1 = (x1 / 100.0) * parentWidth;
+    realX2 = (x2 / 100.0) * parentWidth;
+    realY1 = (y1 / 100.0) * parentHeight;
+    realY2 = (y2 / 100.0) * parentHeight;
+    realX1 = realX1 + tagSize/2;
+    realY1 = realY1 + tagSize/2;
+    realX2 = realX2 + datablockWidth/2;
+    realY2 = realY2 + datablockHeight/2;
+    var length = Math.sqrt((realX1 - realX2) * (realX1 - realX2) + (realY1 - realY2) * (realY1 - realY2));
+    var angle = Math.atan2(realY2 - realY1, realX2 - realX1) * 180 / Math.PI;
+    var transform = 'rotate(' + angle + 'deg)';
+
+    var line = $('<div>')
+        .appendTo(parent)
+        .addClass('line')
+        .css({
+        'position': 'absolute',
+        'left': realX1,
+        'top': realY1,
+            '-webkit-transform': transform,
+            '-moz-transform': transform,
+            'transform': transform
+        }).attr('id', 'hardpoint_line_' + hardpointID).attr('data-length', length).animate({'width' : length}, 300);;
+    return line;
+}
+
 function enableUpdateVariant(value)
 {
     if (value)
@@ -341,7 +377,7 @@ function getHardpointName(hardpoint)
 // Stores a lookup of Backgrid tables
 var GRIDS = {};
 
-var Items = Backbone.Model.extend({});
+// var Items = Backbone.Model.extend({});
 
 function createGrid(itemTypeName, shipName, element, pageSize)
 {
@@ -369,28 +405,28 @@ function createGrid(itemTypeName, shipName, element, pageSize)
 }
 
 
-var ItemTypeCell = Backgrid.StringCell.extend({
-    className : "item-type-cell"
-});
+// var ItemTypeCell = Backgrid.StringCell.extend({
+//     className : "item-type-cell"
+// });
 // var ItemSubTypeCell = Backgrid.StringCell.extend({
 //     className : "item-subtype-cell"
 // });
-var ItemSizeCell = Backgrid.StringCell.extend({
-    className : "item-size-cell"
-});
-var ItemNameCell = Backgrid.StringCell.extend({
-    className : "item-name-cell"
-});
+// var ItemSizeCell = Backgrid.StringCell.extend({
+//     className : "item-size-cell"
+// });
+// var ItemNameCell = Backgrid.StringCell.extend({
+//     className : "item-name-cell"
+// });
 
-var ClickableRow = Backgrid.Row.extend({
-    className:"vehicle-item-row",
-    events: {
-        "click": "onClick"
-    },
-    onClick: function () {
-        Backbone.trigger("rowclicked", this.model);
-    }
-});
+// var ClickableRow = Backgrid.Row.extend({
+//     className:"vehicle-item-row",
+//     events: {
+//         "click": "onClick"
+//     },
+//     onClick: function () {
+//         Backbone.trigger("rowclicked", this.model);
+//     }
+// });
 
 function createBackgrid(collection, parentElement){
     var columns = [{
@@ -516,20 +552,23 @@ function enterPort(port)
 {
     port.attr("data-focus", "yes");
     // distance datablock should be from port tag
-    var offsetLeft = -15;
-    var offsetTop = 0;
+    var offsetLeft = 100;
+    var offsetTop = 50;
     // Display datablock overlay in computed postion
     var tagNumber = port.attr("data-tag-number");
     var datablock = getHardpointOverlay(getHardpointName(port), tagNumber)
     // console.log("Datablock:", datablock);
     var datablockHeight = datablock.height();
     var datablockWidth = datablock.width();
+    console.log(datablockWidth, datablockHeight);
     var tagLeft = port.position().left;
     var tagTop = port.position().top;
+    console.log(tagLeft, tagTop);
     var parentWidth = port.parent().width();
     var parentHeight = port.parent().height();
     var datablockLeft = tagLeft - ((datablockWidth / 2) + offsetLeft);
     var datablockTop = tagTop - (datablockHeight + offsetTop);
+    console.log(datablockLeft, datablockTop);
     if (datablockLeft - (datablockWidth / 2) < 0)
     {
         datablockLeft = 0
@@ -1084,22 +1123,14 @@ function addItemToPort(portData, itemData)
     var parentPort = portData["parentPort"];
     if (parentPort == undefined)
     {
-        var portTags = getHardpointTags(portName);
-        // var portLabel = $(".item-port-label[data-port-name='" + portName + "']");
-        // Mark tag as filled
-        portTags.each( function(){
-            $(this).addClass("filled");
-        });
-
-        // Remove item from label
-        // portLabel.removeAttr("data-item-name");
-        // portLabel.find("span.item-name").text("Nothing Loaded");
         var portDatablock = getHardpointDatablock(portName);
+        console.log("Main hardpoint: ", portDatablock)
     }
     else
     {
         var parentItem = portData["parentItem"];
         var portDatablock = getHardpointDatablock(portName,parentPort,parentItem);
+        console.log("Item based hardpoint: ", portDatablock)
     }
 
     var portDisplayName = portDatablock.parent().parent().find(".panel-heading h5").text();
@@ -1116,9 +1147,9 @@ function addItemToPort(portData, itemData)
     panel.addClass("panel-success");
     
     var portOverlays = getHardpointOverlays(portName)
-    // console.log("Overlays", portOverlays);
+    console.log("Overlays", portOverlays);
     portOverlays.each( function(){
-        $(this).find("span.item-name").text(itemDisplayName);
+        $(this).find("h4").text(itemDisplayName);
     });
     // Add ItemPorts that may be on this item
     // TODO
@@ -1140,8 +1171,8 @@ function addItemToPort(portData, itemData)
             // console.log("-----");
             if (data["ports"].length > 0)
             {
-                // console.log("adding itemports for item");
-                // console.log(data["ports"])
+                console.log("adding itemports for item");
+                console.log(data["ports"])
                 var overview = $("#hardpoints-overview");
                 ports = data["ports"];
                 for (var index = 0; index < ports.length; index++)
@@ -1200,7 +1231,7 @@ function addItemToPort(portData, itemData)
                         .addClass("panel-footer")
                         .text(portDisplayName);
 
-                    enableDatablock($(well));
+                    // enableDatablock($(well));
                 }
             }
         }
@@ -1312,97 +1343,6 @@ function enableDatablock(element)
         var portName = portWell.attr("data-port-name");
         filterByItemPort(portName);
     });
-    // Click event for port details
-    element.on("click", function(){
-        $("#item-details-modal").modal("hide");
-        $("#itemport-details-modal").modal("show");
-        var portName = $(this).attr("data-port-name")
-        var portData = {"name":portName,"parentItem":$(this).attr("data-parent-item")}
-        getItemPortDetails(portData, "{{shipData.name}}");
-    });
-
-    // Make Droppable
-    element.droppable({
-        activeClass: "label-success",
-        tolerance : "pointer",
-        drop : function(event, ui) {
-            $(this).removeClass("over");
-            dropItem(this, event, ui);
-        },
-        deactivate : function(event, ui) {
-        // reset temporary status coloring
-            var panels = $(".panel-compact[data-status]");
-            filterHardpoints("all");
-            filterHardpoints("filled", $("#hardpoints-filter-show-filled").attr("checked"))
-            filterHardpoints("empty", $("#hardpoints-filter-show-empty").attr("checked"))
-            panels.each(function(){
-                $(this).removeClass("panel-success panel-warning panel-danger");
-                var status = $(this).attr("data-status");
-                $(this).addClass("panel-" + status);
-            });
-        },
-        activate : function(event, ui) {
-            // console.log("Activate drag")
-            var draggable = ui.draggable;
-            var row = draggable;
-            var itemType = row.find("td.item-type-cell").text();
-            var itemSize = parseInt(row.find("td.item-size-cell").text(), 10);
-            var minSize = $(this).attr("data-min-size");
-            var maxSize = $(this).attr("data-max-size");
-            var label = $(this).find(".label")
-            var panel = $(this).parent().parent();
-            var supportedTypes = $(this).attr("data-types");
-            var item = {"size":itemSize,"type":itemType};
-            var showInvalid = $("#hardpoints-filter-show-invalid").attr('checked');
-            if (isItemCompatibleWithPort(item, $(this)))
-            // if (supportedTypes.indexOf(itemType) > -1 && itemSize >= minSize && itemSize <= maxSize)
-            {
-                // console.log("Item Supported!")
-                panel.removeClass("panel-warning panel-danger panel-success");
-                panel.addClass("panel-success");
-            }
-            else
-            {
-                panel.removeClass("panel-warning panel-danger panel-success");
-                panel.addClass("panel-danger");
-            }
-            var itemData = {};
-            itemData['size'] = itemSize;
-            itemData["type"] = itemType;
-            filterHardpoints("invalid", showInvalid, itemData)
-            $("#item-details-modal").modal("hide");
-            $("#itemport-details-modal").modal("hide");
-        },
-        over : function(event, ui) {
-            $(this).addClass("over");
-            // console.log("Over")
-        },
-        out : function(event, ui) {
-            $(this).removeClass("over");
-            // console.log("out")
-        },
-    accept: function(draggable) {
-        var row = draggable;
-        var itemType = row.find("td.item-type-cell").text();
-        var itemSize = parseInt(row.find("td.item-size-cell").text(), 10);
-        var supportedTypes = $(this).attr("data-types");
-        var minSize = $(this).attr("data-min-size");
-        var maxSize = $(this).attr("data-max-size");
-        var label = $(this).find(".label")
-        var panel = $(this).parent().parent();
-        var item = {"size" : itemSize, "type" : itemType};
-        if (isItemCompatibleWithPort(item, $(this)))
-        // if (supportedTypes.indexOf(itemType) > -1 && itemSize >= minSize && itemSize <= maxSize)
-        {
-            // console.log("Item Supported!")
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }});       
-
 }
 
 var hardpoints = getAllHardpointTags();
@@ -1621,12 +1561,13 @@ function computeStats()
     var scannedPorts = [];
     var scannedItems = [];
     var LDS = []
+    console.log(ports);
     ports.each(function() {
         var itemName = $(this).attr("data-item-name");
         if (itemName != undefined)
         {
             var itemState = $(this).find("input").val()
-            // console.log(itemName, itemState);
+            console.log(itemName, itemState);
             LDS.push( {"name" : itemName, "state" : itemState} );
         }
     });
@@ -1636,64 +1577,28 @@ function computeStats()
     {
         data["items"].push(LDS[i]);
     }
-    // console.log(data);
+    data["ship"] = $("#ship-stats-base").attr("data-shipname")
+    console.log(data);
     var jsonData = JSON.stringify(data);
-    // console.log(jsonData);
+    console.log(jsonData);
     $.ajaxSetup({
       async: false
     });
-    $.post('/graphs/get/available-power/', jsonData).done(function(data) {
+    $.post('/compute/stats/', jsonData).done(function(data) {
         if (data['success'] == false)
         {
-            console.log("Failed to retrieve power usage data:", data['response']);
+            console.log("Failed to compute stats:", data['response']);
         }
         else
         {
-            // console.log("Available Power data");
-            // console.log(data);
-            var powerConsumed = data['data']['powerConsumed'];
-            if (powerConsumed < 0)
-                powerConsumed = powerConsumed * -1;
-            var maxPower = data['data']['maxPower'];
-            var percentMaxPower = 0.0;
-            // console.log( powerConsumed, maxPower );
-            if (maxPower > 0)
-            {
-                $("#stats-lds-warning-missingpowerplant").hide();
-                percentMaxPower = (powerConsumed / maxPower) * 100;
-                $("#stats-lds-available-power-label").text(powerConsumed + "/" + maxPower);
-                $("#stats-lds-available-power-bar").removeClass("progress-bar-success").removeClass("progress-bar-warning").removeClass("progress-bar-danger");
-                if (percentMaxPower <= 50.0)
-                {
-                    $("#stats-lds-available-power-bar").addClass("progress-bar-success");
-                }
-                else if (percentMaxPower >= 50.0 && percentMaxPower <= 75.0)
-                {
-                    $("#stats-lds-available-power-bar").addClass("progress-bar-warning");
-                }
-                else if (percentMaxPower >= 75 && percentMaxPower <= 100.0)
-                {
-                    $("#stats-lds-available-power-bar").addClass("progress-bar-danger");
-                }
-                else
-                {
-                    $("#stats-lds-available-power-bar").addClass("progress-bar-danger");
-                    percentMaxPower = 100.0;
-                }
-                $("#stats-lds-available-power-bar").css({width: percentMaxPower + "%"})
-            }
-            else
-            {
-                // console.log($("#stats-lds-available-power-bar"));
-                $("#stats-lds-warning-missingpowerplant").show();
-                $("#stats-lds-available-power-label").text(powerConsumed + "/0");
-                $("#stats-lds-available-power-bar").removeClass("progress-bar-success").removeClass("progress-bar-warning").removeClass("progress-bar-danger");
-                $("#stats-lds-available-power-bar").addClass("progress-bar-danger");
-                $("#stats-lds-available-power-bar").css({width:"100%"})
-            }
+            $("#mass_configured").text($.number(data['mass'], 0, ".", ","));
+            $("#thrust_max").text($.number(data['thrust'], 0, ".", ","));
+            $("#twr").text($.number(data['twr'], 2, ".", ","));
+            $("#power_output").text($.number(data['power'], 0, ".", ","));
+            console.log("Mass: " + data['mass']);
         }
-        });
-        ports.each(function(){
+    });
+    ports.each(function(){
         var itemName = $(this).attr("data-item-name");
         var portName = $(this).attr("data-port-name");
         if (itemName != undefined && portName != undefined)
@@ -1708,19 +1613,19 @@ function computeStats()
     });
     // console.log(scannedItems);
     var data = {};
-    data['state'] = "Active";
+    data['state'] = "Idle";
     data['items'] = []
     for (var index=0; index < scannedItems.length; index++)
     {
         var entry = {
             "name" : scannedItems[index],
-            "state" : "Active"
+            "state" : "Idle"
         };
         data['items'].push( entry );
     }
     // console.log(data);
     var jsonData = JSON.stringify(data);
-    // console.log(jsonData);
+    console.log(jsonData);
     $.ajaxSetup({
       async: false
     });
@@ -1731,18 +1636,22 @@ function computeStats()
         }
         else
         {
-            // console.log("Available Power data");
-            // console.log(data);
+            console.log("Power Data");
+            console.log(data);
             var powerConsumed = data['data']['powerConsumed'];
             if (powerConsumed < 0)
                 powerConsumed = powerConsumed * -1;
+            var peakPower = data['data']['peakPower'];
+            if (peakPower < 0)
+                peakPower = peakPower * -1;
             var maxPower = data['data']['maxPower'];
             var percentMaxPower = 0.0;
             if (maxPower > 0)
             {
+                // Base power usage
                 $("#stats-warning-missingpowerplant").hide();
                 percentMaxPower = (powerConsumed / maxPower) * 100;
-                $("#stats-available-power-label").text(powerConsumed + "/" + maxPower);
+                $("#stats-available-power-label").text($.number(powerConsumed,2,".",",") + "/" + $.number(maxPower,2,".",","));
                 $("#stats-available-power-bar").removeClass("progress-bar-success").removeClass("progress-bar-warning").removeClass("progress-bar-danger");
                 if (percentMaxPower <= 50.0)
                 {
@@ -1762,16 +1671,137 @@ function computeStats()
                     percentMaxPower = 100.0;
                 }
                 $("#stats-available-power-bar").css({width: percentMaxPower + "%"})
+                // Peak power usage
+                percentPeakPower = (peakPower / maxPower) * 100;
+                $("#stats-peak-power-label").text($.number(peakPower,2,".",",") + "/" + $.number(maxPower,2,".",","));
+                $("#stats-peak-power-bar").removeClass("progress-bar-success").removeClass("progress-bar-warning").removeClass("progress-bar-danger");
+                if (percentPeakPower <= 50.0)
+                {
+                    $("#stats-peak-power-bar").addClass("progress-bar-success");
+                }
+                else if (percentPeakPower >= 50.0 && percentPeakPower <= 75.0)
+                {
+                    $("#stats-peak-power-bar").addClass("progress-bar-warning");
+                }
+                else if (percentPeakPower >= 75 && percentPeakPower <= 100.0)
+                {
+                    $("#stats-peak-power-bar").addClass("progress-bar-danger");
+                }
+                else
+                {
+                    $("#stats-peak-power-bar").addClass("progress-bar-danger");
+                    percentPeakPower = 100.0;
+                }
+                $("#stats-peak-power-bar").css({width: percentPeakPower + "%"})
             }
             else
             {
+                // base power usage
                 $("#stats-warning-missingpowerplant").show();
-                $("#stats-available-power-label").text(powerConsumed + "/0");
+                $("#stats-available-power-label").text($.number(powerConsumed,2,".",",") + "/0");
                 $("#stats-available-power-bar").removeClass("progress-bar-success").removeClass("progress-bar-warning").removeClass("progress-bar-danger");
                 $("#stats-available-power-bar").addClass("progress-bar-danger");
                 $("#stats-available-power-bar").css({width:"100%"})
+                // peak power usage
+                $("#stats-peak-power-label").text($.number(peakPower,2,".",",") + "/0");
+                $("#stats-peak-power-bar").removeClass("progress-bar-success").removeClass("progress-bar-warning").removeClass("progress-bar-danger");
+                $("#stats-peak-power-bar").addClass("progress-bar-danger");
+                $("#stats-peak-power-bar").css({width:"100%"})
             }
         }
     });
 }
 
+function equipItem() {
+    var portName = $("#item_browser_dialog_table").attr("data-current-port");
+    var parentPort = $("#item_browser_dialog_table").attr("data-current-parent-port");
+    var oTable = $("#item_browser_dialog_table").dataTable({"bRetrieve":true});
+    var selectedTR = oTable.$("tr.browser-item-selected")[0];
+    var data = oTable.fnGetData(selectedTR)
+    console.log("Port:", portName)
+    console.log("Data:", data)
+    var itemData = {
+        "displayName" : data[0],
+        "name" : data[6]
+    };
+    var portData = {"name" : portName};
+    if (parentPort && parentPort != "") {
+        portData["parentPort"] = parentPort;
+        portData["parentItem"] = getHardpointDatablock(parentPort).attr("data-item-name")
+    }
+    addItemToPort(portData, itemData);
+    $("#item_browser_dialog").modal("hide");
+}
+
+
+function fetchItems(url) {
+    $("#item_browser_dialog_table").dataTable( {
+        "aoColumnDefs": [
+            {
+            "mRender": function ( data, type, row ) {
+                    return '<p style="cursor:pointer;" class="pull-right" data-tooltip-url="/vehicleitem/tooltip/basic/' + row[6] + '/">' + data + '</p>';
+                },
+                "aTargets": [ 0 ]
+            },
+            {
+            "mRender": function ( data, type, row ) {
+                    return '<i style="cursor:pointer;" class="fa fa-bars fa-lg" data-tooltip-url="/vehicleitem/tooltip/pipes/' + row[6] + '/"></i>';
+                },
+                "aTargets": [ 3 ]
+            },
+            {
+            "mRender": function ( data, type, row ) {
+                    return '<i style="cursor:pointer;" class="fa fa-search fa-lg" data-tooltip-url="/vehicleitem/tooltip/details/' + row[6] + '/"></i>';
+                },
+                "aTargets": [ 4 ]
+            },
+            { "bVisible": false, "aTargets": [5] },
+            { "bVisible": false, "aTargets": [6] }
+        ],
+        "bProcessing" : true,
+        "sAjaxSource" : url,
+        "sScrollY": "400px",
+        "sDom" : "rtip",
+        "bDeferRender" : false,
+        "bDestroy" : true,
+        "fnInitComplete": function(oSettings, json) {
+            console.log(json)
+            var oTable = this
+            // Setup click functionlity
+            oTable.$('tr').click(function(){
+                oTable.$("tr.browser-item-selected").removeClass("browser-item-selected")
+                var data = oTable.fnGetData(this)
+                $(this).addClass("browser-item-selected")
+            })
+            // tooltips
+            console.log(oTable.$('[data-tooltip-url]'))
+            oTable.$('[data-tooltip-url]').each(function() {
+                    $(this).tooltipster({
+                    contentAsHTML: true,
+                    maxWidth:500,
+                    position: 'right',
+                    autoClose: true,
+                    theme: 'tooltipster-shadow',
+                    content: 'Loading...',
+                    functionBefore: function(origin, continueTooltip) {
+
+                        // we'll make this function asynchronous and allow the tooltip to go ahead and show the loading notification while fetching our data
+                        continueTooltip();
+                        
+                        // next, we want to check if our data has already been cached
+                        if (origin.data('ajax') !== 'cached') {
+                            $.ajax({
+                                type: 'POST',
+                                url: $(this).attr('data-tooltip-url'),
+                                success: function(data) {
+                                    // update our tooltip content with our returned data and cache it
+                                    origin.tooltipster('content', data).data('ajax', 'cached');
+                                }
+                            });
+                        }
+                    }
+                });
+            })
+         }    
+    });
+}

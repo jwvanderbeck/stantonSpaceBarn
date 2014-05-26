@@ -24,40 +24,50 @@ Purchase: http://themeforest.net/item/metronic-responsive-admin-dashboard-templa
 <meta name="MobileOptimized" content="320">
 <!-- BEGIN GLOBAL MANDATORY STYLES -->
 <link href="http://fonts.googleapis.com/css?family=Open+Sans:400,300,600,700&subset=all" rel="stylesheet" type="text/css"/>
-<link href='{% static "metronic/admin/template/assets/plugins/font-awesome/css/font-awesome.min.css" %}' rel="stylesheet" type="text/css"/>
-<link href='{% static "metronic/admin/template/assets/plugins/bootstrap/css/bootstrap.min.css" %}' rel="stylesheet" type="text/css"/>
-<link href='{% static "metronic/admin/template/assets/plugins/uniform/css/uniform.default.css" %}' rel="stylesheet" type="text/css"/>
-<link href='{% static "metronic/admin/template/assets/plugins/data-tables/DT_bootstrap.css" %}' rel="stylesheet" type="text/css"/>
+<link href='{% static "metronic/assets/global/plugins/font-awesome/css/font-awesome.min.css" %}' rel="stylesheet" type="text/css"/>
+<link href='{% static "metronic/assets/global/plugins/bootstrap/css/bootstrap.min.css" %}' rel="stylesheet" type="text/css"/>
+<link href='{% static "metronic/assets/global/plugins/uniform/css/uniform.default.css" %}' rel="stylesheet" type="text/css"/>
+<link href='{% static "metronic/assets/global/plugins/data-tables/DT_bootstrap.css" %}' rel="stylesheet" type="text/css"/>
 <!-- END GLOBAL MANDATORY STYLES -->
+<link rel="stylesheet" href="http://cdn.oesmith.co.uk/morris-0.4.3.min.css">
+<link href='{% static "metronic/assets/global/plugins/tooltipster/css/tooltipster.css" %}' rel="stylesheet" type="text/css"/>
+<link href='{% static "metronic/assets/global/plugins/tooltipster/css/themes/tooltipster-light.css" %}' rel="stylesheet" type="text/css"/>
+<link href='{% static "metronic/assets/global/plugins/tooltipster/css/themes/tooltipster-noir.css" %}' rel="stylesheet" type="text/css"/>
+<link href='{% static "metronic/assets/global/plugins/tooltipster/css/themes/tooltipster-shadow.css" %}' rel="stylesheet" type="text/css"/>
 <!-- BEGIN THEME STYLES -->
-<link href='{% static "metronic/admin/template/assets/css/style-metronic.css" %}' rel="stylesheet" type="text/css"/>
-<link href='{% static "metronic/admin/template/assets/css/style.css" %}' rel="stylesheet" type="text/css"/>
-<link href='{% static "metronic/admin/template/assets/css/style-responsive.css" %}' rel="stylesheet" type="text/css"/>
-<link href='{% static "metronic/admin/template/assets/css/plugins.css" %}' rel="stylesheet" type="text/css"/>
-<link href='{% static "metronic/admin/template/assets/css/themes/default.css" %}' rel="stylesheet" type="text/css"/>
-<link href='{% static "metronic/admin/template/assets/css/custom.css" %}' rel="stylesheet" type="text/css"/>
+<link href='{% static "metronic/assets/global/css/components.css" %}' rel="stylesheet" type="text/css"/>
+<link href='{% static "metronic/assets/admin/layout/css/layout.css" %}' rel="stylesheet" type="text/css"/>
+<link href='{% static "metronic/assets/global/css/plugins.css" %}' rel="stylesheet" type="text/css"/>
+<link id="style_color" href='{% static "metronic/assets/admin/layout/css/themes/default.css" %}' rel="stylesheet" type="text/css"/>
+<link href='{% static "metronic/assets/admin/layout/css/custom.css" %}' rel="stylesheet" type="text/css"/>
+<link href='{% static "css/phase2_app_style.css" %}' rel="stylesheet">
 <!-- END THEME STYLES -->
 <link rel="shortcut icon" href="favicon.ico"/>
 </head>
 {%  endblock head %}
 <!-- END HEAD -->
 <!-- BEGIN BODY -->
-<body class="page-header-fixed page-sidebar-closed page-boxed">
+<body class="page-header-fixed page-sidebar-closed">
 <!-- BEGIN HEADER -->
-<div class="header navbar navbar-inverse navbar-fixed-top">
+<div class="page-header navbar navbar-inverse navbar-fixed-top">
 	<!-- BEGIN TOP NAVIGATION BAR -->
-	<div class="header-inner">
+	<div class="page-header-inner">
 		<!-- BEGIN LOGO -->
-		<a class="navbar-brand" href="index.html">
-		<img src='{% static "images/ssb_logo2.png" %}' alt="logo" class="img-responsive"/>
-		</a>
+		<div class="page-logo">
+			<a href="index.html">
+			<img src='{% static "images/ssb_logo2.png" %}' alt="logo" class="logo-default"/>
+			</a>
+			<div class="menu-toggler sidebar-toggler hide">
+				<!-- DOC: Remove the above "hide" to enable the sidebar toggler button on header -->
+			</div>
+		</div>
 		<!-- END LOGO -->
 		<!-- BEGIN RESPONSIVE MENU TOGGLER -->
-		<a href="javascript:;" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-		<img src='{% static "metronic/admin/template/assets/img/menu-toggler.png" %}' alt=""/>
-		</a>
+		<div class="menu-toggler responsive-toggler" data-toggle="collapse" data-target=".navbar-collapse">
+		</div>
 		<!-- END RESPONSIVE MENU TOGGLER -->
         <!-- BEGIN TOP NAVIGATION MENU -->
+        <div class="top-menu">
         <ul class="nav navbar-nav">
             <li class="dropdown">
                 <a href="#" class="dropdown-toggle" data-toggle="dropdown">Phase 1 <b class="caret"></b></a>
@@ -111,6 +121,7 @@ Purchase: http://themeforest.net/item/metronic-responsive-admin-dashboard-templa
                 </form>
             </span>
         </ul>
+        </div>
 		<!-- END TOP NAVIGATION MENU -->
 	</div>
 	<!-- END TOP NAVIGATION BAR -->
@@ -119,295 +130,67 @@ Purchase: http://themeforest.net/item/metronic-responsive-admin-dashboard-templa
 <div class="clearfix">
 </div>
 <!-- BEGIN CONTAINER -->
-<div class="container">
+<div class="page-container">
 	<!-- BEGIN SIDEBAR -->
 	<div class="page-sidebar-wrapper">
+		<!-- DOC: Set data-auto-scroll="false" to disable the sidebar from auto scrolling/focusing -->
+		<!-- DOC: Change data-auto-speed="200" to adjust the sub menu slide up/down speed -->
 		<div class="page-sidebar navbar-collapse collapse">
 			<!-- BEGIN SIDEBAR MENU -->
-			<ul class="page-sidebar-menu">
+			<ul class="page-sidebar-menu page-sidebar-menu-closed" data-auto-scroll="false" data-auto-speed="200">
+				<!-- DOC: To remove the sidebar toggler from the sidebar you just need to completely remove the below "sidebar-toggler-wrapper" LI element -->
 				<li class="sidebar-toggler-wrapper">
 					<!-- BEGIN SIDEBAR TOGGLER BUTTON -->
-					<div class="sidebar-toggler hidden-phone">
+					<div class="sidebar-toggler">
 					</div>
 					<!-- BEGIN SIDEBAR TOGGLER BUTTON -->
 				</li>
-				<li class="sidebar-search-wrapper">
-					<!-- BEGIN RESPONSIVE QUICK SEARCH FORM -->
-					<form class="sidebar-search" action="extra_search.html" method="POST">
-						<div class="form-container">
-							<div class="input-box">
-								<a href="javascript:;" class="remove"></a>
-								<input type="text" placeholder="Search..."/>
-								<input type="button" class="submit" value=" "/>
-							</div>
-						</div>
-					</form>
-					<!-- END RESPONSIVE QUICK SEARCH FORM -->
-				</li>
 				<li class="start ">
-					<a href="index.html">
+					<a href="/phase2">
 					<i class="fa fa-home"></i>
 					<span class="title">
-						Dashboard
-					</span>
+					Home </span>
 					</a>
 				</li>
-				<li class="">
-					<a href="index_horizontal_menu.html">
-					<i class="fa fa-briefcase"></i>
-					<span class="title">
-						Dashboard 2
-					</span>
-					</a>
-				</li>
-				<li class="active ">
-					<a href="javascript:;">
+				<li class="active open">
+					<a id="load-build" href="javascript:;">
 					<i class="fa fa-cogs"></i>
 					<span class="title">
-						Layouts
-					</span>
+					Build </span>
 					<span class="selected">
 					</span>
 					<span class="arrow open">
 					</span>
 					</a>
+				</li>
+				<li>
+					<a href="javascript:;">
+					<i class="fa fa-bar-chart-o"></i>
+					<span class="title">
+					Statistics </span>
+					<span class="arrow ">
+					</span>
+					</a>
 					<ul class="sub-menu">
 						<li>
-							<a href="layout_session_timeout.html">
-							<span class="badge badge-roundless badge-important">
-								new
-							</span>
-							Session Timeout</a>
-						</li>
-						<li>
-							<a href="layout_idle_timeout.html">
-							<span class="badge badge-roundless badge-important">
-								new
-							</span>
-							User Idle Timeout</a>
-						</li>
-						<li>
-							<a href="layout_language_bar.html">
-							Language Switch Bar</a>
-						</li>
-						<li>
-							<a href="layout_horizontal_sidebar_menu.html">
-							Horizontal & Sidebar Menu</a>
-						</li>
-						<li>
-							<a href="layout_horizontal_menu1.html">
-							Horizontal Menu 1</a>
-						</li>
-						<li>
-							<a href="layout_horizontal_menu2.html">
-							Horizontal Menu 2</a>
-						</li>
-						<li>
-							<a href="layout_search_on_header.html">
-							<span class="badge badge-roundless badge-important">
-								new
-							</span>
-							Search Box On Header</a>
-						</li>
-						<li>
-							<a href="layout_sidebar_toggler_on_header.html">
-							Sidebar Toggler On Header</a>
-						</li>
-						<li>
-							<a href="layout_sidebar_reversed.html">
-							<span class="badge badge-roundless badge-success">
-								new
-							</span>
-							Right Sidebar Page</a>
-						</li>
-						<li>
-							<a href="layout_sidebar_fixed.html">
-							Sidebar Fixed Page</a>
-						</li>
-						<li>
-							<a href="layout_sidebar_closed.html">
-							Sidebar Closed Page</a>
-						</li>
-						<li>
-							<a href="layout_disabled_menu.html">
-							Disabled Menu Links</a>
-						</li>
-						<li class="active">
-							<a href="layout_blank_page.html">
-							Blank Page</a>
-						</li>
-						<li>
-							<a href="layout_boxed_page.html">
-							Boxed Page</a>
-						</li>
-						<li>
-							<a href="layout_boxed_not_responsive.html">
-							Non-Responsive Boxed Layout</a>
-						</li>
-						<li>
-							<a href="layout_promo.html">
-							Promo Page</a>
-						</li>
-						<li>
-							<a href="layout_email.html">
-							Email Templates</a>
-						</li>
-						<li>
-							<a href="layout_ajax.html">
-							Content Loading via Ajax</a>
+							<a id="load-livestats" href="#">
+							<i class="fa fa-bullhorn"></i>
+							Livestats </a>
 						</li>
 					</ul>
 				</li>
-				<li id="frontend-link" class="tooltips" data-placement="right" data-original-title="Frontend&nbsp;Theme For&nbsp;Metronic&nbsp;Admin">
-					<a href="http://keenthemes.com/preview/index.php?theme=metronic_frontend" target="_blank">
+				<li>
+					<a href="javascript:;" class="tooltips" data-container="body" data-placement="right" data-html="true" data-original-title="Multipurpose Corporte & eCommerce Frontend Theme">
 					<i class="fa fa-gift"></i>
 					<span class="title">
-						Frontend Theme
-					</span>
+					Frontend Theme </span>
 					</a>
 				</li>
-				<li class="">
-					<a href="javascript:;">
-					<i class="fa fa-bookmark-o"></i>
-					<span class="title">
-						UI Features
-					</span>
-					<span class="arrow ">
-					</span>
-					</a>
-					<ul class="sub-menu">
-						<li>
-							<a href="ui_general.html">
-							General</a>
-						</li>
-						<li>
-							<a href="ui_buttons.html">
-							Buttons & Icons</a>
-						</li>
-						<li>
-							<a href="ui_typography.html">
-							Typography</a>
-						</li>
-						<li>
-							<a href="ui_modals.html">
-							Modals</a>
-						</li>
-						<li>
-							<a href="ui_extended_modals.html">
-							Extended Modals</a>
-						</li>
-						<li>
-							<a href="ui_tabs_accordions_navs.html">
-							Tabs, Accordions & Navs</a>
-						</li>
-						<li>
-							<a href="ui_datepaginator.html">
-							<span class="badge badge-roundless badge-success">
-								new
-							</span>
-							Date Paginator</a>
-						</li>
-						<li>
-							<a href="ui_bootbox.html">
-							<span class="badge badge-roundless badge-important">
-								new
-							</span>
-							Bootbox Dialogs</a>
-						</li>
-						<li>
-							<a href="ui_tiles.html">
-							Tiles</a>
-						</li>
-						<li>
-							<a href="ui_toastr.html">
-							Toastr Notifications</a>
-						</li>
-						<li>
-							<a href="ui_tree.html">
-							Tree View</a>
-						</li>
-						<li>
-							<a href="ui_nestable.html">
-							Nestable List</a>
-						</li>
-						<li>
-							<a href="ui_ion_sliders.html">
-							Ion Range Sliders</a>
-						</li>
-						<li>
-							<a href="ui_noui_sliders.html">
-							NoUI Range Sliders</a>
-						</li>
-						<li>
-							<a href="ui_jqueryui_sliders.html">
-							jQuery UI Sliders</a>
-						</li>
-						<li>
-							<a href="ui_knob.html">
-							Knob Circle Dials</a>
-						</li>
-					</ul>
-				</li>
-				<li class="">
-					<a href="javascript:;">
-					<i class="fa fa-table"></i>
-					<span class="title">
-						Form Stuff
-					</span>
-					<span class="arrow ">
-					</span>
-					</a>
-					<ul class="sub-menu">
-						<li>
-							<a href="form_controls.html">
-							Form Controls</a>
-						</li>
-						<li>
-							<a href="form_layouts.html">
-							Form Layouts</a>
-						</li>
-						<li>
-							<a href="form_component.html">
-							Form Components</a>
-						</li>
-						<li>
-							<a href="form_editable.html">
-							<span class="badge badge-roundless badge-warning">
-								new
-							</span>
-							Form X-editable</a>
-						</li>
-						<li>
-							<a href="form_wizard.html">
-							Form Wizard</a>
-						</li>
-						<li>
-							<a href="form_validation.html">
-							Form Validation</a>
-						</li>
-						<li>
-							<a href="form_image_crop.html">
-							<span class="badge badge-roundless badge-important">
-								new
-							</span>
-							Image Cropping</a>
-						</li>
-						<li>
-							<a href="form_fileupload.html">
-							Multiple File Upload</a>
-						</li>
-						<li>
-							<a href="form_dropzone.html">
-							Dropzone File Upload</a>
-						</li>
-					</ul>
-				</li>
-				<li class="">
+				<li>
 					<a href="javascript:;">
 					<i class="fa fa-sitemap"></i>
 					<span class="title">
-						Pages
-					</span>
+					Pages </span>
 					<span class="arrow ">
 					</span>
 					</a>
@@ -416,356 +199,61 @@ Purchase: http://themeforest.net/item/metronic-responsive-admin-dashboard-templa
 							<a href="page_portfolio.html">
 							<i class="fa fa-briefcase"></i>
 							<span class="badge badge-warning badge-roundless">
-								new
-							</span>
-							Portfolio</a>
+							new </span>
+							Portfolio </a>
 						</li>
 						<li>
 							<a href="page_timeline.html">
 							<i class="fa fa-clock-o"></i>
 							<span class="badge badge-info">
-								4
-							</span>
-							Timeline</a>
+							4 </span>
+							Timeline </a>
 						</li>
 						<li>
 							<a href="page_coming_soon.html">
 							<i class="fa fa-cogs"></i>
-							Coming Soon</a>
+							Coming Soon </a>
 						</li>
 						<li>
 							<a href="page_blog.html">
 							<i class="fa fa-comments"></i>
-							Blog</a>
+							Blog </a>
 						</li>
 						<li>
 							<a href="page_blog_item.html">
 							<i class="fa fa-font"></i>
-							Blog Post</a>
+							Blog Post </a>
 						</li>
 						<li>
 							<a href="page_news.html">
 							<i class="fa fa-coffee"></i>
 							<span class="badge badge-success">
-								9
-							</span>
-							News</a>
+							9 </span>
+							News </a>
 						</li>
 						<li>
 							<a href="page_news_item.html">
 							<i class="fa fa-bell"></i>
-							News View</a>
+							News View </a>
 						</li>
 						<li>
 							<a href="page_about.html">
 							<i class="fa fa-group"></i>
-							About Us</a>
+							About Us </a>
 						</li>
 						<li>
 							<a href="page_contact.html">
 							<i class="fa fa-envelope-o"></i>
-							Contact Us</a>
+							Contact Us </a>
 						</li>
 						<li>
 							<a href="page_calendar.html">
 							<i class="fa fa-calendar"></i>
-							<span class="badge badge-important">
-								14
-							</span>
-							Calendar</a>
+							<span class="badge badge-danger">
+							14 </span>
+							Calendar </a>
 						</li>
 					</ul>
-				</li>
-				<li class="">
-					<a href="javascript:;">
-					<i class="fa fa-gift"></i>
-					<span class="title">
-						Extra
-					</span>
-					<span class="arrow ">
-					</span>
-					</a>
-					<ul class="sub-menu">
-						<li>
-							<a href="extra_profile.html">
-							User Profile</a>
-						</li>
-						<li>
-							<a href="extra_lock.html">
-							Lock Screen</a>
-						</li>
-						<li>
-							<a href="extra_faq.html">
-							FAQ</a>
-						</li>
-						<li>
-							<a href="inbox.html">
-							<span class="badge badge-important">
-								4
-							</span>
-							Inbox</a>
-						</li>
-						<li>
-							<a href="extra_search.html">
-							Search Results</a>
-						</li>
-						<li>
-							<a href="extra_invoice.html">
-							Invoice</a>
-						</li>
-						<li>
-							<a href="extra_pricing_table.html">
-							Pricing Tables</a>
-						</li>
-						<li>
-							<a href="extra_404_option1.html">
-							404 Page Option 1</a>
-						</li>
-						<li>
-							<a href="extra_404_option2.html">
-							404 Page Option 2</a>
-						</li>
-						<li>
-							<a href="extra_404_option3.html">
-							404 Page Option 3</a>
-						</li>
-						<li>
-							<a href="extra_500_option1.html">
-							500 Page Option 1</a>
-						</li>
-						<li>
-							<a href="extra_500_option2.html">
-							500 Page Option 2</a>
-						</li>
-					</ul>
-				</li>
-				<li>
-					<a class="active" href="javascript:;">
-					<i class="fa fa-leaf"></i>
-					<span class="title">
-						3 Level Menu
-					</span>
-					<span class="arrow ">
-					</span>
-					</a>
-					<ul class="sub-menu">
-						<li>
-							<a href="javascript:;">
-							Item 1
-							<span class="arrow">
-							</span>
-							</a>
-							<ul class="sub-menu">
-								<li>
-									<a href="#">Sample Link 1</a>
-								</li>
-								<li>
-									<a href="#">Sample Link 2</a>
-								</li>
-								<li>
-									<a href="#">Sample Link 3</a>
-								</li>
-							</ul>
-						</li>
-						<li>
-							<a href="javascript:;">
-							Item 1
-							<span class="arrow">
-							</span>
-							</a>
-							<ul class="sub-menu">
-								<li>
-									<a href="#">Sample Link 1</a>
-								</li>
-								<li>
-									<a href="#">Sample Link 1</a>
-								</li>
-								<li>
-									<a href="#">Sample Link 1</a>
-								</li>
-							</ul>
-						</li>
-						<li>
-							<a href="#">
-							Item 3 </a>
-						</li>
-					</ul>
-				</li>
-				<li>
-					<a href="javascript:;">
-					<i class="fa fa-folder-open"></i>
-					<span class="title">
-						4 Level Menu
-					</span>
-					<span class="arrow ">
-					</span>
-					</a>
-					<ul class="sub-menu">
-						<li>
-							<a href="javascript:;">
-							<i class="fa fa-cogs"></i> Item 1
-							<span class="arrow">
-							</span>
-							</a>
-							<ul class="sub-menu">
-								<li>
-									<a href="javascript:;">
-									<i class="fa fa-user"></i>
-									Sample Link 1
-									<span class="arrow">
-									</span>
-									</a>
-									<ul class="sub-menu">
-										<li>
-											<a href="#"><i class="fa fa-remove"></i> Sample Link 1</a>
-										</li>
-										<li>
-											<a href="#"><i class="fa fa-pencil"></i> Sample Link 1</a>
-										</li>
-										<li>
-											<a href="#"><i class="fa fa-edit"></i> Sample Link 1</a>
-										</li>
-									</ul>
-								</li>
-								<li>
-									<a href="#"><i class="fa fa-user"></i> Sample Link 1</a>
-								</li>
-								<li>
-									<a href="#"><i class="fa fa-external-link"></i> Sample Link 2</a>
-								</li>
-								<li>
-									<a href="#"><i class="fa fa-bell"></i> Sample Link 3</a>
-								</li>
-							</ul>
-						</li>
-						<li>
-							<a href="javascript:;">
-							<i class="fa fa-globe"></i> Item 2
-							<span class="arrow">
-							</span>
-							</a>
-							<ul class="sub-menu">
-								<li>
-									<a href="#"><i class="fa fa-user"></i> Sample Link 1</a>
-								</li>
-								<li>
-									<a href="#"><i class="fa fa-external-link"></i> Sample Link 1</a>
-								</li>
-								<li>
-									<a href="#"><i class="fa fa-bell"></i> Sample Link 1</a>
-								</li>
-							</ul>
-						</li>
-						<li>
-							<a href="#">
-							<i class="fa fa-folder-open"></i>
-							Item 3 </a>
-						</li>
-					</ul>
-				</li>
-				<li class="">
-					<a href="javascript:;">
-					<i class="fa fa-user"></i>
-					<span class="title">
-						Login Options
-					</span>
-					<span class="arrow ">
-					</span>
-					</a>
-					<ul class="sub-menu">
-						<li>
-							<a href="login.html">
-							Login Form 1</a>
-						</li>
-						<li>
-							<a href="login_soft.html">
-							Login Form 2</a>
-						</li>
-					</ul>
-				</li>
-				<li class="">
-					<a href="javascript:;">
-					<i class="fa fa-th"></i>
-					<span class="title">
-						Data Tables
-					</span>
-					<span class="arrow ">
-					</span>
-					</a>
-					<ul class="sub-menu">
-						<li>
-							<a href="table_basic.html">
-							Basic Datatables</a>
-						</li>
-						<li>
-							<a href="table_responsive.html">
-							Responsive Datatables</a>
-						</li>
-						<li>
-							<a href="table_managed.html">
-							Managed Datatables</a>
-						</li>
-						<li>
-							<a href="table_editable.html">
-							Editable Datatables</a>
-						</li>
-						<li>
-							<a href="table_advanced.html">
-							Advanced Datatables</a>
-						</li>
-						<li>
-							<a href="table_ajax.html">
-							Ajax Datatables</a>
-						</li>
-					</ul>
-				</li>
-				<li class="">
-					<a href="javascript:;">
-					<i class="fa fa-file-text"></i>
-					<span class="title">
-						Portlets
-					</span>
-					<span class="arrow ">
-					</span>
-					</a>
-					<ul class="sub-menu">
-						<li>
-							<a href="portlet_general.html">
-							General Portlets</a>
-						</li>
-						<li>
-							<a href="portlet_draggable.html">
-							Draggable Portlets</a>
-						</li>
-					</ul>
-				</li>
-				<li class="">
-					<a href="javascript:;">
-					<i class="fa fa-map-marker"></i>
-					<span class="title">
-						Maps
-					</span>
-					<span class="arrow ">
-					</span>
-					</a>
-					<ul class="sub-menu">
-						<li>
-							<a href="maps_google.html">
-							Google Maps</a>
-						</li>
-						<li>
-							<a href="maps_vector.html">
-							Vector Maps</a>
-						</li>
-					</ul>
-				</li>
-				<li class="last ">
-					<a href="charts.html">
-					<i class="fa fa-bar-chart-o"></i>
-					<span class="title">
-						Visual Charts
-					</span>
-					</a>
 				</li>
 			</ul>
 			<!-- END SIDEBAR MENU -->
@@ -798,7 +286,7 @@ Purchase: http://themeforest.net/item/metronic-responsive-admin-dashboard-templa
 			<!-- /.modal -->
 			<!-- END SAMPLE PORTLET CONFIGURATION MODAL FORM-->
 			<!-- BEGIN PAGE HEADER-->
-			<div class="row">
+			<div class="row-fluid">
 				<div class="col-md-12">
 					<!-- BEGIN PAGE TITLE & BREADCRUMB-->
 					<h3 class="page-title">
@@ -847,7 +335,9 @@ Purchase: http://themeforest.net/item/metronic-responsive-admin-dashboard-templa
 			</div>
 			<!-- END PAGE HEADER-->
 			<!-- BEGIN PAGE CONTENT-->
-			<div class="row">
+	        {% block pre-content %}
+	        {% endblock pre-content %}
+			<div class="row-fluid">
 				<div class="col-md-12">
                     {% block main-content %}
                     {% endblock main-content %}
@@ -877,25 +367,39 @@ Purchase: http://themeforest.net/item/metronic-responsive-admin-dashboard-templa
    <script src='{% static "metronic/admin/template/assets/plugins/respond.min.js" %}'></script>
    <script src='{% static "metronic/admin/template/assets/plugins/excanvas.min.js" %}'></script>
    <![endif]-->
-<script src='{% static "metronic/admin/template/assets/plugins/jquery-1.10.2.min.js" %}' type="text/javascript"></script>
-<script src='{% static "metronic/admin/template/assets/plugins/jquery-migrate-1.2.1.min.js" %}' type="text/javascript"></script>
-<!-- IMPORTANT! Load jquery-ui-1.10.3.custom.min.js before bootstrap.min.js to fix bootstrap tooltip conflict with jquery ui tooltip -->
-<script src='{% static "metronic/admin/template/assets/plugins/jquery-ui/jquery-ui-1.10.3.custom.min.js" %}' type="text/javascript"></script>
-<script src='{% static "metronic/admin/template/assets/plugins/bootstrap/js/bootstrap.min.js" %}' type="text/javascript"></script>
-<script src='{% static "metronic/admin/template/assets/plugins/bootstrap-hover-dropdown/bootstrap-hover-dropdown.min.js" %}' type="text/javascript"></script>
-<script src='{% static "metronic/admin/template/assets/plugins/jquery-slimscroll/jquery.slimscroll.min.js" %}' type="text/javascript"></script>
-<script src='{% static "metronic/admin/template/assets/plugins/jquery.blockui.min.js" %}' type="text/javascript"></script>
-<script src='{% static "metronic/admin/template/assets/plugins/jquery.cokie.min.js" %}' type="text/javascript"></script>
-<script src='{% static "metronic/admin/template/assets/plugins/uniform/jquery.uniform.min.js" %}' type="text/javascript"></script>
-<script src='{% static "metronic/admin/template/assets/plugins/data-tables/jquery.dataTables.js" %}' type="text/javascript"></script>
-<script src='{% static "metronic/admin/template/assets/plugins/data-tables/DT_bootstrap.js" %}' type="text/javascript"></script>
-<script src='{% static "metronic/admin/template/assets/plugins/data-tables/dataTables.scroller.min.js" %}' type="text/javascript"></script>
+<script src='{% static "metronic/assets/global/plugins/jquery-1.11.0.min.js" %}' type="text/javascript"></script>
+<script src='{% static "metronic/assets/global/plugins/jquery-migrate-1.2.1.min.js" %}' type="text/javascript"></script>
+<script src='{% static "metronic/assets/global/plugins/jquery-ui/jquery-ui-1.10.3.custom.min.js" %}' type="text/javascript"></script>
+<script src='{% static "metronic/assets/global/plugins/bootstrap/js/bootstrap.min.js" %}' type="text/javascript"></script>
+<script src='{% static "metronic/assets/global/plugins/bootstrap-hover-dropdown/bootstrap-hover-dropdown.min.js" %}' type="text/javascript"></script>
+<script src='{% static "metronic/assets/global/plugins/jquery-slimscroll/jquery.slimscroll.min.js" %}' type="text/javascript"></script>
+<script src='{% static "metronic/assets/global/plugins/jquery.blockui.min.js" %}' type="text/javascript"></script>
+<script src='{% static "metronic/assets/global/plugins/jquery.cokie.min.js" %}' type="text/javascript"></script>
+<script src='{% static "metronic/assets/global/plugins/uniform/jquery.uniform.min.js" %}' type="text/javascript"></script>
+<script src='{% static "metronic/assets/global/plugins/data-tables/jquery.dataTables.js" %}' type="text/javascript"></script>
+<script src='{% static "metronic/assets/global/plugins/data-tables/DT_bootstrap.js" %}' type="text/javascript"></script>
+<script src='{% static "metronic/assets/global/plugins/data-tables/dataTables.scroller.min.js" %}' type="text/javascript"></script>
 <!-- END CORE PLUGINS -->
-<script src='{% static "metronic/admin/template/assets/scripts/core/app.js" %}'></script>
+ <script src='{% static "metronic/assets/global/plugins/tooltipster/js/jquery.tooltipster.js" %}' type="text/javascript"></script>
+<script src='{% static "metronic/assets/global/plugins/jquery.sparkline.min.js" %}' type="text/javascript"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/raphael/2.1.0/raphael-min.js"></script>
+<script src="http://cdn.oesmith.co.uk/morris-0.4.3.min.js"></script>
+<script src='{% static "metronic/assets/global/plugins/flot/jquery.flot.js" %}' type="text/javascript"></script>
+<script src='{% static "metronic/assets/global/plugins/flot/jquery.flot.resize.js" %}' type="text/javascript"></script> 
+<script src='{% static "metronic/assets/global/plugins/jquery-number/jquery.number.min.js" %}' type="text/javascript"></script> 
+
+{# <script src="http://cdn.jsdelivr.net/qtip2/2.2.0/jquery.qtip.js" type="text/javascript"></script>
+ #}
+<script src='{% static "metronic/assets/global/scripts/metronic.js" %}'></script>
+<script src='{% static "metronic/assets/admin/layout/scripts/layout.js" %}'></script>
+
+<script src='{% static "js/phase2_app.js" %}'></script>
+
 <script>
     jQuery(document).ready(function() {
         {% block ready-script %}
-        App.init();
+        Metronic.init(); // init metronic core components
+        Layout.init(); // init current layout
         {% endblock ready-script %}
     });
    </script>
