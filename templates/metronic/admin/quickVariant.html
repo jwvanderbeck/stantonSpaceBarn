@@ -1,0 +1,64 @@
+{% extends "metronic/admin/shipMain_test.html" %}
+{% load static %}
+{% block head %}
+    {{ block.super }}
+{% endblock head %}
+
+{% block sidebar %}
+    {{ block.super }} 
+{% endblock sidebar %}
+
+{% block pre-content %}
+    {{ block.super }}
+
+{% endblock pre-content %}
+
+{% block page-header %}Workshop{% endblock page-header %}
+        {% block main-content %}
+            {{ block.super }}
+        {% endblock main-content %}
+
+{% block ready-script %}
+
+{{ block.super }}
+
+/***************************************************************
+// Dynamically Generated Variant Data
+/**************************************************************/
+var variantData = [
+    {% for data in variantData %}
+        { 
+        'portName'          : "{{data.port.name}}",
+        'itemName'          : "{{data.item.name}}",
+        {% if 'parentPort' in data %}
+        'parentPort'        : "{{data.parentPort.name}}",
+        {% endif %}
+        {% if 'parentItem' in data %}
+        'parentItem'        : "{{data.parentItem.name}}",
+        {% endif %}
+        'itemDisplayName'   : "{{data.item.displayName}}"
+        } {% if not forloop.last %},{% endif %}
+    {% endfor %}
+    ];
+
+function loadVariantData()
+{
+    for (var i=0; i < variantData.length; i++)
+    {
+        var portName = variantData[i]['portName'];
+        var portData = {
+            "name"          : variantData[i]['portName'],
+            "parentItem"    : variantData[i]['parentItem'],
+            "parentPort"    : variantData[i]['parentPort']
+        }
+        var itemData = {
+            "displayName"   : variantData[i]['itemDisplayName'],
+            "name"          : variantData[i]['itemName']
+        }
+
+        addItemToPort(portData, itemData);        
+    }
+}
+loadVariantData();
+
+{% endblock ready-script %}

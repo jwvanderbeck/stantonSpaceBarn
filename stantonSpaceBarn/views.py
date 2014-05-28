@@ -639,6 +639,7 @@ def quickVariant(request, shipName, variantURL = 0):
 
             return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
         elif version == 1:
+            print data
             # print "Version 1"
             # What we need:
             #   Name of ship
@@ -676,14 +677,18 @@ def quickVariant(request, shipName, variantURL = 0):
                     parentItem = None
 
                 try:
-                    if parentItem and parentPort:
-                        parentItemData = VehicleItem.objects.get(name__iexact=parentItem);
-                        portData = ItemPort.objects.get(name__iexact=portName, parentItem__exact=parentItemData)
-                        parentPortData = ItemPort.objects.get(name__iexact=parentPort, parentVehicle__exact=vehicleData)
-                    else:
-                        portData = ItemPort.objects.get(name__iexact=portName, parentVehicle__exact=vehicleData)
                     itemData = VehicleItem.objects.get(name__iexact=itemName)
+                    if parentItem and parentPort:
+                        parentItemData = VehicleItem.objects.get(name__iexact=parentItem)
+                        portData = parentItemData.ports.get(name__iexact=portName)
+                        # portData = ItemPort.objects.get(name__iexact=portName, parentItem__exact=parentItemData)
+                        # parentPortData = ItemPort.objects.get(name__iexact=parentPort, parentVehicle__exact=vehicleData)
+                        parentPortData = vehicleData.ports.get(name__iexact=parentPort)
+                    else:
+                        # print "Looking for %s in %s" % (portName, vehicleData.ports.all())
+                        portData = vehicleData.ports.get(name__iexact=portName)
                 except Exception as e:
+                    print e
                     response_data = {
                     'url' : 'Z',
                     'success' : False,
@@ -827,7 +832,7 @@ def quickVariant(request, shipName, variantURL = 0):
             'loginForm'         : loginForm,
             'createUserForm'    : createUserForm
         }
-        return render_to_response('bootstrap/light-blue/quickVariant.html', renderContext, context_instance=RequestContext(request))
+        return render_to_response('metronic/admin/quickVariant.html', renderContext, context_instance=RequestContext(request))
     
 @ensure_csrf_cookie
 def variantDetail(request, buildID):
@@ -2006,7 +2011,7 @@ def shipLayoutTest(request, shipName):
     }
     logger = logging.getLogger("shipBuilder")
     logger.debug("Test")
-    return render_to_response('metronic/admin/shipMain_test.html', renderContext, context_instance=RequestContext(request))
+    return render_to_response('metronic/admin/shipMain.html', renderContext, context_instance=RequestContext(request))
 
 def phase2(request):
     renderContext = {
@@ -2027,7 +2032,7 @@ def phase2ShipList(request):
     # The bit here about context_instance=RequestContext(request) is ABSOLUTELY VITAL 
     # as it is what enables the resulting rendered view to contain the CSRF token!
     # !!!!!!!!!!!!!
-    return render_to_response('bootstrap/light-blue/shipList.html', renderContext, context_instance=RequestContext(request))
+    return render_to_response('metronic/admin/shipList.html', renderContext, context_instance=RequestContext(request))
 
 def phase2VariantList(request):
     variants = Variant.objects.all().order_by("-creation_date")
@@ -2055,7 +2060,7 @@ def gameUpdateList(request):
     # The bit here about context_instance=RequestContext(request) is ABSOLUTELY VITAL 
     # as it is what enables the resulting rendered view to contain the CSRF token!
     # !!!!!!!!!!!!!
-    return render_to_response('bootstrap/light-blue/gameUpdateList.html', renderContext, context_instance=RequestContext(request))
+    return render_to_response('metronic/admin/gameUpdateList.html', renderContext, context_instance=RequestContext(request))
 
 def gameUpdate(request, pk):
     update = GameUpdate.objects.get(pk=pk)
@@ -2073,7 +2078,7 @@ def gameUpdate(request, pk):
     # The bit here about context_instance=RequestContext(request) is ABSOLUTELY VITAL 
     # as it is what enables the resulting rendered view to contain the CSRF token!
     # !!!!!!!!!!!!!
-    return render_to_response('bootstrap/light-blue/gameUpdate.html', renderContext, context_instance=RequestContext(request))
+    return render_to_response('metronic/admin/gameUpdate.html', renderContext, context_instance=RequestContext(request))
 
 def gameUpdatesByEntity(request, entityName):
     changes = GameUpdateChange.objects.filter(entityName=entityName).order_by("-creation_date")
@@ -2090,7 +2095,7 @@ def gameUpdatesByEntity(request, entityName):
     # The bit here about context_instance=RequestContext(request) is ABSOLUTELY VITAL 
     # as it is what enables the resulting rendered view to contain the CSRF token!
     # !!!!!!!!!!!!!
-    return render_to_response('bootstrap/light-blue/gameUpdateByEntity.html', renderContext, context_instance=RequestContext(request))
+    return render_to_response('metronic/admin/gameUpdateByEntity.html', renderContext, context_instance=RequestContext(request))
 
 def testView(request):
     # shipName = '300i'  
@@ -2222,11 +2227,14 @@ def createOrUpdateVariant(request):
             try:
                 if parentItem and parentPort:
                     parentItemData = VehicleItem.objects.get(name__iexact=parentItem);
-                    portData = ItemPort.objects.get(name__iexact=portName, parentItem__exact=parentItemData)
-                    parentPortData = ItemPort.objects.get(name__iexact=parentPort, parentVehicle__exact=vehicleData)
+                    portData = parentItem.ports.get(name__iexact=portName)
+                    parentPortData = vehicleData.ports.get(name__iexact=parentPort)
+                    # portData = ItemPort.objects.get(name__iexact=portName, parentItem__exact=parentItemData)
+                    # parentPortData = ItemPort.objects.get(name__iexact=parentPort, parentVehicle__exact=vehicleData)
                 else:
-                    portData = ItemPort.objects.get(name__iexact=portName, parentVehicle__exact=vehicleData)
+                    # portData = ItemPort.objects.get(name__iexact=portName, parentVehicle__exact=vehicleData)
                     itemData = VehicleItem.objects.get(name__iexact=itemName)
+                    portData = vehicleData.ports.get(name__iexact=portName)
                 item = {
                     "port" : portData,
                     "item" : itemData
@@ -2320,7 +2328,8 @@ def displayVariant(request, variantID):
         'variantForm'       : submitBuildForm,
         'variant'           : variant
     }
-    return render_to_response('bootstrap/light-blue/variant.html', renderContext, context_instance=RequestContext(request))
+    return render_to_response('metronic/admin/variant.html', renderContext, context_instance=RequestContext(request))
+    # wifi pw 240805799
 def computeStats(request):
     # JSON callable function to retrive graph data
     if request.is_ajax():

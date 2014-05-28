@@ -281,21 +281,6 @@
                                 </div>
                                 {% endfor %}
                                 <div class="tab-pane fade" id="hardpoints-overview">
-                                    <div class="row">
-                                        <div class="col-md-6 col-md-offset-1">
-                                            <div class="btn-group" data-toggle="buttons">
-                                                <label class="btn btn-info btn-sm active" data-toggle-class="btn-info" data-toggle-passive-class="btn-primary">
-                                                    <input type="checkbox" value="show-empty" id="hardpoints-filter-show-empty">Show Empty Hardpoints
-                                                </label>
-                                                <label class="btn btn-info btn-sm active" data-toggle-class="btn-info" data-toggle-passive-class="btn-primary">
-                                                    <input type="checkbox" value="show-filled" id="hardpoints-filter-show-filled">Show Filled Hardpoints
-                                                </label>
-                                                <label class="btn btn-primary btn-sm" data-toggle-class="btn-info" data-toggle-passive-class="btn-primary">
-                                                    <input type="checkbox" value="show-invalid" id="hardpoints-filter-show-invalid">Show Invalid Hardpoints
-                                                </label>
-                                            </div>
-                                        </div>
-                                    </div>
                                     <div id="hardpoints-container" class="row">
                                     {% for itemPort in shipData.ports.all %}
                                         <div class="col-lg-4">
@@ -485,49 +470,6 @@ $('#item_browser_dialog').modal({
 // Bind Events  
 ******************************************************************************/
 
-{% comment %}
-$(document).on("mouseenter", "#item_browser_table tr", function(){
-    $(this).draggable({
-      revert: "invalid",
-      containment: "document",
-      helper: "clone",
-      cursor: "move",
-      delay: 100,
-      distance: 5,
-      zIndex: 100,
-      scroll : true,
-      scrollDistance: 100,
-      appendTo: "#item_browser"
-    })
-});
-{% endcomment %}
-
-
-{% comment %}
-Backbone.on("rowclicked", function (model) {
-    console.log("Showing item details modal")
-    getItemDetails(model.get("name"));
-    chartPipe(model.get("name"), "Power", "All");
-    chartPipe(model.get("name"), "Heat", "All");
-    chartPipe(model.get("name"), "Avionics", "All");
-    $("#itemport-details-modal").modal("hide");
-    $("#item-details-modal").modal("show");
-});
-{% endcomment %}
-
-{% comment %}
-$(".glyphicon-remove").on("click", function(event){
-    event.stopPropagation();
-    var portWell = $(this).parent().parent().parent();
-    var portName = portWell.attr("data-port-name");
-    var parentPort = portWell.attr("data-parent-port");
-    var parentItem = portWell.attr("data-parent-item");
-    var portData = {"name" : portName, "parentPort":parentPort,"parentItem":parentItem};
-    console.log(portData)
-    removeItemFromPort(portData);
-});
-{% endcomment %}
-
 $(function() {
     $("#load-livestats").click(function(e) {
         e.preventDefault();
@@ -541,60 +483,6 @@ $("#hardpoints-overview").on("click", ".item-port-datablock", function(event){
 
 $(".datablock").on("click", function(event){
     openHardpoint($(this), "{{shipData.name}}")
-});
-
-{% comment %}
-$(".datablock-floating").on("mouseenter", function(event){
-    var datablock = $(this);
-    console.log("Datablock", datablock);
-   enterOverlay(datablock);
-});
-
-$(".datablock-floating").on("mouseleave", function(event){
-    var datablock = $(this);
-   leaveOverlay(datablock);
-});
-
-$(".item-port").on("click", function(event){
-    var portName = $(this).attr("data-port-name");
-    filterByItemPort(portName);
-});
-
-$(".glyphicon-filter").on("click", function(event){
-    event.stopPropagation();
-    var portWell = $(this).parent().parent().parent();
-    console.log(portWell);
-    var portName = portWell.attr("data-port-name");
-    filterByItemPort(portName);
-});
-
-$(".item-port-label").on("click", function(){
-    $("#item-details-modal").modal("hide");
-    $("#itemport-details-modal").modal("show");
-    var portName = $(this).attr("data-port-name")
-    getItemPortDetails({"name":portName}, "{{shipData.name}}");
-});
-
-$(".item-port-datablock").on("click", function(){
-    $("#item-details-modal").modal("hide");
-    $("#itemport-details-modal").modal("show");
-    var portName = $(this).attr("data-port-name")
-    var portData = {"name":portName,"parentItem":$(this).attr("data-parent-item")}
-    getItemPortDetails(portData, "{{shipData.name}}");
-});
-
-$(document).on("mouseenter", "tr.vehicle-item-row", function(){
-    $(this).draggable({
-      revert: "invalid",
-      containment: "document",
-      helper: "clone",
-      cursor: "move",
-      delay: 100,
-      distance: 5,
-      zIndex: 100,
-      scroll : true,
-      scrollDistance: 100
-    })
 });
 
 $("#user-action-login").on("click", function(event) {
@@ -612,6 +500,19 @@ $("#user-action-newuser").on("click", function(event) {
     $("#user-newuser").modal("show");
 });
 
+
+
+
+$("button.noop").click(function(event){
+    $(this).parent().parent().find("input").val($(this).val());
+    event.stopPropagation();
+    computeStats();
+});
+
+// Handle ENTER on forms
+$('input,select').keypress(function(event) { return event.keyCode != 13; });
+computeStats();
+
 $("#system-action-quickvariant").on("click", function(event){
     event.preventDefault();
     getQuickVariant("{{shipData.name}}");
@@ -621,34 +522,6 @@ $("#system-action-savenewvariant").on("click", function(event){
     event.preventDefault();
     $("#new-variant").modal("show");
 });
-
-$("button.noop").click(function(event){
-    $(this).parent().parent().find("input").val($(this).val());
-    event.stopPropagation();
-    computeStats();
-});
-{% endcomment %}
-
-//
-// Hardpoint filters on Overview page
-//
-{% comment %}
-$("#hardpoints-filter-show-empty").change(function(){
-    var isTrue = this.checked;
-    filterHardpoints("empty", isTrue);
-});
-$("#hardpoints-filter-show-filled").change(function(){
-    var isTrue = this.checked;
-    filterHardpoints("filled", isTrue);
-});
-{% endcomment %}
-//$("#hardpoints-filter-show-invalid").attr("checked", "true");
-
-// Handle ENTER on forms
-{#$('input,select').keypress(function(event) { return event.keyCode != 13; });#}
-computeStats();
-$("#hardpoints-filter-show-filled").attr("checked", "true");
-$("#hardpoints-filter-show-empty").attr("checked", "true");
 
 // Generate lines from tags to datablocks
 {% for image in shipData.vehicleimage_set.all %}

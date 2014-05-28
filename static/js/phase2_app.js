@@ -203,6 +203,11 @@ function setUserState(loggedIn)
             showCreateVariant = true
             showQuickVariant = true
         }
+        if (window.location.href.indexOf("/shiptest/") > -1)
+        {
+            showCreateVariant = true
+            showQuickVariant = true
+        }
 
         if (showUpdateVariant)
             $("#system-actions-updatevariant").show(0);
@@ -660,7 +665,7 @@ function getQuickVariant(shipName)
         }
         else
         {
-            // console.log(data);
+            console.log(data);
             var dialog = $('#quick-variant');
             var urlDiv = $("#quickvariant-url");
             var variantURL = data["url"];
@@ -1106,10 +1111,6 @@ function removeItemFromPort(portData)
         // if (section.children().length == 0)
         //     section.remove();
     });
-    // update hardpoint filters
-    filterHardpoints("all");
-    filterHardpoints("filled", $("#hardpoints-filter-show-filled").attr("checked"))
-    filterHardpoints("empty", $("#hardpoints-filter-show-empty").attr("checked"))
     // Recompute all stats now that this item has been removed
     computeStats();
 }
@@ -1362,9 +1363,6 @@ hardpointDatablocks.droppable({
         // console.log("Deactivate drag")
         // console.log("Deactivate")
         var panels = $(".panel-compact[data-status]");
-        filterHardpoints("all");
-        filterHardpoints("filled", $("#hardpoints-filter-show-filled").attr("checked"))
-        filterHardpoints("empty", $("#hardpoints-filter-show-empty").attr("checked"))
         panels.each(function(){
             $(this).removeClass("panel-success panel-warning panel-danger");
             var status = $(this).attr("data-status");
@@ -1402,7 +1400,6 @@ hardpointDatablocks.droppable({
         var itemData = {};
         itemData['type'] = itemType;
         itemData['size'] = itemSize;
-        filterHardpoints("invalid", showInvalid, itemData)
         $("#item-details-modal").modal("hide");
         $("#itemport-details-modal").modal("hide");
     },
@@ -1475,86 +1472,6 @@ hardpoints.droppable({
         return false;
 }});       
 
-/*********************************************
-// Filters a given set of hardpoints in the
-// hardpoints overview page
-*********************************************/
-function filterHardpoints(set, value, item)
-{
-    /*****************************************
-    // Valid 'set' options:
-    // 'all' shows all hardpoints.  'value' is ignored
-    // 'filled' hides or shows filled hardpoints
-    // 'empty' hides or shows empty hardpoints
-    // 'invalid' hides or shows hardpoints invalid during a drag operation
-    *****************************************/
-    
-    var allHardpoints = $(".panel-compact[data-status]");
-    // console.log("value", value)
-    // console.log("item", item)
-    if (set == "all")
-    {
-        allHardpoints.each( function(){
-           $(this).parent().show(0); 
-        });
-    }
-    else if (set == "filled")
-    {
-        allHardpoints.each( function(){
-            if ( $(this).attr('data-state') == 'filled' )
-            {
-                if (value)
-                    $(this).parent().show(200);
-                else
-                    $(this).parent().hide(200);
-            }
-        });
-    }
-    else if (set == "empty")
-    {
-        allHardpoints.each( function(){
-            if ( $(this).attr('data-state') == 'empty' )
-            {
-                if (value)
-                    $(this).parent().show(200);
-                else
-                    $(this).parent().hide(200);
-            }
-        });
-    }
-    else if (set == "invalid")
-    {
-        allHardpoints.each( function(){
-            var panelBody = $(this).find(".panel-body").find('.well');
-            if (isItemCompatibleWithPort(item, panelBody))
-            {
-                $(this).parent().show(200);
-            }
-            else
-            {
-                if (value)
-                    $(this).parent().show(200);
-                else
-                    $(this).parent().hide(200);
-            }
-            // console.log(panelBody);
-            // var supportedTypes = panelBody.attr("data-types");
-            // var minSize = panelBody.attr("data-min-size");
-            // var maxSize = panelBody.attr("data-max-size");
-            // if (supportedTypes.indexOf(item['type']) == -1 || item['size'] < minSize || item['size'] > maxSize)
-            // {
-            //     if (value)
-            //         $(this).show(200);
-            //     else
-            //         $(this).hide(200);
-            // }
-            // else
-            // {
-            //     $(this).show(200);
-            // }
-        });
-    }
-}
 function computeStats()
 {
     // computes stats based on items equipped
