@@ -62,7 +62,7 @@ function loadVariantData()
 loadVariantData();
 
 // Event handler for Update Variant option
-$("#system-action-updatevariant").on("click", function(event){
+$("#system-actions-updatevariant").on("click", function(event){
     event.preventDefault();
     // Set the form defaults to for "Name" and "Role"
     console.log($("#id_updatename").val("{{variant.name}}"))

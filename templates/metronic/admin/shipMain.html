@@ -343,7 +343,7 @@
             <div class="col-md-4">
                 <div class="panel panel-default">
                     <div class="panel-heading">
-                        <h1 class="panel-title">Specifications</h1>
+                        <h1 class="panel-title">Specifications<i id="system-actions-savenewvariant" style="cursor:pointer;" class="fa fa-copy fa-lg pull-right tooltips" data-container="body" data-placement="left" data-html="true" data-original-title="Save As New Variant"></i><i id="system-actions-updatevariant" style="cursor:pointer;" class="fa fa-save fa-lg pull-right tooltips" data-container="body" data-placement="left" data-html="true" data-original-title="Save Variant"></i><i id="system-actions-quickvariant" style="cursor:pointer;" class="fa fa-share fa-lg pull-right tooltips" data-container="body" data-placement="left" data-html="true" data-original-title="Get QuickVariant URL for Sharing"></i></h1>
                     </div>
                     <div class="panel-body">
                         <h4>Base Ship Stats</h4>
@@ -513,12 +513,12 @@ $("button.noop").click(function(event){
 $('input,select').keypress(function(event) { return event.keyCode != 13; });
 computeStats();
 
-$("#system-action-quickvariant").on("click", function(event){
+$("#system-actions-quickvariant").on("click", function(event){
     event.preventDefault();
     getQuickVariant("{{shipData.name}}");
 });
 
-$("#system-action-savenewvariant").on("click", function(event){
+$("#system-actions-savenewvariant").on("click", function(event){
     event.preventDefault();
     $("#new-variant").modal("show");
 });
