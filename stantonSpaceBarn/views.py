@@ -205,22 +205,38 @@ def userLogin(request):
 
         username = None
         password = None
+        rememberMe = False
         for entry in data:
             if entry['name'] == 'username':
                 username = entry['value']
+            if entry['name'] == 'remember_me':
+                rememberMe = entry['value']
             elif entry['name'] == 'password':
                 password = entry['value']
-
+        print "Remember Me: ", rememberMe
         user = authenticate(username=username, password=password)
-        if user is not None:
-            if user.is_active:
-                login(request, user)
+        if not user:
+            response_data = {
+            'success' : False,
+            'response' : 'Unable to authenticate login'
+            }
+            return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
+        if not user.is_active:
+            response_data = {
+            'success' : False,
+            'response' : 'User is not active'
+            }
+            return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
+
+        login(request, user)
 
         response_data = {
         'success' : True,
         'username' : username,
         'response' : 'User logged in.'
         }
+        if not rememberMe:
+            request.session.set_expiry(0)
         return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
 
 @ensure_csrf_cookie

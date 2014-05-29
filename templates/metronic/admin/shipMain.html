@@ -12,26 +12,6 @@
 
 {% block pre-content %}
 {{block.super}}
-<div class="modal fade" id="user-login">
-    <div class="modal-dialog">
-        <div class="modal-content" tabindex="-1" role="dialog">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal">X</button>
-                <h3>Pilot Login</h3>
-            </div>
-            <div class="modal-body">
-                <form name='login-form' id='login-form' method='POST' action='/users/login/'>
-                    {{ loginForm.as_p}}
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-primary" aria-hidden="true" onclick="submitUserLogin()">Submit</button>
-                <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
-            </div>
-        </div>
-    </div>
-</div>
-
 <div class="modal fade" id="item_browser_dialog" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -63,6 +43,25 @@
         <!-- /.modal-content -->
     </div>
     <!-- /.modal-dialog -->
+</div>
+<div class="modal fade" id="user-login">
+    <div class="modal-dialog">
+        <div class="modal-content" tabindex="-1" role="dialog">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">X</button>
+                <h3>Pilot Login</h3>
+            </div>
+            <div class="modal-body">
+                <form name='login-form' id='login-form' method='POST' action='/users/login/'>
+                    {{ loginForm.as_p}}
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" aria-hidden="true" onclick="submitUserLogin()">Submit</button>
+                <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+            </div>
+        </div>
+    </div>
 </div>
 <div class="modal fade" id="user-newuser">
     <div class="modal-dialog">
@@ -233,7 +232,8 @@
 
 {% block page-header %}Workshop{% endblock page-header %}
         {% block main-content %}
-        <div class="row-fluid">
+        {{block.super}}
+        <div id="workshop-ship" class="row-fluid">
             <div class="col-md-8" id="ship-images" style="max-width:1070px;">
                 <div class="panel panel-info">
                     <div class="panel-heading">
@@ -521,6 +521,12 @@ $("#system-actions-quickvariant").on("click", function(event){
 $("#system-actions-savenewvariant").on("click", function(event){
     event.preventDefault();
     $("#new-variant").modal("show");
+});
+
+$("#nav-login-test").on("click", function(event){
+    event.preventDefault();
+    $("#workshop-ship").hide()
+    $("#workshop-login").show()
 });
 
 // Generate lines from tags to datablocks
