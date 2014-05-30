@@ -727,7 +727,7 @@ function saveNewVariant(shipName)
         {
             // console.log("Variant created")
             // console.log(data);
-            url = "/phase2/variant/" + data["variantID"]
+            url = "/variant/" + data["variantID"]
             window.location.href = url;
         }
     });
