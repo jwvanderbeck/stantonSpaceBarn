@@ -209,7 +209,7 @@ def userLogin(request):
         for entry in data:
             if entry['name'] == 'username':
                 username = entry['value']
-            if entry['name'] == 'remember_me':
+            if entry['name'] == 'remember':
                 rememberMe = entry['value']
             elif entry['name'] == 'password':
                 password = entry['value']
@@ -228,6 +228,8 @@ def userLogin(request):
             }
             return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
 
+        if not rememberMe:
+            request.session.set_expiry(0)
         login(request, user)
 
         response_data = {
@@ -235,8 +237,6 @@ def userLogin(request):
         'username' : username,
         'response' : 'User logged in.'
         }
-        if not rememberMe:
-            request.session.set_expiry(0)
         return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
 
 @ensure_csrf_cookie
@@ -265,13 +265,16 @@ def userCreate(request):
         username = None
         password1 = None
         password2 = None
+        email = None
         for entry in data:
             if entry['name'] == 'username':
                 username = entry['value']
-            elif entry['name'] == 'password1':
+            elif entry['name'] == 'password':
                 password1 = entry['value']
-            elif entry['name'] == 'password2':
+            elif entry['name'] == 'rpassword':
                 password2 = entry['value']
+            elif entry['name'] == 'email':
+                email = entry['value']
 
         if password1 != password2:
             response_data = {
@@ -290,6 +293,13 @@ def userCreate(request):
             return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
         else:
             user = authenticate(username=username, password=password1)
+            if not user:
+                response_data = {
+                'success' : False,
+                'response' : 'Could not authenticate new user'
+                }
+                return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
+
             login(request, user)
 
         response_data = {
@@ -1980,26 +1990,26 @@ def getGraph(request, graphType):
         # someone is doing somethign fishy!
         assert False
 
+# @ensure_csrf_cookie
+# def shipLayout(request, shipName):
+#     shipData = Vehicle.objects.get(name__iexact=shipName)
+#     shipData.views = shipData.views + 1
+#     shipData.save()
+#     loginForm = AuthenticationForm()
+#     createUserForm = UserCreationForm()
+#     submitBuildForm = SubmitBuildForm()
+
+#     renderContext = {
+#         'shipData'      : shipData,
+#         'loginForm'     : loginForm,
+#         'createUserForm': createUserForm,
+#         'variantForm'   : submitBuildForm
+#     }
+
+#     return render_to_response('bootstrap/light-blue/shipMain.html', renderContext, context_instance=RequestContext(request))
+
 @ensure_csrf_cookie
 def shipLayout(request, shipName):
-    shipData = Vehicle.objects.get(name__iexact=shipName)
-    shipData.views = shipData.views + 1
-    shipData.save()
-    loginForm = AuthenticationForm()
-    createUserForm = UserCreationForm()
-    submitBuildForm = SubmitBuildForm()
-
-    renderContext = {
-        'shipData'      : shipData,
-        'loginForm'     : loginForm,
-        'createUserForm': createUserForm,
-        'variantForm'   : submitBuildForm
-    }
-
-    return render_to_response('bootstrap/light-blue/shipMain.html', renderContext, context_instance=RequestContext(request))
-
-@ensure_csrf_cookie
-def shipLayoutTest(request, shipName):
     shipData = Vehicle.objects.get(name__iexact=shipName)
     shipData.views = shipData.views + 1
     shipData.save()
@@ -2060,7 +2070,7 @@ def phase2VariantList(request):
     # The bit here about context_instance=RequestContext(request) is ABSOLUTELY VITAL 
     # as it is what enables the resulting rendered view to contain the CSRF token!
     # !!!!!!!!!!!!!
-    return render_to_response('bootstrap/light-blue/variantsList.html', renderContext, context_instance=RequestContext(request))
+    return render_to_response('metronic/admin/variantList.html', renderContext, context_instance=RequestContext(request))
 
 def gameUpdateList(request):
     updates = GameUpdate.objects.all().order_by("-creation_date")
@@ -2382,7 +2392,7 @@ def computeStats(request):
             except:
                 print "Failed to find item %s" % (itemName)
                 continue
-            print "%s, Mass: %f" % (itemName, item.mass)
+            # print "%s, Mass: %f" % (itemName, item.mass)
             totalMass = totalMass + item.mass
             if item.thrusterData:
                 totalThrust = totalThrust + item.thrusterData.maxthrust

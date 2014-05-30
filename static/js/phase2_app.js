@@ -184,10 +184,13 @@ function setUserState(loggedIn)
 {
     if (loggedIn)
     {
-        $("#my-hangar").show(0);
-        $("#user-actions-login").hide(0);
-        $("#user-actions-logout").show(0);
-        $("#user-actions-newuser").hide(0);
+        // $("#my-hangar").show(0);
+        // $("#user-actions-login").hide(0);
+        // $("#user-actions-logout").show(0);
+        // $("#user-actions-newuser").hide(0);
+        $("#systems-notLoggedIn").hide();
+        $("#systems-loggedIn").show();
+
         showUpdateVariant = false
         showCreateVariant = false
         showQuickVariant = false
@@ -224,18 +227,21 @@ function setUserState(loggedIn)
     }
     else
     {
-        $("#my-hangar").hide(0);
-        $("#user-actions-login").show(0);
-        $("#user-actions-logout").hide(0);
-        $("#user-actions-newuser").show(0);
+        // $("#my-hangar").hide(0);
+        // $("#user-actions-login").show(0);
+        // $("#user-actions-logout").hide(0);
+        // $("#user-actions-newuser").show(0);
+        $("#systems-notLoggedIn").show();
+        $("#systems-loggedIn").hide();
         $("#system-actions-savenewvariant").hide(0);
         $("#system-actions-updatevariant").hide(0);
-        $("#system-actions-quickvariant").hide(0);
+        $("#system-actions-quickvariant").show(0);
     }
 }
 
 function submitUserLogin() {
-    $("#user-login").modal('hide');
+    $("#workshop-login").hide()
+    $("#workshop-ship").show()
     var frm = $('#login-form');
     var jsonData = JSON.stringify(frm.serializeArray());
     // console.log(jsonData);
@@ -246,9 +252,9 @@ function submitUserLogin() {
         }
         else
         {
-            console.log(data);
+            // console.log(data);
             setUserState(true);
-            console.log(variantOwner);
+            // console.log(variantOwner);
             if (variantOwner == data["username"])
                 enableUpdateVariant(true);
             else
@@ -258,7 +264,8 @@ function submitUserLogin() {
 }
 
 function submitNewUser() {
-    $("#user-newuser").modal('hide');
+    $("#workshop-login").hide()
+    $("#workshop-ship").show()
     var frm = $('#newuser-form');
     var jsonData = JSON.stringify(frm.serializeArray());
     // console.log(jsonData);
@@ -269,7 +276,7 @@ function submitNewUser() {
         }
         else
         {
-            console.log(data);
+            // console.log(data);
             setUserState(true);
             if (variantOwner == data["username"])
                 enableUpdateVariant(true);
@@ -301,10 +308,8 @@ function submitUserLogout() {
 function createLine(parent, x1, y1, x2, y2, hardpointID, master) {
     var containerLeft = parent.offset().left;
     var containerTop = parent.offset().top;
-    console.log(master)
     var parentWidth = master.width();
     var parentHeight = master.height();
-    console.log(parentWidth, parentHeight);
     var datablockWidth = 252;
     var datablockHeight = 52;
     var tagSize = 22;
@@ -570,15 +575,12 @@ function enterPort(port)
     // console.log("Datablock:", datablock);
     var datablockHeight = datablock.height();
     var datablockWidth = datablock.width();
-    console.log(datablockWidth, datablockHeight);
     var tagLeft = port.position().left;
     var tagTop = port.position().top;
-    console.log(tagLeft, tagTop);
     var parentWidth = port.parent().width();
     var parentHeight = port.parent().height();
     var datablockLeft = tagLeft - ((datablockWidth / 2) + offsetLeft);
     var datablockTop = tagTop - (datablockHeight + offsetTop);
-    console.log(datablockLeft, datablockTop);
     if (datablockLeft - (datablockWidth / 2) < 0)
     {
         datablockLeft = 0
@@ -665,16 +667,16 @@ function getQuickVariant(shipName)
         }
         else
         {
-            console.log(data);
+            // console.log(data);
             var dialog = $('#quick-variant');
             var urlDiv = $("#quickvariant-url");
             var variantURL = data["url"];
             dialog.modal("show");
             urlDiv.empty();
-            $(document.createElement('input')).appendTo(urlDiv)
-                .attr('type', 'text')
-                .attr('size', variantURL.length + 35)
+            $(document.createElement('textarea')).appendTo(urlDiv)
                 .attr('value', 'https://www.stantonspacebarn.com' + variantURL)
+                .attr('cols', 70)
+                .attr('rows', 5)
                 .addClass("span9")
                 .attr("name", "quickvariant-url-input");
 
@@ -694,7 +696,7 @@ function saveNewVariant(shipName)
     $("#new-variant").modal('hide');
     var frm = $('#newvariant-form');
     var formData = frm.serializeArray();
-    console.log(formData);
+    // console.log(formData);
     data["formData"] = formData;
     // get all items equipped
     var ports = getAllHardpointDatablocks();
@@ -712,7 +714,7 @@ function saveNewVariant(shipName)
         }
     });
     var jsonData = JSON.stringify(data);
-    console.log(jsonData);
+    // console.log(jsonData);
     $.ajaxSetup({
       async: true
     });
@@ -723,8 +725,8 @@ function saveNewVariant(shipName)
         }
         else
         {
-            console.log("Variant created")
-            console.log(data);
+            // console.log("Variant created")
+            // console.log(data);
             url = "/phase2/variant/" + data["variantID"]
             window.location.href = url;
         }
@@ -744,7 +746,7 @@ function updateVariant(shipName, variantID)
     $("#update-variant").modal('hide');
     var frm = $('#updatevariant-form');
     var formData = frm.serializeArray();
-    console.log(formData);
+    // console.log(formData);
     data["formData"] = formData;
     // get all items equipped
     var ports = getAllHardpointDatablocks();
@@ -762,7 +764,7 @@ function updateVariant(shipName, variantID)
         }
     });
     var jsonData = JSON.stringify(data);
-    console.log(jsonData);
+    // console.log(jsonData);
     $.ajaxSetup({
       async: true
     });
@@ -773,8 +775,8 @@ function updateVariant(shipName, variantID)
         }
         else
         {
-            console.log("Variant update")
-            console.log(data);
+            // console.log("Variant update")
+            // console.log(data);
         }
     });
 }
@@ -827,8 +829,8 @@ function isItemCompatibleWithPort(item, port)
     mainType = itemType.split(":")[0]
     if (portType.indexOf(mainType) >= 0)
     {
-        console.log("Main Type only match")
-        console.log(mainType, "in", portType);
+        // console.log("Main Type only match")
+        // console.log(mainType, "in", portType);
         return true
     }
 
@@ -854,14 +856,14 @@ function getItemDetails(itemName) {
         }
         else
         {
-            console.log(data)
+            // console.log(data)
             $("#item-details").show();
             var section = $("#item-details");
             $("#item-details-itemname").text(data['itemname']);
             $("#item-details-itemclass").text(data['itemclass']);
             $("#item-details-itemsize").text(data['itemsize']);
             $("#item-details-itemtype").text(data['itemtype']);
-            console.log("itemtype=", data["itemtype"]);
+            // console.log("itemtype=", data["itemtype"]);
             $("#item-details-description").text(data['description']);
             // clear the sub divs so we;re starting fresh
             var weaponbars = $("#item-details-weaponbars");
@@ -1100,13 +1102,13 @@ function removeItemFromPort(portData)
     var datablocks = $(".item-port-datablock[data-parent-port='" + portName + "']");
     // console.log("Datablocks", datablocks);
     datablocks.each(function(){
-        console.log("Removing", $(this))
+        // console.log("Removing", $(this))
         var div = $(this).parent();
         var panel = div.parent();
         var widget = panel.parent();
-        console.log("div", div);
-        console.log("panel", panel);
-        console.log("widget", widget);
+        // console.log("div", div);
+        // console.log("panel", panel);
+        // console.log("widget", widget);
         widget.remove();
         // if (section.children().length == 0)
         //     section.remove();
@@ -1127,13 +1129,13 @@ function addItemToPort(portData, itemData)
     if (parentPort == undefined)
     {
         var portDatablock = getHardpointDatablock(portName);
-        console.log("Main hardpoint: ", portDatablock)
+        // console.log("Main hardpoint: ", portDatablock)
     }
     else
     {
         var parentItem = portData["parentItem"];
         var portDatablock = getHardpointDatablock(portName,parentPort,parentItem);
-        console.log("Item based hardpoint: ", portDatablock)
+        // console.log("Item based hardpoint: ", portDatablock)
     }
 
     var portDisplayName = portDatablock.parent().parent().find(".panel-heading h5").text();
@@ -1150,7 +1152,7 @@ function addItemToPort(portData, itemData)
     panel.addClass("panel-success");
     
     var portOverlays = getHardpointOverlays(portName)
-    console.log("Overlays", portOverlays);
+    // console.log("Overlays", portOverlays);
     portOverlays.each( function(){
         $(this).find("h4").text(itemDisplayName);
     });
@@ -1172,11 +1174,11 @@ function addItemToPort(portData, itemData)
             var currentSection = portDatablock.parent().parent().parent();
             // console.log("currentSection " + currentSection);
             // console.log("-----");
-            console.log("ITEM DETAILS DATA: ", data)
+            // console.log("ITEM DETAILS DATA: ", data)
             if (data["ports"].length > 0)
             {
-                console.log("adding itemports for item");
-                console.log(data["ports"])
+                // console.log("adding itemports for item");
+                // console.log(data["ports"])
                 var overview = $("#hardpoints-overview");
                 ports = data["ports"];
                 for (var index = 0; index < ports.length; index++)
@@ -1481,13 +1483,13 @@ function computeStats()
     var scannedPorts = [];
     var scannedItems = [];
     var LDS = []
-    console.log(ports);
+    // console.log(ports);
     ports.each(function() {
         var itemName = $(this).attr("data-item-name");
         if (itemName != undefined)
         {
             var itemState = $(this).find("input").val()
-            console.log(itemName, itemState);
+            // console.log(itemName, itemState);
             LDS.push( {"name" : itemName, "state" : itemState} );
         }
     });
@@ -1498,9 +1500,9 @@ function computeStats()
         data["items"].push(LDS[i]);
     }
     data["ship"] = $("#ship-stats-base").attr("data-shipname")
-    console.log(data);
+    // console.log(data);
     var jsonData = JSON.stringify(data);
-    console.log(jsonData);
+    // console.log(jsonData);
     $.ajaxSetup({
       async: false
     });
@@ -1515,7 +1517,7 @@ function computeStats()
             $("#thrust_max").text($.number(data['thrust'], 0, ".", ","));
             $("#twr").text($.number(data['twr'], 2, ".", ","));
             $("#power_output").text($.number(data['power'], 0, ".", ","));
-            console.log("Mass: " + data['mass']);
+            // console.log("Mass: " + data['mass']);
         }
     });
     ports.each(function(){
@@ -1545,7 +1547,7 @@ function computeStats()
     }
     // console.log(data);
     var jsonData = JSON.stringify(data);
-    console.log(jsonData);
+    // console.log(jsonData);
     $.ajaxSetup({
       async: false
     });
@@ -1556,8 +1558,8 @@ function computeStats()
         }
         else
         {
-            console.log("Power Data");
-            console.log(data);
+            // console.log("Power Data");
+            // console.log(data);
             var powerConsumed = data['data']['powerConsumed'];
             if (powerConsumed < 0)
                 powerConsumed = powerConsumed * -1;
@@ -1638,8 +1640,8 @@ function equipItem() {
     var oTable = $("#item_browser_dialog_table").dataTable({"bRetrieve":true});
     var selectedTR = oTable.$("tr.browser-item-selected")[0];
     var data = oTable.fnGetData(selectedTR)
-    console.log("Port:", portName)
-    console.log("Data:", data)
+    // console.log("Port:", portName)
+    // console.log("Data:", data)
     var itemData = {
         "displayName" : data[0],
         "name" : data[6]
@@ -1660,8 +1662,8 @@ function unequipHardpoint() {
     var oTable = $("#item_browser_dialog_table").dataTable({"bRetrieve":true});
     var selectedTR = oTable.$("tr.browser-item-selected")[0];
     var data = oTable.fnGetData(selectedTR)
-    console.log("Port:", portName)
-    console.log("Data:", data)
+    // console.log("Port:", portName)
+    // console.log("Data:", data)
     var portData = {"name" : portName};
     if (parentPort && parentPort != "") {
         portData["parentPort"] = parentPort;
@@ -1703,7 +1705,7 @@ function fetchItems(url) {
         "bDeferRender" : false,
         "bDestroy" : true,
         "fnInitComplete": function(oSettings, json) {
-            console.log(json)
+            // console.log(json)
             var oTable = this
             // Select current item if one exists
             var portName = $("#item_browser_dialog_table").attr("data-current-port");
@@ -1716,7 +1718,7 @@ function fetchItems(url) {
                 var datablock = getHardpointDatablock(portName)
             }
             equippedItem = getItemNameForDatablock(datablock)
-            console.log("equipped item = ", equippedItem)
+            // console.log("equipped item = ", equippedItem)
             oTable.$('tr').each(function(){
                 var data = oTable.fnGetData(this)
                 if (data[6] == equippedItem) {
@@ -1733,7 +1735,7 @@ function fetchItems(url) {
                 $("#equip-item-button").removeClass("disabled")
             })
             // tooltips
-            console.log(oTable.$('[data-tooltip-url]'))
+            // console.log(oTable.$('[data-tooltip-url]'))
             oTable.$('[data-tooltip-url]').each(function() {
                     $(this).tooltipster({
                     contentAsHTML: true,
@@ -1780,8 +1782,8 @@ function openHardpoint(port, shipName) {
         var datablock = getHardpointDatablock(portName)
     }
     equippedItem = getItemNameForDatablock(datablock)
-    console.log(datablock)
-    console.log(equippedItem)
+    // console.log(datablock)
+    // console.log(equippedItem)
     if (equippedItem == undefined || equippedItem == "") {
         $("#equip-item-button").addClass("disabled")
     }
@@ -1792,7 +1794,7 @@ function openHardpoint(port, shipName) {
     else {
         url = '/items/get/compatible-with-vehicleport/' + shipName + '/' + port.attr("data-port-name") + "/";
     }
-    console.log(url)
+    // console.log(url)
     setTimeout(function(){
         fetchItems(url)},
         100)

@@ -11,47 +11,6 @@
 
 {% block pre-content %}
 {{block.super}}
-<div class="modal fade" id="user-login">
-    <div class="modal-dialog">
-        <div class="modal-content" tabindex="-1" role="dialog">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal">X</button>
-                <h3>Pilot Login</h3>
-            </div>
-            <div class="modal-body">
-                <form name='login-form' id='login-form' method='POST' action='/users/login/'>
-                    {{ loginForm.as_p}}
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-primary" aria-hidden="true" onclick="submitUserLogin()">Submit</button>
-                <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="modal fade" id="user-newuser">
-    <div class="modal-dialog">
-        <div class="modal-content" tabindex="-1" role="dialog">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal">X</button>
-                <h3>Create New Pilot</h3>
-            </div>
-            <div class="modal-body">
-                <form name='newuser-form' id='newuser-form' method='POST' action='/users/create/'>
-                    {{ createUserForm.as_p}}
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-primary" aria-hidden="true" onclick="submitNewUser()">Submit</button>
-                <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-
 {% endblock pre-content %}
 
 {% block page-header %}Game Updates{% endblock page-header %}
@@ -64,7 +23,7 @@
                     </div>
                     <div class="panel-body">
                     {% for update in updates_list %}
-                    <p><a href="/phase2/gameupdate/{{update.id}}">{{update.name}}</a></p>
+                    <p><a href="/gameupdate/{{update.id}}">{{update.name}}</a></p>
                     {% endfor %}
                     </div>
                 </div>
@@ -76,43 +35,6 @@
 {% block ready-script %}
 
 {{ block.super }}
-
-/******************************************************************************
-// Set up Modal Dialogs 
-******************************************************************************/
-
-$('#user-login').modal({
-    backdrop: true,
-    show: false
-})
-
-$('#user-newuser').modal({
-    backdrop: true,
-    show: false
-})
-/******************************************************************************
-// Bind Events  
-******************************************************************************/
-$("#user-action-login").on("click", function(event) {
-    event.preventDefault();
-    $("#user-login").modal("show");
-});
-
-$("#user-action-logout").on("click", function(event) {
-    event.preventDefault();
-    submitUserLogout();
-});
-
-$("#user-action-newuser").on("click", function(event) {
-    event.preventDefault();
-    $("#user-newuser").modal("show");
-});
-
-// Handle ENTER on forms
-$('input,select').keypress(function(event) { return event.keyCode != 13; });
-computeStats();
-$("#hardpoints-filter-show-filled").attr("checked", "true");
-$("#hardpoints-filter-show-empty").attr("checked", "true");
 
 {% if user.is_authenticated %}
 setUserState(true);

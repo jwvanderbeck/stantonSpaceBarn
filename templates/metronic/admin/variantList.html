@@ -11,14 +11,15 @@
 {% block page-header %}Variants{% endblock page-header %}
 
 {% block main-content %}
+{{block.super}}
 {% for variant in variant_list %}
 <div class="col-lg-3">
 	<div class="panel panel-info">
         <div class="panel-heading">
-            <h4><a href="/phase2/variant/{{variant.id}}">{{variant.name}}</a> ({{variant.role}})</h4>
+            <h4><a href="/variant/{{variant.id}}">{{variant.name}}</a> ({{variant.role}})</h4>
         </div>
         <div class="panel-body">
-            <a href="/phase2/variant/{{variant.id}}"><image src="{{variant.baseVehicle.thumbnail}}" class="img-responsive" /></a>
+            <a href="/variant/{{variant.id}}"><image src="{{variant.baseVehicle.thumbnail}}" class="img-responsive" /></a>
         </div>
        	<div class="panel-footer">
        		{{ variant.baseVehicle.displayName }}
@@ -29,6 +30,7 @@
 {% endblock main-content %}
 
 {% block ready-script %}
+{{block.super}}
 {% if user.is_authenticated %}
 setUserState(true);
 {% else %}
