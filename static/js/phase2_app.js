@@ -173,7 +173,7 @@ function setDatablockDescription(source, destination)
 **********************************************************/
 function gotoQuickVariant() 
 {
-    var url = $("#quickvariant-url").find("input").val();
+    var url = $("#quickvariant-url").find("textarea").val();
     window.location.href = url;
 }
 
