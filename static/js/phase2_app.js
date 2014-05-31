@@ -1074,28 +1074,6 @@ function removeItemFromPort(portData)
     container.attr("data-status", baseStatus);
     container.addClass("panel-" + baseStatus);
     
-
-    // Reset datablock state selection
-    parent = portDatablock.find(".item-port-datablock-statebuttons");
-    // console.log(parent)
-    parent.empty();
-    $(document.createElement("input")).appendTo(parent).attr("id", "item-powerstate-" + portName + "-input").attr("type", "hidden").attr("name", "item-powerstate").attr("value","Default");
-    var parentDiv = $(document.createElement("div")).appendTo(parent).addClass("btn-group");
-    parentDiv.attr("id", "port-powerstate-" + portName);
-    parentDiv.attr("data-toggle", "buttons-radio").attr("data-target", "item-powerstate-" + portName + "-input")
-    var button = $(document.createElement("button")).appendTo(parentDiv)
-        .addClass("btn btn-xs btn-info active")
-        .attr("data-toggle-class","btn-info")
-        .attr("data-toggle-passive-class", "btn-inverse")
-        .attr("type", "button")
-        .attr("name", "port-powerstate")
-        .attr("value", "Default");
-    button.text("Default");
-    button.click(function(event){
-        $(this).parent().parent().find("input").val($(this).val());
-        event.stopPropagation();
-        computeStats();
-    });
     // If this item has any ItemPorts, we need to remove those
     // TODO
     // console.log("Removing sub ports");
@@ -1192,10 +1170,6 @@ function addItemToPort(portData, itemData)
                         .attr("data-base-status", "warning");
                     var heading = $(document.createElement("div")).appendTo(panel).addClass("panel-heading");
                     var h5 = $(document.createElement("h5")).appendTo(heading).text(ports[index]["name"]);
-                    $(document.createElement("span")).appendTo(h5)
-                        .addClass("glyphicon glyphicon-remove pull-right icon-large");
-                    $(document.createElement("span")).appendTo(h5)
-                        .addClass("glyphicon glyphicon-filter pull-right icon-large");
                     var body = $(document.createElement("div")).appendTo(panel)
                         .addClass("panel-body");
                     var well = $(document.createElement("div")).appendTo(body)
@@ -1210,25 +1184,6 @@ function addItemToPort(portData, itemData)
                     //     .addClass("icon-remove pull-right icon-large");
                     // $(document.createElement("i")).appendTo(well)
                     //     .addClass("icon-filter pull-right icon-large");
-                    var stateDiv = $(document.createElement("div")).appendTo(well)
-                        .addClass("item-port-datablock-statebuttons");
-                    $(document.createElement("input")).appendTo(stateDiv)
-                        .attr("id", "item-powerstate-" + newPortName + "-input")
-                        .attr("type", "hidden")
-                        .attr("name", "item-powerstate")
-                        .attr("value", "Default");
-                    var buttonGroup = $(document.createElement("div")).appendTo(stateDiv)
-                        .addClass("btn-group")
-                        .attr("id", "item-powerstate-" + newPortName)
-                        .attr("data-toggle", "buttons-radio")
-                        .attr("data-target", "item-powerstate-" + newPortName + "-input");
-                    $(document.createElement("button")).appendTo(buttonGroup)
-                        .addClass("btn btn-xs btn-info active noop")
-                        .attr("data-toggle-class", "btn-info")
-                        .attr("data-toggle-passive-class", "btn-inverse")
-                        .attr("type", "button")
-                        .attr("value", "Default")
-                        .text("Default");
                     $(document.createElement("br")).appendTo(well);
                     $(document.createElement("span")).appendTo(well)
                         .addClass("item-name")

@@ -270,7 +270,7 @@
         {% endfor %}
         data-port-name="{{itemPort.name}}">
             <div class="panel-heading">
-                <h5>{% firstof itemPort.displayName itemPort.name %}<span class="glyphicon glyphicon-remove pull-right icon-large"></span><span class="glyphicon glyphicon-filter pull-right icon-large"></span></h5>
+                <h5>{% firstof itemPort.displayName itemPort.name %}</h5>
             </div>
             <div class="panel-body">
                 <div class="well well-compact item-port-datablock" 
@@ -280,12 +280,6 @@
                     data-min-size={{itemPort.minSize}} 
                     data-max-size={{itemPort.maxSize}} 
                     data-parent-vehicle="{{shipData.name}}">
-                    <div class="item-port-datablock-statebuttons">
-                        <input id="item-powerstate-{{itemPort.name}}-input" type="hidden" name="item-powerstate" value="Default">
-                        <div class="btn-group" id="port-powerstate-{{itemPort.name}}" data-toggle="buttons-radio" data-target="item-powerstate-{{itemPort.name}}-input">
-                            <button class="btn btn-xs btn-info active noop" data-toggle-class="btn-info" data-toggle-passive-class="btn-inverse" type="button" value="Default">Default</button>
-                        </div>
-                    </div>
                     <br>
                     <span class="item-name">Nothing Loaded</span>
                 </div>
