@@ -2028,6 +2028,16 @@ def shipLayout(request, shipName):
             else:
                 itemTypes[itemType.typeName] = [itemType.subTypeName]
 
+    # Try to fill in missing Hardpoint display names with better looking ones that wrap
+    for image in shipData.vehicleimage_set.all():
+        for tag in image.hardpointtag_set.all():
+            if not tag.hardpoint.displayName or tag.hardpoint.displayName == "":
+                tag.hardpoint.displayName = tag.hardpoint.name.replace("hardpoint_", "").replace("_", " ").title()
+                tag.hardpoint.save()
+    for port in shipData.ports.all():
+        if not port.displayName or port.displayName == "":
+            port.displayName = port.name.replace("hardpoint_", "").replace("_", " ").title()
+            port.save()
     renderContext = {
         'shipData'      : shipData,
         'loginForm'     : loginForm,

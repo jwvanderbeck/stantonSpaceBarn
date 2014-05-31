@@ -88,7 +88,7 @@ class ItemPortData(object):
                 if key in self.rawData:
                     self.properties[key] = self.rawData[key]
             # Some one-off code to create displayName if it isn't set
-            if not self.properties["displayname"]:
+            if not self.properties["displayname"] or self.properties["displayName"] == "":
                 self.properties["displayname"] = self.properties["name"].replace("hardpoint_", "").replace("_", " ").title()
             # Parse more complex properties
             self.parseSupportedTypes()
