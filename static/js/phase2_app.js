@@ -1046,12 +1046,18 @@ function removeItemFromPort(portData)
     // Get the port tag, datablock, and label elements
     var portName = portData["name"];
     var parentPort = portData["parentPort"];
+    var portDisplayName = portData["displayName"];
+    console.log("---------------------")
+    console.log(portName)
+    console.log(parentPort)
     if (parentPort == undefined)
     {
         var portOverlays = getHardpointOverlays(portName);
         // Remove item from overlays
         portOverlays.each( function() {
-           $(this).find("h4").text("Empty Hardpoint: Click here to select an item");
+           $(this).find(".details .desc").addClass("text-default").text(portDisplayName);
+           $(this).removeClass("green-jungle");
+           $(this).addClass("red-intense");
         });
         var portDatablock = getHardpointDatablock(portName);
     }
@@ -1064,16 +1070,10 @@ function removeItemFromPort(portData)
 
     // Remove item from datablock
     portDatablock.removeAttr("data-item-name");
-    portDatablock.find("span.item-name").text("Nothing Loaded");
+    portDatablock.find(".details .number").text("");
     
     // Set the proper states, coloring, etc
-    var container = portDatablock.parent().parent();
-    container.attr("data-state", "empty");
-    var baseStatus = container.attr("data-base-status");
-    container.removeClass("panel-" + baseStatus);
-    container.attr("data-status", baseStatus);
-    container.addClass("panel-" + baseStatus);
-    
+    portDatablock.removeClass("green-jungle").addClass("red-intense");
     // If this item has any ItemPorts, we need to remove those
     // TODO
     // console.log("Removing sub ports");
@@ -1081,13 +1081,14 @@ function removeItemFromPort(portData)
     // console.log("Datablocks", datablocks);
     datablocks.each(function(){
         // console.log("Removing", $(this))
-        var div = $(this).parent();
-        var panel = div.parent();
-        var widget = panel.parent();
+        // var div = $(this).parent();
+        // var panel = div.parent();
+        // var widget = panel.parent();
         // console.log("div", div);
         // console.log("panel", panel);
         // console.log("widget", widget);
-        widget.remove();
+        // widget.remove();
+        $(this).remove();
         // if (section.children().length == 0)
         //     section.remove();
     });
@@ -1116,23 +1117,23 @@ function addItemToPort(portData, itemData)
         // console.log("Item based hardpoint: ", portDatablock)
     }
 
-    var portDisplayName = portDatablock.parent().parent().find(".panel-heading h5").text();
+    var portDisplayName = portDatablock.find(".details .desc").text();
 
     var itemDisplayName = itemData["displayName"];
     var itemName = itemData["name"];
-    portDatablock.find("span.item-name").text(itemDisplayName);
+    console.log(portDatablock.find(".details .number"))
+    console.log(itemDisplayName)
+    portDatablock.find(".details .number").text(itemDisplayName);
     portDatablock.attr("data-item-name", itemName)
-    var panel = portDatablock.parent().parent();
-    panel.attr("data-state", "filled");
-    panel.attr("data-status", "success");
+    var panel = portDatablock;
     // Reset the datablock's coloring
-    panel.removeClass("panel-warning panel-danger panel-success");
-    panel.addClass("panel-success");
+    panel.removeClass("red-intense").addClass("green-jungle");
     
     var portOverlays = getHardpointOverlays(portName)
     // console.log("Overlays", portOverlays);
     portOverlays.each( function(){
-        $(this).find("h4").text(itemDisplayName);
+        $(this).find(".details .desc").text(itemDisplayName);
+        $(this).removeClass("red-intense").addClass("green-jungle");
     });
     // Add ItemPorts that may be on this item
     // TODO
@@ -1149,7 +1150,7 @@ function addItemToPort(portData, itemData)
         }
         else
         {
-            var currentSection = portDatablock.parent().parent().parent();
+            var currentSection = portDatablock.parent();
             // console.log("currentSection " + currentSection);
             // console.log("-----");
             // console.log("ITEM DETAILS DATA: ", data)
@@ -1163,36 +1164,36 @@ function addItemToPort(portData, itemData)
                 {
                     newPortName = ports[index]["portname"]
                     var mainDiv = $(document.createElement("div")).insertAfter(currentSection).addClass("col-lg-4");
-                    var panel = $(document.createElement("div")).appendTo(mainDiv).addClass("panel panel-compact panel-warning")
-                        .attr("data-port-name", newPortName)
-                        .attr("data-state", "empty")
-                        .attr("data-status", "warning")
-                        .attr("data-base-status", "warning");
-                    var heading = $(document.createElement("div")).appendTo(panel).addClass("panel-heading");
-                    var h5 = $(document.createElement("h5")).appendTo(heading).text(ports[index]["name"]);
-                    var body = $(document.createElement("div")).appendTo(panel)
-                        .addClass("panel-body");
-                    var well = $(document.createElement("div")).appendTo(body)
-                        .addClass("well well-compact item-port-datablock")
+                    var panel = $(document.createElement("div")).appendTo(mainDiv).addClass("dashboard-stat red-intense item-port-datablock")
                         .attr("data-port-name", newPortName)
                         .attr("data-parent-item", itemName)
                         .attr("data-parent-port", portName)
+                        .attr("data-port-displayname", ports[index]["name"])
                         .attr("data-min-size", ports[index]["minsize"])
                         .attr("data-max-size", ports[index]["maxsize"])
                         .attr("data-types", ports[index]["types"].join(","));
-                    // $(document.createElement("i")).appendTo(well)
-                    //     .addClass("icon-remove pull-right icon-large");
-                    // $(document.createElement("i")).appendTo(well)
-                    //     .addClass("icon-filter pull-right icon-large");
-                    $(document.createElement("br")).appendTo(well);
-                    $(document.createElement("span")).appendTo(well)
-                        .addClass("item-name")
-                        .text("Nothing Loaded");
-                    $(document.createElement("div")).appendTo(panel)
-                        .addClass("panel-footer")
-                        .text(portDisplayName);
-
-                    // enableDatablock($(well));
+                    var icon = $(document.createElement("i")).addClass("fa fa-edit");
+                    var visualDiv = $(document.createElement("div")).appendTo(panel).addClass("visual");
+                    icon.appendTo(visualDiv);
+                    var itemNameDiv = $(document.createElement("div")).addClass("number");
+                    var portNameDiv = $(document.createElement("div")).addClass("desc").text(ports[index]["name"]);
+                    var detailsDiv = $(document.createElement("div")).addClass("details").appendTo(panel);
+                    itemNameDiv.appendTo(detailsDiv);
+                    portNameDiv.appendTo(detailsDiv);
+                    var parentNameDiv = $(document.createElement("span")).appendTo(panel).addClass("more").text(portDisplayName);
+                    // var heading = $(document.createElement("div")).appendTo(panel).addClass("panel-heading");
+                    // var h5 = $(document.createElement("h5")).appendTo(heading).text(ports[index]["name"]);
+                    // var body = $(document.createElement("div")).appendTo(panel)
+                    //     .addClass("panel-body");
+                    // var well = $(document.createElement("div")).appendTo(body)
+                    //     .addClass("well well-compact item-port-datablock")
+                    // $(document.createElement("br")).appendTo(well);
+                    // $(document.createElement("span")).appendTo(well)
+                    //     .addClass("item-name")
+                    //     .text("Nothing Loaded");
+                    // $(document.createElement("div")).appendTo(panel)
+                    //     .addClass("panel-footer")
+                    //     .text(portDisplayName);
                 }
             }
         }
@@ -1591,6 +1592,7 @@ function computeStats()
 
 function equipItem() {
     var portName = $("#item_browser_dialog_table").attr("data-current-port");
+    var portDisplayName = $("#item_browser_dialog_table").attr("data-current-port-displayname");
     var parentPort = $("#item_browser_dialog_table").attr("data-current-parent-port");
     var oTable = $("#item_browser_dialog_table").dataTable({"bRetrieve":true});
     var selectedTR = oTable.$("tr.browser-item-selected")[0];
@@ -1601,7 +1603,10 @@ function equipItem() {
         "displayName" : data[0],
         "name" : data[6]
     };
-    var portData = {"name" : portName};
+    var portData = {
+        "name" : portName,
+        "displayName": portDisplayName
+    };
     if (parentPort && parentPort != "") {
         portData["parentPort"] = parentPort;
         portData["parentItem"] = getHardpointDatablock(parentPort).attr("data-item-name")
@@ -1613,13 +1618,17 @@ function equipItem() {
 
 function unequipHardpoint() {
     var portName = $("#item_browser_dialog_table").attr("data-current-port");
+    var portDisplayName = $("#item_browser_dialog_table").attr("data-current-port-displayname");
     var parentPort = $("#item_browser_dialog_table").attr("data-current-parent-port");
     var oTable = $("#item_browser_dialog_table").dataTable({"bRetrieve":true});
     var selectedTR = oTable.$("tr.browser-item-selected")[0];
     var data = oTable.fnGetData(selectedTR)
-    // console.log("Port:", portName)
-    // console.log("Data:", data)
-    var portData = {"name" : portName};
+    console.log("Port:", portName)
+    console.log("Data:", data)
+    var portData = {
+        "name" : portName,
+        "displayName": portDisplayName
+    };
     if (parentPort && parentPort != "") {
         portData["parentPort"] = parentPort;
         portData["parentItem"] = getHardpointDatablock(parentPort).attr("data-item-name")
@@ -1726,8 +1735,11 @@ function openHardpoint(port, shipName) {
     var portName = port.attr("data-port-name");
     var parentName = port.attr("data-parent-item");
     var parentPort = port.attr("data-parent-port");
+    var portDisplayName = port.attr("data-port-displayname");
+    console.log("openHardpoint, parentPort = ", parentPort)
     var url = ""
     $("#item_browser_dialog_table").attr("data-current-port", portName)
+    $("#item_browser_dialog_table").attr("data-current-port-displayname", portDisplayName)
     $("#item_browser_dialog_table").attr("data-current-parent-port", parentPort)
     $("#item_browser_dialog_table").attr("data-current-parent-item", parentName)
     if (parentName && parentName != "") {

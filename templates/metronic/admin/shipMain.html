@@ -195,7 +195,7 @@
         {% block main-content %}
         {{block.super}}
         <div id="workshop-ship" class="row-fluid">
-            <div class="col-md-8" id="ship-images" style="max-width:1070px;">
+            <div class="col-lg-8" id="ship-images" style="max-width:1070px;">
                 <div class="panel panel-info">
                     <div class="panel-heading">
                         <h1 class="panel-title">{% block page-title %}{{shipData.displayName}}{% endblock page-title %}</h1>
@@ -227,7 +227,7 @@
                                         data-port-name="{{tag.hardpoint.name}}"
                                         data-tag-number="{{forloop.counter}}">
                                     </div>
-                                    <div class="datablock hardpoint-datablock-{{tag.hardpoint.name}}" 
+                                    <div class="dashboard-stat red-intense datablock hardpoint-datablock-{{tag.hardpoint.name}}" 
                                         id="hardpoint-datablock-{{tag.hardpoint.name}}"
                                         style="left:{{tag.datablockX}}%;top:{{tag.datablockY}}%;" 
                                         data-types="{%for type in tag.hardpoint.supportedTypes.all%}{{type.name}}{%if not forloop.last %},{%endif%}{%endfor%}" 
@@ -235,8 +235,14 @@
                                         data-max-size="{{tag.hardpoint.maxSize}}"
                                         data-parent="{{tag.hardpoint.parentImage}}"
                                         data-port-name="{{tag.hardpoint.name}}"
+                                        data-port-displayname="{% firstof tag.hardpoint.displayName tag.hardpoint.name %}"
                                         data-tag-number="{{forloop.counter}}">
-                                        <h4>Empty Hardpoint: Click here to select an item</h4>
+                                        <div class="visual">
+                                        <i class="fa fa-edit"></i>
+                                        </div>
+                                                <div class="details">
+                                                    <div class="desc">{% firstof tag.hardpoint.displayName tag.hardpoint.name %}</div>
+                                                </div>
                                     </div>
                                     {% endfor %}
                                 </div>
@@ -245,49 +251,24 @@
                                     <div id="hardpoints-container" class="row">
                                     {% for itemPort in shipData.ports.all %}
                                         <div class="col-lg-4">
-        <!-- {{itemPort.supportedTypes.all}} -->
-        <div class="panel panel-compact
-        {% for type in itemPort.supportedTypes.all %}
-        {% if "powerplant" in type.typeName %}
-         panel-danger
-        {% endif %}
-        {% if "thruster" in type.typeName %}
-         panel-danger
-        {% else %}
-         panel-warning
-        {% endif %}
-        {% endfor %}
-        " data-state="empty"
-        {% for type in itemPort.supportedTypes.all %}
-        {% if "powerplant" in type.typeName %}
-          data-status="danger" data-base-status="danger"
-        {% endif %}
-        {% if "thruster" in type.typeName %}
-          data-status="danger" data-base-status="danger"
-        {% else %}
-          data-status="warning" data-base-status="warning"
-        {% endif %}
-        {% endfor %}
-        data-port-name="{{itemPort.name}}">
-            <div class="panel-heading">
-                <h5>{% firstof itemPort.displayName itemPort.name %}</h5>
-            </div>
-            <div class="panel-body">
-                <div class="well well-compact item-port-datablock" 
-                    data-port-name="{{itemPort.name}}" 
-                    data-parent="{{itemPort.parentImage}}"
-                    data-types="{%for type in itemPort.supportedTypes.all%}{{type.name}}{%if not forloop.last %},{%endif%}{%endfor%}" 
-                    data-min-size={{itemPort.minSize}} 
-                    data-max-size={{itemPort.maxSize}} 
-                    data-parent-vehicle="{{shipData.name}}">
-                    <br>
-                    <span class="item-name">Nothing Loaded</span>
-                </div>
-            </div>
-            <div class="panel-footer">{{shipData.displayName}}</div>
-        </div>
-
+                                            <div class="dashboard-stat red-intense item-port-datablock" 
+                                                data-port-name="{{itemPort.name}}"
+                                                data-port-displayname="{{itemPort.displayName}}" 
+                                                data-parent="{{itemPort.parentImage}}"
+                                                data-types="{%for type in itemPort.supportedTypes.all%}{{type.name}}{%if not forloop.last %},{%endif%}{%endfor%}" 
+                                                data-min-size={{itemPort.minSize}} 
+                                                data-max-size={{itemPort.maxSize}} 
+                                                data-parent-vehicle="{{shipData.name}}">
+                                                <div class="visual"><i class="fa fa-edit"></i></div>
+                                                <div class="details">
+                                                    <div class="number"></div>
+                                                    <div class="desc">{% firstof itemPort.displayName itemPort.name %}</div>
+                                                </div>
+                                                <span class="more">{{shipData.displayName}}</span>
+                                            </div>
                                         </div>
+        <!-- {{itemPort.supportedTypes.all}} -->
+
                                     {% endfor %}
                                     </div>
                                 </div>
@@ -295,7 +276,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md-4">
+            <div class="col-lg-4">
                 <div class="panel panel-default">
                     <div class="panel-heading">
                         <h1 class="panel-title">Specifications<i id="system-actions-savenewvariant" style="cursor:pointer;" class="fa fa-copy fa-lg pull-right tooltips" data-container="body" data-placement="left" data-html="true" data-original-title="Save As New Variant"></i><i id="system-actions-updatevariant" style="cursor:pointer;" class="fa fa-save fa-lg pull-right tooltips" data-container="body" data-placement="left" data-html="true" data-original-title="Save Variant"></i><i id="system-actions-quickvariant" style="cursor:pointer;" class="fa fa-share fa-lg pull-right tooltips" data-container="body" data-placement="left" data-html="true" data-original-title="Get QuickVariant URL for Sharing"></i></h1>

@@ -33,3 +33,14 @@ td {
 #workshop-login {
 	display: none;
 }
+.dashboard-stat .details .number {
+  font-size: 15px;
+}
+.dashboard-stat .details .desc {
+  font-size: 15px;
+}
+.dashboard-stat .visual > i {
+  margin-left: -10px;
+  font-size: 30px;
+  line-height:0px;
+}
