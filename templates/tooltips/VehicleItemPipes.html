@@ -1,7 +1,8 @@
+<h4>Resource Pipes</h4>
+<p>Positive values indicate <b>generation</b>, and negative values indicate <b>consumption</b></p>
 {% if itemData.pipePower.all|length > 0 %}
 	<h4>Power</h4>
-	<p>Positive values indicate <b>generation</b>, and negative values indicate <b>consumption</b></p>
-	<div id="power-graph" style="width:350px;height:150px;"></div>
+	<div id="power-graph" style="width:325px;height:125px;"></div>
 	<script>
     jQuery(document).ready(function() {
 
@@ -31,12 +32,9 @@
     });
 	</script>
 {% endif %}
-
 {% if itemData.pipeHeat.all|length > 0 %}
-	<hr/>
 	<h4>Heat</h4>
-	<p>Positive values indicate <b>heating</b>, and negative values indicate <b>cooling</b></p>
-	<div id="heat-graph" style="width:350px;height:150px;"></div>
+	<div id="heat-graph" style="width:325px;height:125px;"></div>
 	<script>
     jQuery(document).ready(function() {
 
@@ -66,12 +64,9 @@
     });
 	</script>
 {% endif %}
-
 {% if itemData.pipeAvionics.all|length > 0 %}
-	<hr/>
 	<h4>Avionics</h4>
-	<p>Positive values indicate <b>generation</b>, and negative values indicate <b>consumption</b></p>
-	<div id="avionics-graph" style="width:350px;height:150px;"></div>
+	<div id="avionics-graph" style="width:325px;height:125px;"></div>
 	<script>
     jQuery(document).ready(function() {
 
