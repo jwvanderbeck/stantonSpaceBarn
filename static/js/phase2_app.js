@@ -1740,6 +1740,10 @@ function openHardpoint(port, shipName) {
     var url = ""
     $("#item_browser_dialog_table").attr("data-current-port", portName)
     $("#item_browser_dialog_table").attr("data-current-port-displayname", portDisplayName)
+    if (parentPort == undefined) {
+        console.log("Removing parent port attr")
+        $("#item_browser_dialog_table").removeAttr("data-current-parent-port");
+    }
     $("#item_browser_dialog_table").attr("data-current-parent-port", parentPort)
     $("#item_browser_dialog_table").attr("data-current-parent-item", parentName)
     if (parentName && parentName != "") {
