@@ -69,9 +69,9 @@ urlpatterns = patterns('stantonSpaceBarn.views',
 	url(r'^graphs/get/(?P<graphType>[a-zA-Z0-9_&-]+)/$', 'getGraph'),
 	url(r'^compute/stats/$', 'computeStats'),
 	url(r'^itemports/details/$', 'getItemPortDetails'),
-	url(r'^vehicleitem/tooltip/pipes/(?P<itemName>[a-zA-Z0-9_&-]+)/$', 'getItemTooltipPagePipes'),
-	url(r'^vehicleitem/tooltip/basic/(?P<itemName>[a-zA-Z0-9_&-]+)/$', 'getItemTooltipPageBasic'),
-	url(r'^vehicleitem/tooltip/details/(?P<itemName>[a-zA-Z0-9_&-]+)/$', 'getItemTooltipPageDetails'),
+	url(r'^vehicleitem/tooltip/pipes/(?P<itemName>[a-zA-Z0-9_&-.]+)/$', 'getItemTooltipPagePipes'),
+	url(r'^vehicleitem/tooltip/basic/(?P<itemName>[a-zA-Z0-9_&-.]+)/$', 'getItemTooltipPageBasic'),
+	url(r'^vehicleitem/tooltip/details/(?P<itemName>[a-zA-Z0-9_&-.]+)/$', 'getItemTooltipPageDetails'),
 	# API Docs
 	url(r'^api-docs/', include('rest_framework_swagger.urls')),
 
