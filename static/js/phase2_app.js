@@ -343,9 +343,9 @@ function createLine(parent, x1, y1, x2, y2, hardpointID, master) {
 function enableUpdateVariant(value)
 {
     if (value)
-        $("#system-actions-updatevariant").removeClass("disabled")
+        $("#system-actions-updatevariant").show()
     else
-        $("#system-actions-updatevariant").addClass("disabled")
+        $("#system-actions-updatevariant").hide()
 }
 function getHardpointTag(hardpointName, tagNumber)
 {
