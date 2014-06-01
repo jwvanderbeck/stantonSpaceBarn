@@ -1,0 +1,53 @@
+{% extends "metronic/admin/workshop_base.html" %}
+{% load static %}
+
+{% block head %}
+{{block.super}}
+{% endblock head %}
+
+{% block sidebar %}
+{{block.super}}
+{% endblock sidebar %}
+
+{% block pre-content %}
+{{block.super}}
+{% endblock pre-content %}
+
+{% block page-header %}Game Updates Browser{% endblock page-header %}
+        {% block main-content %}
+        <div class="row-fluid">
+            <div class="col-md-8">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h1 class="page-title">{{update.name}}</h1>
+                    </div>
+                    <div class="panel-body">
+                    <ul>
+                    {% for change in changes %}
+                    {% ifchanged change.entityName %}
+                    {% if not forloop.first %}
+                    </ul>
+                    {% endif %}
+                    <li><a href="/gameupdatebyentity/{{change.entityName}}">{{change.entityName}}</a></li><ul>
+                    {% endifchanged %}
+                    <li>{{change.description}}</li>
+                    {% endfor %}
+                    </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endblock main-content %}
+
+
+{% block ready-script %}
+
+{{ block.super }}
+
+{% if user.is_authenticated %}
+setUserState(true);
+{% else %}
+setUserState(false);
+{% endif %}
+enableUpdateVariant(false);
+{% endblock ready-script %}

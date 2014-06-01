@@ -1,0 +1,151 @@
+{% if itemData.weaponData %}
+	<h4>Weapon Details</h4>
+	{% if itemData.weaponData.supportedAmmo.all|length > 0 %}
+		<h5>Supported Ordinance</h5>
+		{% for ammo in itemData.weaponData.supportedAmmo.all %}
+			<p><b>{% firstof ammo.displayName ammo.name %}</b></p>
+		{% endfor %}
+	{% endif %}
+	{% if itemData.weaponData.fireModes.all|length > 0 %}
+		<h5>Fire Modes</h5>
+		{% for fireMode in itemData.weaponData.fireModes.all %}
+		<h5>{{fireMode.name}}</h5>
+		<p>Ammunition: {{fireMode.ammo_type}}</p>
+		<p>Rate of Fire: {{fireMode.rate}}, Damage: {{fireMode.damage}}</p>
+		{% endfor %}
+	{% endif %}
+ 	{% if itemData.ports.all|length > 0 %}
+		{% for port in itemData.ports.all %}
+			{% for supportedType in port.supportedTypes.all %}
+				{% if supportedType.typeName|lower == "ordinance" %}
+					<p>Ordinance Hardpoint: {% firstof port.displayName port.name %}</p>
+				{% endif %}
+			{% endfor %}
+		{% endfor %}
+	{% endif %}
+	{% if itemData.turretData %}
+		<h5>Turreting</h5>
+		{% if itemData.turretData.pitch_speed > 0 %}
+			<h5>Pitch</h5>
+			<p>Speed: {{itemData.turretData.pitch_speed}}, Range: {{itemData.turretData.pitch_min}} to {{itemData.turretData.pitch_max}} degrees
+		{% endif %}
+		{% if itemData.turretData.roll_speed > 0 %}
+			<h5>Roll</h5>
+			<p>Speed: {{itemData.turretData.roll_speed}}, Range: {{itemData.turretData.roll_min}} to {{itemData.turretData.roll_max}} degrees
+		{% endif %}
+		{% if itemData.turretData.yaw_speed > 0 %}
+			<h5>Yaw</h5>
+			<p>Speed: {{itemData.turretData.yaw_speed}}, Range: {{itemData.turretData.yaw_min}} to {{itemData.turretData.yaw_max}} degrees
+		{% endif %}
+	{% endif %}
+{% endif %}
+
+
+{% if itemData.ammoData %}
+	<h5>Ordinance Details</h5>
+	{% if itemData.ammoData.vehicleDamageParam %}
+		<h5>Ammo Damage Details</h5>
+		<p>Damage: {{itemData.ammoData.vehicleDamageParam.damage}}</p>
+		<p>Optimal Range: {{itemData.ammoData.vehicleDamageParam.damage_drop_min_distance}} meters</p>
+		<p>Damage Dropoff: {{itemData.ammoData.vehicleDamageParam.damage_drop_per_meter}} after {{itemData.ammoData.vehicleDamageParam.damage_drop_min_distance}} meters</p>
+	{% endif %}
+	{% if itemData.ammoData.vehicleMissileParam %}
+		<h5>Missile Details</h5>
+		<p>Category: {{itemData.ammoData.vehicleMissileParam.category}}</p>
+		<p>Damage: {{itemData.ammoData.vehicleMissileParam.damage}}, Detonation Radius: {{itemData.ammoData.vehicleMissileParam.detonation_radius}}</p>
+		<p>Maximum Speed: {{itemData.ammoData.vehicleMissileParam.max_speed}}, Acceleration: {{itemData.ammoData.vehicleMissileParam.accel}}</p>
+		<h5>Maneuvering</h5>
+		<p>Initial Delay: {{itemData.ammoData.vehicleMissileParam.initial_delay}}, Manuevering Acceleration: {{itemData.ammoData.vehicleMissileParam.maneuver_accel}}</p>
+		<p>Turn Speed: {{itemData.ammoData.vehicleMissileParam.turn_speed}}, Turn Lazyness: {{itemData.ammoData.vehicleMissileParam.turn_speed}}</p>
+	{% endif %}
+	{% if itemData.ammoData.vehicleMissileGuidanceParam %}
+		<h5>Missile Guidance Details</h5>
+		<p>Guidance Type: {{itemData.ammoData.vehicleMissileGuidanceParam.guidance_type}}</p>
+		<p>Tracking Angle {{itemData.ammoData.vehicleMissileGuidanceParam.min_tracking_angle}} to {{itemData.ammoData.vehicleMissileGuidanceParam.max_tracking_angle}} degrees</p>
+		<p>Tracking Distance: {{itemData.ammoData.vehicleMissileGuidanceParam.min_tracking_distance}} to {{itemData.ammoData.vehicleMissileGuidanceParam.max_tracking_distance}} meters</p>
+		<h5>Signal</h5>
+		<p>Range Modifier: {{itemData.ammoData.vehicleMissileGuidanceParam.signal_range_modifier}}
+		<p>Antenna Gain: {{itemData.ammoData.vehicleMissileGuidanceParam.signal_antenna_gain}}
+		<p>Transmit Power: {{itemData.ammoData.vehicleMissileGuidanceParam.signal_transmit_power}}
+		{% if itemData.ammoData.vehicleMissileGuidanceParam.signatures.all|length > 0 %}
+			<h5>Signal Threshold</h5>
+			{% for signature in itemData.ammoData.vehicleMissileGuidanceParam.signatures.all %}
+				<p>{{signature.name}} {{signature.threshold}}</p>
+			{% endfor %}
+		{% endif %}
+	{% endif %}
+{% endif %}
+
+{% if itemData.armorData %}
+	<h5>Armor Details</h5>
+	{% if itemData.armorData.armorParams.all|length > 0 %}
+		<h5>Armor Parameters</h5>
+		{% for armorParam in itemData.armorData.armorParams.all %}
+		<p>{{armorParam.name}} {{armorParam.value}}</p>
+		{% endfor %}
+	{% endif %}
+	{% if itemData.armorData.damageMultipliers.all|length > 0 %}
+		<h5>Damage Multipliers</h5>
+		{% for multiplier in itemData.armorData.damageMultipliers.all %}
+		<p>{{multiplier.asPercent}}%</p>
+		{% endfor %}
+	{% endif %}
+	{% if itemData.armorData.signatures.all|length > 0 %}
+		<h5>Signature Modifiers</h5>
+		{% for signature in itemData.armorData.signatures.all %}
+		<p>{{signature.name}} {{signature.value}}</p>
+		{% endfor %}
+	{% endif %}
+{% endif %}
+
+{% if itemData.batteryData %}
+	<h5>Battery Details</h5>
+	<p>Capacity: {{itemData.batteryData.capacity}}, Charge Rate: {{itemData.batteryData.chargeRate}}, Output: {{itemData.batteryData.output}}</p>
+{% endif %}
+
+{% if itemData.radarData %}
+	<h5>Radar Details</h5>
+	<p>Radar Type: {{itemData.radarData.radar_type}}</p>
+	<p>Grid Size: {{itemData.radarData.grid_size}}, Search Radius: {{itemData.radarData.search_radius}}</p>
+	<p>Signal Range Modifier: {{itemData.radarData.signal_range_modifier}}, Antenna Gain: {{itemData.radarData.signal_antenna_gain}}, Transmit Power: {{itemData.radarData.signal_transmit_power}}</p>
+	{% if itemData.radarData.signatures.all|length > 0 %}
+		<h5>Signature Detection Thresholds</h5>
+		{% for signature in itemData.radarData.signatures.all %}
+			<p>{{signature.name}} {{signature.threshold}}</p>
+		{% endfor %}
+	{% endif %}
+{% endif %}
+
+{% if itemData.thrusterData %}
+	<h5>Thruster Details</h5>
+	<p>Maximum Thrust: {{itemData.thrusterData.maxthrust}} kN</p>
+	{% if itemData.thrusterData.pitch_speed > 0 %}
+		<h5>Pitch</h5>
+		<p>Speed: {{itemData.thrusterData.pitch_speed}}, Range: {{itemData.thrusterData.pitch_min}} to {{itemData.thrusterData.pitch_max}} degrees
+	{% endif %}
+	{% if itemData.thrusterData.roll_speed > 0 %}
+		<h5>Roll</h5>
+		<p>Speed: {{itemData.thrusterData.roll_speed}}, Range: {{itemData.thrusterData.roll_min}} to {{itemData.thrusterData.roll_max}} degrees
+	{% endif %}
+	{% if itemData.thrusterData.yaw_speed > 0 %}
+		<h5>Yaw</h5>
+		<p>Speed: {{itemData.thrusterData.yaw_speed}}, Range: {{itemData.thrusterData.yaw_min}} to {{itemData.thrusterData.yaw_max}} degrees
+	{% endif %}
+{% endif %}
+
+{% if itemData.gimbalData %}
+	<h5>Gimbal Details</h5>
+	{% if itemData.gimbalData.pitch_speed > 0 %}
+		<h5>Pitch</h5>
+		<p>Speed: {{itemData.gimbalData.pitch_speed}}, Range: {{itemData.gimbalData.pitch_min}} to {{itemData.gimbalData.pitch_max}} degrees
+	{% endif %}
+	{% if itemData.gimbalData.roll_speed > 0 %}
+		<h5>Roll</h5>
+		<p>Speed: {{itemData.gimbalData.roll_speed}}, Range: {{itemData.gimbalData.roll_min}} to {{itemData.gimbalData.roll_max}} degrees
+	{% endif %}
+	{% if itemData.gimbalData.yaw_speed > 0 %}
+		<h5>Yaw</h5>
+		<p>Speed: {{itemData.gimbalData.yaw_speed}}, Range: {{itemData.gimbalData.yaw_min}} to {{itemData.gimbalData.yaw_max}} degrees
+	{% endif %}
+{% endif %}
+

@@ -1,3 +1,5 @@
+# Original code length 800 lines
+
 import os
 import json
 from shipBuilder.models import *
@@ -86,7 +88,7 @@ class ItemPortData(object):
                 if key in self.rawData:
                     self.properties[key] = self.rawData[key]
             # Some one-off code to create displayName if it isn't set
-            if not self.properties["displayname"]:
+            if not self.properties["displayname"] or self.properties["displayName"] == "":
                 self.properties["displayname"] = self.properties["name"].replace("hardpoint_", "").replace("_", " ").title()
             # Parse more complex properties
             self.parseSupportedTypes()
@@ -322,7 +324,8 @@ class VehicleItemData(object):
             "class" : "itemClass",
             "description" : "description",
             "size" : "itemSize",
-            "mass" : "mass"
+            "mass" : "mass",
+            "hitpoints" : "hitpoints"
         }
         def __init__(self, gameUpdate):
             self.newModel = False
@@ -353,7 +356,6 @@ class VehicleItemData(object):
                 self.manufacturer = self.rawData['manufacturer'].replace('_', ' ').replace('and', '&')
             else:
                 self.manufacturer = None
-            # self.manufacturer = self.rawData["manufacturer"]
             # ItemPorts
             if "ports" in self.rawData:
                 self._itemPorts = []
@@ -366,6 +368,7 @@ class VehicleItemData(object):
             else:
                 self._itemPorts = None
             # Type and Subtype
+            self.itemType = self.rawData["itemtype"].lower()
             self.typeGroup = self.rawData["itemtype"].lower()
             if "itemsubtype" in self.rawData and self.rawData["itemsubtype"] and self.rawData["itemsubtype"] != "":
                 self.typeGroup = self.typeGroup + ":" + self.rawData["itemsubtype"].lower()
@@ -386,6 +389,28 @@ class VehicleItemData(object):
                         self.pipes[pipe] = pipes[pipe]
             else:
                 self.pipes = None
+            # ============================================================
+            # ItemType specific code
+            # Specific ItemTypes have additional models and data to be retrieved and stored
+            if self.itemType == "ordinance":
+                # Ammo
+                self.ammoData = {
+                    "name" : self.rawData["ammodata"]["name"],
+                    "displayname" : self.rawData["ammodata"]["displayname"],
+                    "pierceability" : self.rawData["ammodata"]["pierceability"],
+                }
+                if "vehicledamageparams" in self.rawData:
+                    self.ammoData["vehicledamageparams"] = {}
+                    for key in self.rawData["vehicledamageparams"]:
+                        self.ammoData["vehicledamageparams"][key] = self.rawData["vehicledamageparams"][key] 
+                if "vehicleMissileParams" in self.rawData:
+                    self.ammoData["vehicleMissileParams"] = {}
+                    for key in self.rawData["vehicleMissileParams"]:
+                        self.ammoData["vehicleMissileParams"][key] = self.rawData["vehicleMissileParams"][key] 
+                if "vehiclemissileguidanceparams" in self.rawData:
+                    self.ammoData["vehiclemissileguidanceparams"] = {}
+                    for key in self.rawData["vehiclemissileguidanceparams"]:
+                        self.ammoData["vehiclemissileguidanceparams"][key] = self.rawData["vehiclemissileguidanceparams"][key] 
             return True
 
 
@@ -396,7 +421,7 @@ class VehicleItemData(object):
             If record = True then GameUpdate logs are recorded for the changes
             """
             # If this is a brand new VehicleItem then we don't want to create
-            # entries for each property
+            # changelog entries for each property
             if self.newModel:
                 # Brand new VehicleItem
                 changeDescription = "ADDED: New VehicleItem '%s'" % self.properties["displayname"]
@@ -474,6 +499,61 @@ class VehicleItemData(object):
                     self.gameUpdate.saveChanges(self.properties["name"], changeDescription)
                 else:
                     print changeDescription
+            # ItemType specific data models
+            if self.itemType == "ordinance":
+                if self.ammoData and self._existingModel.ammoData:
+                    # Basic ammodata
+                    ammoData = self._existingModel.ammoData
+                    for key in modelProperties:
+                        modelValue = self._existingModel.ammoData.__getattribute__(key)
+                        value = modelProperties[key]
+                        if value != modelValue:
+                            changeDescription = "CHANGED: AmmoData %s changed from '%s' to '%s'" % (key, modelValue, value)
+                            if record and self.gameUpdate:
+                                self.gameUpdate.saveChanges(properties["name"], changeDescription)
+                            else:
+                                print changeDescription
+                    # VehicleDamageParams
+                    if self.ammoData["vehicledamageparams"]:
+                        if self._existingModel.ammoData.vehicleDamageParam:
+                            model = self._existingModel.ammoData.vehicleDamageParam
+                            for key in self.ammoData["vehicledamageparams"]:
+                                modelValue = model.__getattribute__(key)
+                                value = self.ammoData["vehicledamageparams"][key]
+                                if value != modelValue:
+                                    changeDescription = "CHANGED: VehicleDamageParam %s changed from '%s' to '%s'" % (key, modelValue, value)
+                                    if record and self.gameUpdate:
+                                        self.gameUpdate.saveChanges(properties["name"], changeDescription)
+                                    else:
+                                        print changeDescription
+                    # vehicleMissileParams
+                    if self.ammoData["vehiclemissileparams"]:
+                        if self._existingModel.ammoData.vehicleMissileParam:
+                            model = self._existingModel.ammoData.vehicleMissileParam
+                            for key in self.ammoData["vehiclemissileparams"]:
+                                modelValue = model.__getattribute__(key)
+                                value = self.ammoData["vehiclemissileparams"][key]
+                                if value != modelValue:
+                                    changeDescription = "CHANGED: vehicleMissileParam %s changed from '%s' to '%s'" % (key, modelValue, value)
+                                    if record and self.gameUpdate:
+                                        self.gameUpdate.saveChanges(properties["name"], changeDescription)
+                                    else:
+                                        print changeDescription
+                    # vehicleMissileGuidanceParams
+                    if self.ammoData["vehiclemissileguidanceparams"]:
+                        if self._existingModel.ammoData.vehicleMissileGuidanceParam:
+                            model = self._existingModel.ammoData.vehicleMissileGuidanceParam
+                            for key in self.ammoData["vehiclemissileguidanceparams"]:
+                                modelValue = model.__getattribute__(key)
+                                value = self.ammoData["vehiclemissileguidanceparams"][key]
+                                if value != modelValue:
+                                    changeDescription = "CHANGED: vehicleMissileGuidanceParam %s changed from '%s' to '%s'" % (key, modelValue, value)
+                                    if record and self.gameUpdate:
+                                        self.gameUpdate.saveChanges(properties["name"], changeDescription)
+                                    else:
+                                        print changeDescription
+
+
             # Pipes are a real pain!
             # For each PIPE we need to see if its new, or removed and in each pipe we need to check
             # the STATES for added, removed, or changed
@@ -669,7 +749,9 @@ class VehicleItemData(object):
                 typeGroup = VehicleItemType(name = self.typeGroup, typeName = itemType, subTypeName = itemSubType)
                 typeGroup.save()
             self._existingModel.itemType = typeGroup
-            self._existingModel.save()
+            # ItemType specific data models
+            if self.itemType == "ordinance":
+                pass
             # Pipes
             # This isn't the best way to do this, as it will cause long term
             # database fragmentation, but pipes are such a pain in the ass to

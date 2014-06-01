@@ -1,0 +1,46 @@
+/* here you can put your own css to customize and override the theme */
+
+.page-content {
+    background-color: rgb(44,44,44);
+    color: rgb(20,20,20);
+}
+.page-title {
+    color: rgb(250,250,250);
+}
+.header .navbar-brand img {
+  padding-right: 20px;
+}
+.panel-heading h1{
+    color: rgb(200,50,50);
+}
+.panel-default {
+    color: rgb(0,0,0);
+}
+.panel-info {
+    background-color: rgb(45,48,69);
+}
+
+td {
+    white-space: nowrap;
+}
+
+.modal-body {
+    color: rgb(20,20,20);
+}
+.page-header.navbar .page-logo .logo-default {
+    margin: 5px 0px 0px 25px;
+}
+#workshop-login {
+	display: none;
+}
+.dashboard-stat .details .number {
+  font-size: 15px;
+}
+.dashboard-stat .details .desc {
+  font-size: 15px;
+}
+.dashboard-stat .visual > i {
+  margin-left: -10px;
+  font-size: 30px;
+  line-height:0px;
+}

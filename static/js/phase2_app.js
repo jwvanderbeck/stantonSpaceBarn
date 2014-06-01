@@ -148,6 +148,10 @@ function getItemIdForDatablock(datablockID)
     else
         return val
 }
+function getItemNameForDatablock(datablock)
+{
+    return datablock.attr("data-item-name");
+}
 /**********************************************************
 // Given a source element with data attributes,
 // this function will fill in the proper description
@@ -169,7 +173,7 @@ function setDatablockDescription(source, destination)
 **********************************************************/
 function gotoQuickVariant() 
 {
-    var url = $("#quickvariant-url").find("input").val();
+    var url = $("#quickvariant-url").find("textarea").val();
     window.location.href = url;
 }
 
@@ -180,10 +184,13 @@ function setUserState(loggedIn)
 {
     if (loggedIn)
     {
-        $("#my-hangar").show(0);
-        $("#user-actions-login").hide(0);
-        $("#user-actions-logout").show(0);
-        $("#user-actions-newuser").hide(0);
+        // $("#my-hangar").show(0);
+        // $("#user-actions-login").hide(0);
+        // $("#user-actions-logout").show(0);
+        // $("#user-actions-newuser").hide(0);
+        $("#systems-notLoggedIn").hide();
+        $("#systems-loggedIn").show();
+
         showUpdateVariant = false
         showCreateVariant = false
         showQuickVariant = false
@@ -195,6 +202,11 @@ function setUserState(loggedIn)
             showQuickVariant = true
         }
         if (window.location.href.indexOf("/ship/") > -1)
+        {
+            showCreateVariant = true
+            showQuickVariant = true
+        }
+        if (window.location.href.indexOf("/shiptest/") > -1)
         {
             showCreateVariant = true
             showQuickVariant = true
@@ -215,18 +227,21 @@ function setUserState(loggedIn)
     }
     else
     {
-        $("#my-hangar").hide(0);
-        $("#user-actions-login").show(0);
-        $("#user-actions-logout").hide(0);
-        $("#user-actions-newuser").show(0);
+        // $("#my-hangar").hide(0);
+        // $("#user-actions-login").show(0);
+        // $("#user-actions-logout").hide(0);
+        // $("#user-actions-newuser").show(0);
+        $("#systems-notLoggedIn").show();
+        $("#systems-loggedIn").hide();
         $("#system-actions-savenewvariant").hide(0);
         $("#system-actions-updatevariant").hide(0);
-        $("#system-actions-quickvariant").hide(0);
+        $("#system-actions-quickvariant").show(0);
     }
 }
 
 function submitUserLogin() {
-    $("#user-login").modal('hide');
+    $("#workshop-login").hide()
+    $("#workshop-ship").show()
     var frm = $('#login-form');
     var jsonData = JSON.stringify(frm.serializeArray());
     // console.log(jsonData);
@@ -237,9 +252,9 @@ function submitUserLogin() {
         }
         else
         {
-            console.log(data);
+            // console.log(data);
             setUserState(true);
-            console.log(variantOwner);
+            // console.log(variantOwner);
             if (variantOwner == data["username"])
                 enableUpdateVariant(true);
             else
@@ -249,7 +264,8 @@ function submitUserLogin() {
 }
 
 function submitNewUser() {
-    $("#user-newuser").modal('hide');
+    $("#workshop-login").hide()
+    $("#workshop-ship").show()
     var frm = $('#newuser-form');
     var jsonData = JSON.stringify(frm.serializeArray());
     // console.log(jsonData);
@@ -260,7 +276,7 @@ function submitNewUser() {
         }
         else
         {
-            console.log(data);
+            // console.log(data);
             setUserState(true);
             if (variantOwner == data["username"])
                 enableUpdateVariant(true);
@@ -289,6 +305,41 @@ function submitUserLogout() {
 /***************************************************************
 // Utility Functions
 ***************************************************************/
+function createLine(parent, x1, y1, x2, y2, hardpointID, master) {
+    var containerLeft = parent.offset().left;
+    var containerTop = parent.offset().top;
+    var parentWidth = master.width();
+    var parentHeight = master.height();
+    var datablockWidth = 252;
+    var datablockHeight = 52;
+    var tagSize = 22;
+    // calculate real pixels from % values
+    realX1 = (x1 / 100.0) * parentWidth;
+    realX2 = (x2 / 100.0) * parentWidth;
+    realY1 = (y1 / 100.0) * parentHeight;
+    realY2 = (y2 / 100.0) * parentHeight;
+    realX1 = realX1 + tagSize/2;
+    realY1 = realY1 + tagSize/2;
+    realX2 = realX2 + datablockWidth/2;
+    realY2 = realY2 + datablockHeight/2;
+    var length = Math.sqrt((realX1 - realX2) * (realX1 - realX2) + (realY1 - realY2) * (realY1 - realY2));
+    var angle = Math.atan2(realY2 - realY1, realX2 - realX1) * 180 / Math.PI;
+    var transform = 'rotate(' + angle + 'deg)';
+
+    var line = $('<div>')
+        .appendTo(parent)
+        .addClass('line')
+        .css({
+        'position': 'absolute',
+        'left': realX1,
+        'top': realY1,
+            '-webkit-transform': transform,
+            '-moz-transform': transform,
+            'transform': transform
+        }).attr('id', 'hardpoint_line_' + hardpointID).attr('data-length', length).animate({'width' : length}, 300);;
+    return line;
+}
+
 function enableUpdateVariant(value)
 {
     if (value)
@@ -341,7 +392,7 @@ function getHardpointName(hardpoint)
 // Stores a lookup of Backgrid tables
 var GRIDS = {};
 
-var Items = Backbone.Model.extend({});
+// var Items = Backbone.Model.extend({});
 
 function createGrid(itemTypeName, shipName, element, pageSize)
 {
@@ -369,28 +420,28 @@ function createGrid(itemTypeName, shipName, element, pageSize)
 }
 
 
-var ItemTypeCell = Backgrid.StringCell.extend({
-    className : "item-type-cell"
-});
+// var ItemTypeCell = Backgrid.StringCell.extend({
+//     className : "item-type-cell"
+// });
 // var ItemSubTypeCell = Backgrid.StringCell.extend({
 //     className : "item-subtype-cell"
 // });
-var ItemSizeCell = Backgrid.StringCell.extend({
-    className : "item-size-cell"
-});
-var ItemNameCell = Backgrid.StringCell.extend({
-    className : "item-name-cell"
-});
+// var ItemSizeCell = Backgrid.StringCell.extend({
+//     className : "item-size-cell"
+// });
+// var ItemNameCell = Backgrid.StringCell.extend({
+//     className : "item-name-cell"
+// });
 
-var ClickableRow = Backgrid.Row.extend({
-    className:"vehicle-item-row",
-    events: {
-        "click": "onClick"
-    },
-    onClick: function () {
-        Backbone.trigger("rowclicked", this.model);
-    }
-});
+// var ClickableRow = Backgrid.Row.extend({
+//     className:"vehicle-item-row",
+//     events: {
+//         "click": "onClick"
+//     },
+//     onClick: function () {
+//         Backbone.trigger("rowclicked", this.model);
+//     }
+// });
 
 function createBackgrid(collection, parentElement){
     var columns = [{
@@ -516,8 +567,8 @@ function enterPort(port)
 {
     port.attr("data-focus", "yes");
     // distance datablock should be from port tag
-    var offsetLeft = -15;
-    var offsetTop = 0;
+    var offsetLeft = 100;
+    var offsetTop = 50;
     // Display datablock overlay in computed postion
     var tagNumber = port.attr("data-tag-number");
     var datablock = getHardpointOverlay(getHardpointName(port), tagNumber)
@@ -581,90 +632,6 @@ function hideOverlay(overlay)
     overlay.hide(200);
 }
 
-function removeItemFromPort(portData)
-{
-    // Get the port tag, datablock, and label elements
-    var portName = portData["name"];
-    var parentPort = portData["parentPort"];
-    if (parentPort == undefined)
-    {
-        var portTags = getHardpointTags(portName);
-        var portOverlays = getHardpointOverlays(portName);
-        portTags.each( function(){
-           $(this).removeClass("filled");
-        });
-
-        // Remove item from overlays
-        portOverlays.each( function() {
-           $(this).find("span.item-name").text("Nothing Loaded");
-        });
-        var portDatablock = getHardpointDatablock(portName);
-    }
-    else
-    {
-        var parentItem = portData["parentItem"];
-        var portDatablock = getHardpointDatablock(portName, parentPort, parentItem)
-    }
-    var itemName = portDatablock.attr("data-item-name");
-
-    // Remove item from datablock
-    portDatablock.removeAttr("data-item-name");
-    portDatablock.find("span.item-name").text("Nothing Loaded");
-    
-    // Set the proper states, coloring, etc
-    var container = portDatablock.parent().parent();
-    container.attr("data-state", "empty");
-    var baseStatus = container.attr("data-base-status");
-    container.removeClass("panel-" + baseStatus);
-    container.attr("data-status", baseStatus);
-    container.addClass("panel-" + baseStatus);
-    
-
-    // Reset datablock state selection
-    parent = portDatablock.find(".item-port-datablock-statebuttons");
-    // console.log(parent)
-    parent.empty();
-    $(document.createElement("input")).appendTo(parent).attr("id", "item-powerstate-" + portName + "-input").attr("type", "hidden").attr("name", "item-powerstate").attr("value","Default");
-    var parentDiv = $(document.createElement("div")).appendTo(parent).addClass("btn-group");
-    parentDiv.attr("id", "port-powerstate-" + portName);
-    parentDiv.attr("data-toggle", "buttons-radio").attr("data-target", "item-powerstate-" + portName + "-input")
-    var button = $(document.createElement("button")).appendTo(parentDiv)
-        .addClass("btn btn-xs btn-info active")
-        .attr("data-toggle-class","btn-info")
-        .attr("data-toggle-passive-class", "btn-inverse")
-        .attr("type", "button")
-        .attr("name", "port-powerstate")
-        .attr("value", "Default");
-    button.text("Default");
-    button.click(function(event){
-        $(this).parent().parent().find("input").val($(this).val());
-        event.stopPropagation();
-        computeStats();
-    });
-    // If this item has any ItemPorts, we need to remove those
-    // TODO
-    // console.log("Removing sub ports");
-    var datablocks = $(".item-port-datablock[data-parent-port='" + portName + "']");
-    // console.log("Datablocks", datablocks);
-    datablocks.each(function(){
-        console.log("Removing", $(this))
-        var div = $(this).parent();
-        var panel = div.parent();
-        var widget = panel.parent();
-        console.log("div", div);
-        console.log("panel", panel);
-        console.log("widget", widget);
-        widget.remove();
-        // if (section.children().length == 0)
-        //     section.remove();
-    });
-    // update hardpoint filters
-    filterHardpoints("all");
-    filterHardpoints("filled", $("#hardpoints-filter-show-filled").attr("checked"))
-    filterHardpoints("empty", $("#hardpoints-filter-show-empty").attr("checked"))
-    // Recompute all stats now that this item has been removed
-    computeStats();
-}
 
 function getQuickVariant(shipName)
 {
@@ -706,10 +673,10 @@ function getQuickVariant(shipName)
             var variantURL = data["url"];
             dialog.modal("show");
             urlDiv.empty();
-            $(document.createElement('input')).appendTo(urlDiv)
-                .attr('type', 'text')
-                .attr('size', variantURL.length + 35)
+            $(document.createElement('textarea')).appendTo(urlDiv)
                 .attr('value', 'https://www.stantonspacebarn.com' + variantURL)
+                .attr('cols', 70)
+                .attr('rows', 5)
                 .addClass("span9")
                 .attr("name", "quickvariant-url-input");
 
@@ -729,7 +696,7 @@ function saveNewVariant(shipName)
     $("#new-variant").modal('hide');
     var frm = $('#newvariant-form');
     var formData = frm.serializeArray();
-    console.log(formData);
+    // console.log(formData);
     data["formData"] = formData;
     // get all items equipped
     var ports = getAllHardpointDatablocks();
@@ -747,7 +714,7 @@ function saveNewVariant(shipName)
         }
     });
     var jsonData = JSON.stringify(data);
-    console.log(jsonData);
+    // console.log(jsonData);
     $.ajaxSetup({
       async: true
     });
@@ -758,9 +725,9 @@ function saveNewVariant(shipName)
         }
         else
         {
-            console.log("Variant created")
-            console.log(data);
-            url = "/phase2/variant/" + data["variantID"]
+            // console.log("Variant created")
+            // console.log(data);
+            url = "/variant/" + data["variantID"]
             window.location.href = url;
         }
     });
@@ -779,7 +746,7 @@ function updateVariant(shipName, variantID)
     $("#update-variant").modal('hide');
     var frm = $('#updatevariant-form');
     var formData = frm.serializeArray();
-    console.log(formData);
+    // console.log(formData);
     data["formData"] = formData;
     // get all items equipped
     var ports = getAllHardpointDatablocks();
@@ -797,7 +764,7 @@ function updateVariant(shipName, variantID)
         }
     });
     var jsonData = JSON.stringify(data);
-    console.log(jsonData);
+    // console.log(jsonData);
     $.ajaxSetup({
       async: true
     });
@@ -808,8 +775,8 @@ function updateVariant(shipName, variantID)
         }
         else
         {
-            console.log("Variant update")
-            console.log(data);
+            // console.log("Variant update")
+            // console.log(data);
         }
     });
 }
@@ -862,8 +829,8 @@ function isItemCompatibleWithPort(item, port)
     mainType = itemType.split(":")[0]
     if (portType.indexOf(mainType) >= 0)
     {
-        console.log("Main Type only match")
-        console.log(mainType, "in", portType);
+        // console.log("Main Type only match")
+        // console.log(mainType, "in", portType);
         return true
     }
 
@@ -889,14 +856,14 @@ function getItemDetails(itemName) {
         }
         else
         {
-            console.log(data)
+            // console.log(data)
             $("#item-details").show();
             var section = $("#item-details");
             $("#item-details-itemname").text(data['itemname']);
             $("#item-details-itemclass").text(data['itemclass']);
             $("#item-details-itemsize").text(data['itemsize']);
             $("#item-details-itemtype").text(data['itemtype']);
-            console.log("itemtype=", data["itemtype"]);
+            // console.log("itemtype=", data["itemtype"]);
             $("#item-details-description").text(data['description']);
             // clear the sub divs so we;re starting fresh
             var weaponbars = $("#item-details-weaponbars");
@@ -1073,6 +1040,62 @@ function getItemPortDetails(portData, shipName) {
         }
     });
 }
+
+function removeItemFromPort(portData)
+{
+    // Get the port tag, datablock, and label elements
+    var portName = portData["name"];
+    var parentPort = portData["parentPort"];
+    var portDisplayName = portData["displayName"];
+    console.log("---------------------")
+    console.log(portName)
+    console.log(parentPort)
+    if (parentPort == undefined)
+    {
+        var portOverlays = getHardpointOverlays(portName);
+        // Remove item from overlays
+        portOverlays.each( function() {
+           $(this).find(".details .desc").addClass("text-default").text(portDisplayName);
+           $(this).removeClass("green-jungle");
+           $(this).addClass("red-intense");
+        });
+        var portDatablock = getHardpointDatablock(portName);
+    }
+    else
+    {
+        var parentItem = portData["parentItem"];
+        var portDatablock = getHardpointDatablock(portName, parentPort, parentItem)
+    }
+    var itemName = portDatablock.attr("data-item-name");
+
+    // Remove item from datablock
+    portDatablock.removeAttr("data-item-name");
+    portDatablock.find(".details .number").text("");
+    
+    // Set the proper states, coloring, etc
+    portDatablock.removeClass("green-jungle").addClass("red-intense");
+    // If this item has any ItemPorts, we need to remove those
+    // TODO
+    // console.log("Removing sub ports");
+    var datablocks = $(".item-port-datablock[data-parent-port='" + portName + "']");
+    // console.log("Datablocks", datablocks);
+    datablocks.each(function(){
+        // console.log("Removing", $(this))
+        // var div = $(this).parent();
+        // var panel = div.parent();
+        // var widget = panel.parent();
+        // console.log("div", div);
+        // console.log("panel", panel);
+        // console.log("widget", widget);
+        // widget.remove();
+        $(this).remove();
+        // if (section.children().length == 0)
+        //     section.remove();
+    });
+    // Recompute all stats now that this item has been removed
+    computeStats();
+}
+
 function addItemToPort(portData, itemData)
 {
     var portName = portData["name"];
@@ -1084,41 +1107,33 @@ function addItemToPort(portData, itemData)
     var parentPort = portData["parentPort"];
     if (parentPort == undefined)
     {
-        var portTags = getHardpointTags(portName);
-        // var portLabel = $(".item-port-label[data-port-name='" + portName + "']");
-        // Mark tag as filled
-        portTags.each( function(){
-            $(this).addClass("filled");
-        });
-
-        // Remove item from label
-        // portLabel.removeAttr("data-item-name");
-        // portLabel.find("span.item-name").text("Nothing Loaded");
         var portDatablock = getHardpointDatablock(portName);
+        // console.log("Main hardpoint: ", portDatablock)
     }
     else
     {
         var parentItem = portData["parentItem"];
         var portDatablock = getHardpointDatablock(portName,parentPort,parentItem);
+        // console.log("Item based hardpoint: ", portDatablock)
     }
 
-    var portDisplayName = portDatablock.parent().parent().find(".panel-heading h5").text();
+    var portDisplayName = portDatablock.find(".details .desc").text();
 
     var itemDisplayName = itemData["displayName"];
     var itemName = itemData["name"];
-    portDatablock.find("span.item-name").text(itemDisplayName);
+    console.log(portDatablock.find(".details .number"))
+    console.log(itemDisplayName)
+    portDatablock.find(".details .number").text(itemDisplayName);
     portDatablock.attr("data-item-name", itemName)
-    var panel = portDatablock.parent().parent();
-    panel.attr("data-state", "filled");
-    panel.attr("data-status", "success");
+    var panel = portDatablock;
     // Reset the datablock's coloring
-    panel.removeClass("panel-warning panel-danger panel-success");
-    panel.addClass("panel-success");
+    panel.removeClass("red-intense").addClass("green-jungle");
     
     var portOverlays = getHardpointOverlays(portName)
     // console.log("Overlays", portOverlays);
     portOverlays.each( function(){
-        $(this).find("span.item-name").text(itemDisplayName);
+        $(this).find(".details .desc").text(itemDisplayName);
+        $(this).removeClass("red-intense").addClass("green-jungle");
     });
     // Add ItemPorts that may be on this item
     // TODO
@@ -1135,9 +1150,10 @@ function addItemToPort(portData, itemData)
         }
         else
         {
-            var currentSection = portDatablock.parent().parent().parent();
+            var currentSection = portDatablock.parent();
             // console.log("currentSection " + currentSection);
             // console.log("-----");
+            // console.log("ITEM DETAILS DATA: ", data)
             if (data["ports"].length > 0)
             {
                 // console.log("adding itemports for item");
@@ -1148,59 +1164,36 @@ function addItemToPort(portData, itemData)
                 {
                     newPortName = ports[index]["portname"]
                     var mainDiv = $(document.createElement("div")).insertAfter(currentSection).addClass("col-lg-4");
-                    var panel = $(document.createElement("div")).appendTo(mainDiv).addClass("panel panel-compact panel-warning")
-                        .attr("data-port-name", newPortName)
-                        .attr("data-state", "empty")
-                        .attr("data-status", "warning")
-                        .attr("data-base-status", "warning");
-                    var heading = $(document.createElement("div")).appendTo(panel).addClass("panel-heading");
-                    var h5 = $(document.createElement("h5")).appendTo(heading).text(ports[index]["name"]);
-                    $(document.createElement("span")).appendTo(h5)
-                        .addClass("glyphicon glyphicon-remove pull-right icon-large");
-                    $(document.createElement("span")).appendTo(h5)
-                        .addClass("glyphicon glyphicon-filter pull-right icon-large");
-                    var body = $(document.createElement("div")).appendTo(panel)
-                        .addClass("panel-body");
-                    var well = $(document.createElement("div")).appendTo(body)
-                        .addClass("well well-compact item-port-datablock")
+                    var panel = $(document.createElement("div")).appendTo(mainDiv).addClass("dashboard-stat red-intense item-port-datablock")
                         .attr("data-port-name", newPortName)
                         .attr("data-parent-item", itemName)
                         .attr("data-parent-port", portName)
+                        .attr("data-port-displayname", ports[index]["name"])
                         .attr("data-min-size", ports[index]["minsize"])
                         .attr("data-max-size", ports[index]["maxsize"])
                         .attr("data-types", ports[index]["types"].join(","));
-                    // $(document.createElement("i")).appendTo(well)
-                    //     .addClass("icon-remove pull-right icon-large");
-                    // $(document.createElement("i")).appendTo(well)
-                    //     .addClass("icon-filter pull-right icon-large");
-                    var stateDiv = $(document.createElement("div")).appendTo(well)
-                        .addClass("item-port-datablock-statebuttons");
-                    $(document.createElement("input")).appendTo(stateDiv)
-                        .attr("id", "item-powerstate-" + newPortName + "-input")
-                        .attr("type", "hidden")
-                        .attr("name", "item-powerstate")
-                        .attr("value", "Default");
-                    var buttonGroup = $(document.createElement("div")).appendTo(stateDiv)
-                        .addClass("btn-group")
-                        .attr("id", "item-powerstate-" + newPortName)
-                        .attr("data-toggle", "buttons-radio")
-                        .attr("data-target", "item-powerstate-" + newPortName + "-input");
-                    $(document.createElement("button")).appendTo(buttonGroup)
-                        .addClass("btn btn-xs btn-info active noop")
-                        .attr("data-toggle-class", "btn-info")
-                        .attr("data-toggle-passive-class", "btn-inverse")
-                        .attr("type", "button")
-                        .attr("value", "Default")
-                        .text("Default");
-                    $(document.createElement("br")).appendTo(well);
-                    $(document.createElement("span")).appendTo(well)
-                        .addClass("item-name")
-                        .text("Nothing Loaded");
-                    $(document.createElement("div")).appendTo(panel)
-                        .addClass("panel-footer")
-                        .text(portDisplayName);
-
-                    enableDatablock($(well));
+                    var icon = $(document.createElement("i")).addClass("fa fa-edit");
+                    var visualDiv = $(document.createElement("div")).appendTo(panel).addClass("visual");
+                    icon.appendTo(visualDiv);
+                    var itemNameDiv = $(document.createElement("div")).addClass("number");
+                    var portNameDiv = $(document.createElement("div")).addClass("desc").text(ports[index]["name"]);
+                    var detailsDiv = $(document.createElement("div")).addClass("details").appendTo(panel);
+                    itemNameDiv.appendTo(detailsDiv);
+                    portNameDiv.appendTo(detailsDiv);
+                    var parentNameDiv = $(document.createElement("span")).appendTo(panel).addClass("more").text(portDisplayName);
+                    // var heading = $(document.createElement("div")).appendTo(panel).addClass("panel-heading");
+                    // var h5 = $(document.createElement("h5")).appendTo(heading).text(ports[index]["name"]);
+                    // var body = $(document.createElement("div")).appendTo(panel)
+                    //     .addClass("panel-body");
+                    // var well = $(document.createElement("div")).appendTo(body)
+                    //     .addClass("well well-compact item-port-datablock")
+                    // $(document.createElement("br")).appendTo(well);
+                    // $(document.createElement("span")).appendTo(well)
+                    //     .addClass("item-name")
+                    //     .text("Nothing Loaded");
+                    // $(document.createElement("div")).appendTo(panel)
+                    //     .addClass("panel-footer")
+                    //     .text(portDisplayName);
                 }
             }
         }
@@ -1312,97 +1305,6 @@ function enableDatablock(element)
         var portName = portWell.attr("data-port-name");
         filterByItemPort(portName);
     });
-    // Click event for port details
-    element.on("click", function(){
-        $("#item-details-modal").modal("hide");
-        $("#itemport-details-modal").modal("show");
-        var portName = $(this).attr("data-port-name")
-        var portData = {"name":portName,"parentItem":$(this).attr("data-parent-item")}
-        getItemPortDetails(portData, "{{shipData.name}}");
-    });
-
-    // Make Droppable
-    element.droppable({
-        activeClass: "label-success",
-        tolerance : "pointer",
-        drop : function(event, ui) {
-            $(this).removeClass("over");
-            dropItem(this, event, ui);
-        },
-        deactivate : function(event, ui) {
-        // reset temporary status coloring
-            var panels = $(".panel-compact[data-status]");
-            filterHardpoints("all");
-            filterHardpoints("filled", $("#hardpoints-filter-show-filled").attr("checked"))
-            filterHardpoints("empty", $("#hardpoints-filter-show-empty").attr("checked"))
-            panels.each(function(){
-                $(this).removeClass("panel-success panel-warning panel-danger");
-                var status = $(this).attr("data-status");
-                $(this).addClass("panel-" + status);
-            });
-        },
-        activate : function(event, ui) {
-            // console.log("Activate drag")
-            var draggable = ui.draggable;
-            var row = draggable;
-            var itemType = row.find("td.item-type-cell").text();
-            var itemSize = parseInt(row.find("td.item-size-cell").text(), 10);
-            var minSize = $(this).attr("data-min-size");
-            var maxSize = $(this).attr("data-max-size");
-            var label = $(this).find(".label")
-            var panel = $(this).parent().parent();
-            var supportedTypes = $(this).attr("data-types");
-            var item = {"size":itemSize,"type":itemType};
-            var showInvalid = $("#hardpoints-filter-show-invalid").attr('checked');
-            if (isItemCompatibleWithPort(item, $(this)))
-            // if (supportedTypes.indexOf(itemType) > -1 && itemSize >= minSize && itemSize <= maxSize)
-            {
-                // console.log("Item Supported!")
-                panel.removeClass("panel-warning panel-danger panel-success");
-                panel.addClass("panel-success");
-            }
-            else
-            {
-                panel.removeClass("panel-warning panel-danger panel-success");
-                panel.addClass("panel-danger");
-            }
-            var itemData = {};
-            itemData['size'] = itemSize;
-            itemData["type"] = itemType;
-            filterHardpoints("invalid", showInvalid, itemData)
-            $("#item-details-modal").modal("hide");
-            $("#itemport-details-modal").modal("hide");
-        },
-        over : function(event, ui) {
-            $(this).addClass("over");
-            // console.log("Over")
-        },
-        out : function(event, ui) {
-            $(this).removeClass("over");
-            // console.log("out")
-        },
-    accept: function(draggable) {
-        var row = draggable;
-        var itemType = row.find("td.item-type-cell").text();
-        var itemSize = parseInt(row.find("td.item-size-cell").text(), 10);
-        var supportedTypes = $(this).attr("data-types");
-        var minSize = $(this).attr("data-min-size");
-        var maxSize = $(this).attr("data-max-size");
-        var label = $(this).find(".label")
-        var panel = $(this).parent().parent();
-        var item = {"size" : itemSize, "type" : itemType};
-        if (isItemCompatibleWithPort(item, $(this)))
-        // if (supportedTypes.indexOf(itemType) > -1 && itemSize >= minSize && itemSize <= maxSize)
-        {
-            // console.log("Item Supported!")
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }});       
-
 }
 
 var hardpoints = getAllHardpointTags();
@@ -1419,9 +1321,6 @@ hardpointDatablocks.droppable({
         // console.log("Deactivate drag")
         // console.log("Deactivate")
         var panels = $(".panel-compact[data-status]");
-        filterHardpoints("all");
-        filterHardpoints("filled", $("#hardpoints-filter-show-filled").attr("checked"))
-        filterHardpoints("empty", $("#hardpoints-filter-show-empty").attr("checked"))
         panels.each(function(){
             $(this).removeClass("panel-success panel-warning panel-danger");
             var status = $(this).attr("data-status");
@@ -1459,7 +1358,6 @@ hardpointDatablocks.droppable({
         var itemData = {};
         itemData['type'] = itemType;
         itemData['size'] = itemSize;
-        filterHardpoints("invalid", showInvalid, itemData)
         $("#item-details-modal").modal("hide");
         $("#itemport-details-modal").modal("hide");
     },
@@ -1532,86 +1430,6 @@ hardpoints.droppable({
         return false;
 }});       
 
-/*********************************************
-// Filters a given set of hardpoints in the
-// hardpoints overview page
-*********************************************/
-function filterHardpoints(set, value, item)
-{
-    /*****************************************
-    // Valid 'set' options:
-    // 'all' shows all hardpoints.  'value' is ignored
-    // 'filled' hides or shows filled hardpoints
-    // 'empty' hides or shows empty hardpoints
-    // 'invalid' hides or shows hardpoints invalid during a drag operation
-    *****************************************/
-    
-    var allHardpoints = $(".panel-compact[data-status]");
-    // console.log("value", value)
-    // console.log("item", item)
-    if (set == "all")
-    {
-        allHardpoints.each( function(){
-           $(this).parent().show(0); 
-        });
-    }
-    else if (set == "filled")
-    {
-        allHardpoints.each( function(){
-            if ( $(this).attr('data-state') == 'filled' )
-            {
-                if (value)
-                    $(this).parent().show(200);
-                else
-                    $(this).parent().hide(200);
-            }
-        });
-    }
-    else if (set == "empty")
-    {
-        allHardpoints.each( function(){
-            if ( $(this).attr('data-state') == 'empty' )
-            {
-                if (value)
-                    $(this).parent().show(200);
-                else
-                    $(this).parent().hide(200);
-            }
-        });
-    }
-    else if (set == "invalid")
-    {
-        allHardpoints.each( function(){
-            var panelBody = $(this).find(".panel-body").find('.well');
-            if (isItemCompatibleWithPort(item, panelBody))
-            {
-                $(this).parent().show(200);
-            }
-            else
-            {
-                if (value)
-                    $(this).parent().show(200);
-                else
-                    $(this).parent().hide(200);
-            }
-            // console.log(panelBody);
-            // var supportedTypes = panelBody.attr("data-types");
-            // var minSize = panelBody.attr("data-min-size");
-            // var maxSize = panelBody.attr("data-max-size");
-            // if (supportedTypes.indexOf(item['type']) == -1 || item['size'] < minSize || item['size'] > maxSize)
-            // {
-            //     if (value)
-            //         $(this).show(200);
-            //     else
-            //         $(this).hide(200);
-            // }
-            // else
-            // {
-            //     $(this).show(200);
-            // }
-        });
-    }
-}
 function computeStats()
 {
     // computes stats based on items equipped
@@ -1621,6 +1439,7 @@ function computeStats()
     var scannedPorts = [];
     var scannedItems = [];
     var LDS = []
+    // console.log(ports);
     ports.each(function() {
         var itemName = $(this).attr("data-item-name");
         if (itemName != undefined)
@@ -1636,64 +1455,28 @@ function computeStats()
     {
         data["items"].push(LDS[i]);
     }
+    data["ship"] = $("#ship-stats-base").attr("data-shipname")
     // console.log(data);
     var jsonData = JSON.stringify(data);
     // console.log(jsonData);
     $.ajaxSetup({
       async: false
     });
-    $.post('/graphs/get/available-power/', jsonData).done(function(data) {
+    $.post('/compute/stats/', jsonData).done(function(data) {
         if (data['success'] == false)
         {
-            console.log("Failed to retrieve power usage data:", data['response']);
+            console.log("Failed to compute stats:", data['response']);
         }
         else
         {
-            // console.log("Available Power data");
-            // console.log(data);
-            var powerConsumed = data['data']['powerConsumed'];
-            if (powerConsumed < 0)
-                powerConsumed = powerConsumed * -1;
-            var maxPower = data['data']['maxPower'];
-            var percentMaxPower = 0.0;
-            // console.log( powerConsumed, maxPower );
-            if (maxPower > 0)
-            {
-                $("#stats-lds-warning-missingpowerplant").hide();
-                percentMaxPower = (powerConsumed / maxPower) * 100;
-                $("#stats-lds-available-power-label").text(powerConsumed + "/" + maxPower);
-                $("#stats-lds-available-power-bar").removeClass("progress-bar-success").removeClass("progress-bar-warning").removeClass("progress-bar-danger");
-                if (percentMaxPower <= 50.0)
-                {
-                    $("#stats-lds-available-power-bar").addClass("progress-bar-success");
-                }
-                else if (percentMaxPower >= 50.0 && percentMaxPower <= 75.0)
-                {
-                    $("#stats-lds-available-power-bar").addClass("progress-bar-warning");
-                }
-                else if (percentMaxPower >= 75 && percentMaxPower <= 100.0)
-                {
-                    $("#stats-lds-available-power-bar").addClass("progress-bar-danger");
-                }
-                else
-                {
-                    $("#stats-lds-available-power-bar").addClass("progress-bar-danger");
-                    percentMaxPower = 100.0;
-                }
-                $("#stats-lds-available-power-bar").css({width: percentMaxPower + "%"})
-            }
-            else
-            {
-                // console.log($("#stats-lds-available-power-bar"));
-                $("#stats-lds-warning-missingpowerplant").show();
-                $("#stats-lds-available-power-label").text(powerConsumed + "/0");
-                $("#stats-lds-available-power-bar").removeClass("progress-bar-success").removeClass("progress-bar-warning").removeClass("progress-bar-danger");
-                $("#stats-lds-available-power-bar").addClass("progress-bar-danger");
-                $("#stats-lds-available-power-bar").css({width:"100%"})
-            }
+            $("#mass_configured").text($.number(data['mass'], 0, ".", ","));
+            $("#thrust_max").text($.number(data['thrust'], 0, ".", ","));
+            $("#twr").text($.number(data['twr'], 2, ".", ","));
+            $("#power_output").text($.number(data['power'], 0, ".", ","));
+            // console.log("Mass: " + data['mass']);
         }
-        });
-        ports.each(function(){
+    });
+    ports.each(function(){
         var itemName = $(this).attr("data-item-name");
         var portName = $(this).attr("data-port-name");
         if (itemName != undefined && portName != undefined)
@@ -1708,13 +1491,13 @@ function computeStats()
     });
     // console.log(scannedItems);
     var data = {};
-    data['state'] = "Active";
+    data['state'] = "Idle";
     data['items'] = []
     for (var index=0; index < scannedItems.length; index++)
     {
         var entry = {
             "name" : scannedItems[index],
-            "state" : "Active"
+            "state" : "Idle"
         };
         data['items'].push( entry );
     }
@@ -1731,18 +1514,22 @@ function computeStats()
         }
         else
         {
-            // console.log("Available Power data");
+            // console.log("Power Data");
             // console.log(data);
             var powerConsumed = data['data']['powerConsumed'];
             if (powerConsumed < 0)
                 powerConsumed = powerConsumed * -1;
+            var peakPower = data['data']['peakPower'];
+            if (peakPower < 0)
+                peakPower = peakPower * -1;
             var maxPower = data['data']['maxPower'];
             var percentMaxPower = 0.0;
             if (maxPower > 0)
             {
+                // Base power usage
                 $("#stats-warning-missingpowerplant").hide();
                 percentMaxPower = (powerConsumed / maxPower) * 100;
-                $("#stats-available-power-label").text(powerConsumed + "/" + maxPower);
+                $("#stats-available-power-label").text($.number(powerConsumed,2,".",",") + "/" + $.number(maxPower,2,".",","));
                 $("#stats-available-power-bar").removeClass("progress-bar-success").removeClass("progress-bar-warning").removeClass("progress-bar-danger");
                 if (percentMaxPower <= 50.0)
                 {
@@ -1762,16 +1549,225 @@ function computeStats()
                     percentMaxPower = 100.0;
                 }
                 $("#stats-available-power-bar").css({width: percentMaxPower + "%"})
+                // Peak power usage
+                percentPeakPower = (peakPower / maxPower) * 100;
+                $("#stats-peak-power-label").text($.number(peakPower,2,".",",") + "/" + $.number(maxPower,2,".",","));
+                $("#stats-peak-power-bar").removeClass("progress-bar-success").removeClass("progress-bar-warning").removeClass("progress-bar-danger");
+                if (percentPeakPower <= 50.0)
+                {
+                    $("#stats-peak-power-bar").addClass("progress-bar-success");
+                }
+                else if (percentPeakPower >= 50.0 && percentPeakPower <= 75.0)
+                {
+                    $("#stats-peak-power-bar").addClass("progress-bar-warning");
+                }
+                else if (percentPeakPower >= 75 && percentPeakPower <= 100.0)
+                {
+                    $("#stats-peak-power-bar").addClass("progress-bar-danger");
+                }
+                else
+                {
+                    $("#stats-peak-power-bar").addClass("progress-bar-danger");
+                    percentPeakPower = 100.0;
+                }
+                $("#stats-peak-power-bar").css({width: percentPeakPower + "%"})
             }
             else
             {
+                // base power usage
                 $("#stats-warning-missingpowerplant").show();
-                $("#stats-available-power-label").text(powerConsumed + "/0");
+                $("#stats-available-power-label").text($.number(powerConsumed,2,".",",") + "/0");
                 $("#stats-available-power-bar").removeClass("progress-bar-success").removeClass("progress-bar-warning").removeClass("progress-bar-danger");
                 $("#stats-available-power-bar").addClass("progress-bar-danger");
                 $("#stats-available-power-bar").css({width:"100%"})
+                // peak power usage
+                $("#stats-peak-power-label").text($.number(peakPower,2,".",",") + "/0");
+                $("#stats-peak-power-bar").removeClass("progress-bar-success").removeClass("progress-bar-warning").removeClass("progress-bar-danger");
+                $("#stats-peak-power-bar").addClass("progress-bar-danger");
+                $("#stats-peak-power-bar").css({width:"100%"})
             }
         }
     });
 }
 
+function equipItem() {
+    var portName = $("#item_browser_dialog_table").attr("data-current-port");
+    var portDisplayName = $("#item_browser_dialog_table").attr("data-current-port-displayname");
+    var parentPort = $("#item_browser_dialog_table").attr("data-current-parent-port");
+    var oTable = $("#item_browser_dialog_table").dataTable({"bRetrieve":true});
+    var selectedTR = oTable.$("tr.browser-item-selected")[0];
+    var data = oTable.fnGetData(selectedTR)
+    // console.log("Port:", portName)
+    // console.log("Data:", data)
+    var itemData = {
+        "displayName" : data[0],
+        "name" : data[6]
+    };
+    var portData = {
+        "name" : portName,
+        "displayName": portDisplayName
+    };
+    if (parentPort && parentPort != "") {
+        portData["parentPort"] = parentPort;
+        portData["parentItem"] = getHardpointDatablock(parentPort).attr("data-item-name")
+    }
+    addItemToPort(portData, itemData);
+    $("#item_browser_dialog").modal("hide");
+}
+
+
+function unequipHardpoint() {
+    var portName = $("#item_browser_dialog_table").attr("data-current-port");
+    var portDisplayName = $("#item_browser_dialog_table").attr("data-current-port-displayname");
+    var parentPort = $("#item_browser_dialog_table").attr("data-current-parent-port");
+    var oTable = $("#item_browser_dialog_table").dataTable({"bRetrieve":true});
+    var selectedTR = oTable.$("tr.browser-item-selected")[0];
+    var data = oTable.fnGetData(selectedTR)
+    console.log("Port:", portName)
+    console.log("Data:", data)
+    var portData = {
+        "name" : portName,
+        "displayName": portDisplayName
+    };
+    if (parentPort && parentPort != "") {
+        portData["parentPort"] = parentPort;
+        portData["parentItem"] = getHardpointDatablock(parentPort).attr("data-item-name")
+    }
+    removeItemFromPort(portData);
+    $("#equip-item-button").addClass("disabled")
+    $("#item_browser_dialog").modal("hide");
+}
+
+function fetchItems(url) {
+    $("#item_browser_dialog_table").dataTable( {
+        "aoColumnDefs": [
+            {
+            "mRender": function ( data, type, row ) {
+                    return '<p style="cursor:pointer;" class="pull-right" data-tooltip-url="/vehicleitem/tooltip/basic/' + row[6] + '/">' + data + '</p>';
+                },
+                "aTargets": [ 0 ]
+            },
+            {
+            "mRender": function ( data, type, row ) {
+                    return '<i style="cursor:pointer;" class="fa fa-bars fa-lg" data-tooltip-url="/vehicleitem/tooltip/pipes/' + row[6] + '/"></i>';
+                },
+                "aTargets": [ 3 ]
+            },
+            {
+            "mRender": function ( data, type, row ) {
+                    return '<i style="cursor:pointer;" class="fa fa-search fa-lg" data-tooltip-url="/vehicleitem/tooltip/details/' + row[6] + '/"></i>';
+                },
+                "aTargets": [ 4 ]
+            },
+            { "bVisible": false, "aTargets": [5] },
+            { "bVisible": false, "aTargets": [6] }
+        ],
+        "bProcessing" : true,
+        "sAjaxSource" : url,
+        "sScrollY": "400px",
+        "sDom" : "rtip",
+        "bDeferRender" : false,
+        "bDestroy" : true,
+        "fnInitComplete": function(oSettings, json) {
+            // console.log(json)
+            var oTable = this
+            // Select current item if one exists
+            var portName = $("#item_browser_dialog_table").attr("data-current-port");
+            var parentPort = $("#item_browser_dialog_table").attr("data-current-parent-port");
+            var parentName = $("#item_browser_dialog_table").attr("data-current-parent-name");
+            if (parentName && parentName != "") {
+                var datablock = getHardpointDatablock(portName, parentPort, parentName)
+            }
+            else {
+                var datablock = getHardpointDatablock(portName)
+            }
+            equippedItem = getItemNameForDatablock(datablock)
+            // console.log("equipped item = ", equippedItem)
+            oTable.$('tr').each(function(){
+                var data = oTable.fnGetData(this)
+                if (data[6] == equippedItem) {
+                    $(this).addClass("browser-item-selected")
+                }
+            })
+
+
+            // Setup click functionlity
+            oTable.$('tr').click(function(){
+                oTable.$("tr.browser-item-selected").removeClass("browser-item-selected")
+                var data = oTable.fnGetData(this)
+                $(this).addClass("browser-item-selected")
+                $("#equip-item-button").removeClass("disabled")
+            })
+            // tooltips
+            // console.log(oTable.$('[data-tooltip-url]'))
+            oTable.$('[data-tooltip-url]').each(function() {
+                    $(this).tooltipster({
+                    contentAsHTML: true,
+                    maxWidth:500,
+                    position: 'right',
+                    autoClose: true,
+                    theme: 'tooltipster-shadow',
+                    content: 'Loading...',
+                    functionBefore: function(origin, continueTooltip) {
+
+                        // we'll make this function asynchronous and allow the tooltip to go ahead and show the loading notification while fetching our data
+                        continueTooltip();
+                        
+                        // next, we want to check if our data has already been cached
+                        if (origin.data('ajax') !== 'cached') {
+                            $.ajax({
+                                type: 'POST',
+                                url: $(this).attr('data-tooltip-url'),
+                                success: function(data) {
+                                    // update our tooltip content with our returned data and cache it
+                                    origin.tooltipster('content', data).data('ajax', 'cached');
+                                }
+                            });
+                        }
+                    }
+                });
+            })
+         }    
+    });
+}
+
+function openHardpoint(port, shipName) {
+    var portName = port.attr("data-port-name");
+    var parentName = port.attr("data-parent-item");
+    var parentPort = port.attr("data-parent-port");
+    var portDisplayName = port.attr("data-port-displayname");
+    console.log("openHardpoint, parentPort = ", parentPort)
+    var url = ""
+    $("#item_browser_dialog_table").attr("data-current-port", portName)
+    $("#item_browser_dialog_table").attr("data-current-port-displayname", portDisplayName)
+    if (parentPort == undefined) {
+        console.log("Removing parent port attr")
+        $("#item_browser_dialog_table").removeAttr("data-current-parent-port");
+    }
+    $("#item_browser_dialog_table").attr("data-current-parent-port", parentPort)
+    $("#item_browser_dialog_table").attr("data-current-parent-item", parentName)
+    if (parentName && parentName != "") {
+        var datablock = getHardpointDatablock(portName, parentPort, parentName)
+    }
+    else {
+        var datablock = getHardpointDatablock(portName)
+    }
+    equippedItem = getItemNameForDatablock(datablock)
+    // console.log(datablock)
+    // console.log(equippedItem)
+    if (equippedItem == undefined || equippedItem == "") {
+        $("#equip-item-button").addClass("disabled")
+    }
+    $("#item_browser_dialog").modal("show");
+    if (parentName && parentName != "") {
+        url = '/items/get/compatible-with-itemport/' + parentName+ '/' + port.attr("data-port-name") + "/"
+    }
+    else {
+        url = '/items/get/compatible-with-vehicleport/' + shipName + '/' + port.attr("data-port-name") + "/";
+    }
+    // console.log(url)
+    setTimeout(function(){
+        fetchItems(url)},
+        100)
+    
+};

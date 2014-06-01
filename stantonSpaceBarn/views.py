@@ -15,6 +15,8 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.core.mail import send_mail
 from django.core.exceptions import ObjectDoesNotExist
+import logging
+import pdb
 
 def stringToIntArray(s):
     intArray = []
@@ -203,16 +205,32 @@ def userLogin(request):
 
         username = None
         password = None
+        rememberMe = False
         for entry in data:
             if entry['name'] == 'username':
                 username = entry['value']
+            if entry['name'] == 'remember':
+                rememberMe = entry['value']
             elif entry['name'] == 'password':
                 password = entry['value']
-
+        print "Remember Me: ", rememberMe
         user = authenticate(username=username, password=password)
-        if user is not None:
-            if user.is_active:
-                login(request, user)
+        if not user:
+            response_data = {
+            'success' : False,
+            'response' : 'Unable to authenticate login'
+            }
+            return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
+        if not user.is_active:
+            response_data = {
+            'success' : False,
+            'response' : 'User is not active'
+            }
+            return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
+
+        if not rememberMe:
+            request.session.set_expiry(0)
+        login(request, user)
 
         response_data = {
         'success' : True,
@@ -247,13 +265,16 @@ def userCreate(request):
         username = None
         password1 = None
         password2 = None
+        email = None
         for entry in data:
             if entry['name'] == 'username':
                 username = entry['value']
-            elif entry['name'] == 'password1':
+            elif entry['name'] == 'password':
                 password1 = entry['value']
-            elif entry['name'] == 'password2':
+            elif entry['name'] == 'rpassword':
                 password2 = entry['value']
+            elif entry['name'] == 'email':
+                email = entry['value']
 
         if password1 != password2:
             response_data = {
@@ -272,6 +293,13 @@ def userCreate(request):
             return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
         else:
             user = authenticate(username=username, password=password1)
+            if not user:
+                response_data = {
+                'success' : False,
+                'response' : 'Could not authenticate new user'
+                }
+                return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
+
             login(request, user)
 
         response_data = {
@@ -637,6 +665,7 @@ def quickVariant(request, shipName, variantURL = 0):
 
             return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
         elif version == 1:
+            print data
             # print "Version 1"
             # What we need:
             #   Name of ship
@@ -674,14 +703,18 @@ def quickVariant(request, shipName, variantURL = 0):
                     parentItem = None
 
                 try:
-                    if parentItem and parentPort:
-                        parentItemData = VehicleItem.objects.get(name__iexact=parentItem);
-                        portData = ItemPort.objects.get(name__iexact=portName, parentItem__exact=parentItemData)
-                        parentPortData = ItemPort.objects.get(name__iexact=parentPort, parentVehicle__exact=vehicleData)
-                    else:
-                        portData = ItemPort.objects.get(name__iexact=portName, parentVehicle__exact=vehicleData)
                     itemData = VehicleItem.objects.get(name__iexact=itemName)
+                    if parentItem and parentPort:
+                        parentItemData = VehicleItem.objects.get(name__iexact=parentItem)
+                        portData = parentItemData.ports.get(name__iexact=portName)
+                        # portData = ItemPort.objects.get(name__iexact=portName, parentItem__exact=parentItemData)
+                        # parentPortData = ItemPort.objects.get(name__iexact=parentPort, parentVehicle__exact=vehicleData)
+                        parentPortData = vehicleData.ports.get(name__iexact=parentPort)
+                    else:
+                        # print "Looking for %s in %s" % (portName, vehicleData.ports.all())
+                        portData = vehicleData.ports.get(name__iexact=portName)
                 except Exception as e:
+                    print e
                     response_data = {
                     'url' : 'Z',
                     'success' : False,
@@ -825,7 +858,7 @@ def quickVariant(request, shipName, variantURL = 0):
             'loginForm'         : loginForm,
             'createUserForm'    : createUserForm
         }
-        return render_to_response('bootstrap/light-blue/quickVariant.html', renderContext, context_instance=RequestContext(request))
+        return render_to_response('metronic/admin/quickVariant.html', renderContext, context_instance=RequestContext(request))
     
 @ensure_csrf_cookie
 def variantDetail(request, buildID):
@@ -1137,7 +1170,7 @@ def extrapolateStateValues(state, duration=30, metric=0, stacking=False):
         chunks = stateValue.split(",")
         stateValues = {}
         for chunk in chunks:
-            stateValues[int(chunk.split(":")[0])] = int(chunk.split(":")[1])
+            stateValues[float(chunk.split(":")[0])] = float(chunk.split(":")[1])
         # print stateValues
         if not stacking:
             currentVPS = 0
@@ -1154,7 +1187,7 @@ def extrapolateStateValues(state, duration=30, metric=0, stacking=False):
 
     else:
         # Simple case, a single value
-        stateValue = int(stateValue)
+        stateValue = float(stateValue)
         if stateValue < 0:
             stateValue = stateValue# * -1
         if metric == 0:
@@ -1240,8 +1273,134 @@ def isItemCompatibleWithPort(itemData, portData):
 
     return False
 
+def getItemListForHardpoint(request, hardpointName = None, vehicleName = None):
+    if request.is_ajax():
+        if not hardpointName:
+            responseData = [{}]
+            return HttpResponse(simplejson.dumps(responseData), content_type="application/json")
+        if not vehicleName:
+            responseData = [{}]
+            return HttpResponse(simplejson.dumps(responseData), content_type="application/json")
+        try:
+            vehicleData = Vehicle.objects.get(name__iexact=vehicleName)
+            for hardpoint in vehicleData.ports.all():
+                if hardpoint.name.lower() == hardpointName.lower():
+                    hardpointData = hardpoint
+                    break
+            # hardpointData = ItemPort.objects.get(name__iexact=hardpointName, parentVehicle=vehicleData)
+        except ObjectDoesNotExist, MultipleObjectsReturned:
+            responseData = [{}]
+            return HttpResponse(simplejson.dumps(responseData), content_type="application/json")
+
+        # We need to get all items that are compatible with this hardpoint.  That means checking
+        # item type, subtype, as well as size
+        compatibleItems = []
+        minSize = hardpointData.minSize
+        maxSize = hardpointData.maxSize
+        supportedTypes = hardpointData.supportedTypes.all()
+        try:
+            allItemsOfSize = VehicleItem.objects.filter(itemSize__range=(minSize, maxSize))
+        except ObjectDoesNotExist:
+            responseData = [{}]
+            return HttpResponse(simplejson.dumps(responseData), content_type="application/json")
+        responseData = []
+        for item in allItemsOfSize:
+            typeName = item.itemType.typeName
+            subTypeName = item.itemType.subTypeName
+            for supportedType in supportedTypes:
+                if supportedType.subTypeName == "" or not supportedType.subTypeName:
+                    needsSubtype = False
+                else:
+                    needsSubtype = True
+                if typeName == supportedType.typeName.lower() and not needsSubtype:
+                    compatibleItems.append(item)
+                    break
+                if typeName == supportedType.typeName.lower() and subTypeName == supportedType.subTypeName.lower():
+                    compatibleItems.append(item)
+                    break
+        for item in compatibleItems:
+            row = []
+            if item.displayName:
+                row.append(item.displayName)
+            else:
+                row.append(item.name)
+            row.append(item.itemSize)
+            row.append(item.mass)
+            row.append("")
+            row.append("")
+            row.append(item.itemType.name)
+            row.append(item.name)
+            responseData.append(row)
+            response = {"aaData":responseData}
+        return HttpResponse(simplejson.dumps(response), content_type="application/json")
+
+def getItemListForItemHardpoint(request, hardpointName = None, itemName = None):
+    if request.is_ajax():
+        if not hardpointName:
+            print "[ERROR] No hardpointName"
+            responseData = [{}]
+            return HttpResponse(simplejson.dumps(responseData), content_type="application/json")
+        if not itemName:
+            print "[ERROR] No itemName"
+            responseData = [{}]
+            return HttpResponse(simplejson.dumps(responseData), content_type="application/json")
+        try:
+            parentItemData = VehicleItem.objects.get(name__iexact=itemName)
+            for hardpoint in parentItemData.ports.all():
+                if hardpoint.name.lower() == hardpointName.lower():
+                    hardpointData = hardpoint
+                    break
+        except ObjectDoesNotExist, MultipleObjectsReturned:
+            print "[ERROR] Could not find hardpoint"
+            responseData = [{}]
+            return HttpResponse(simplejson.dumps(responseData), content_type="application/json")
+
+        # We need to get all items that are compatible with this hardpoint.  That means checking
+        # item type, subtype, as well as size
+        compatibleItems = []
+        minSize = hardpointData.minSize
+        maxSize = hardpointData.maxSize
+        supportedTypes = hardpointData.supportedTypes.all()
+        try:
+            allItemsOfSize = VehicleItem.objects.filter(itemSize__range=(minSize, maxSize))
+        except ObjectDoesNotExist:
+            responseData = [{}]
+            print "[ERROR] No properly sized items found"
+            return HttpResponse(simplejson.dumps(responseData), content_type="application/json")
+        responseData = []
+        for item in allItemsOfSize:
+            typeName = item.itemType.typeName
+            subTypeName = item.itemType.subTypeName
+            for supportedType in supportedTypes:
+                if supportedType.subTypeName == "" or not supportedType.subTypeName:
+                    needsSubtype = False
+                else:
+                    needsSubtype = True
+                if typeName == supportedType.typeName.lower() and not needsSubtype:
+                    compatibleItems.append(item)
+                    break
+                if typeName == supportedType.typeName.lower() and subTypeName == supportedType.subTypeName.lower():
+                    compatibleItems.append(item)
+                    break
+        for item in compatibleItems:
+            row = []
+            if item.displayName:
+                row.append(item.displayName)
+            else:
+                row.append(item.name)
+            row.append(item.itemSize)
+            row.append(item.mass)
+            row.append("")
+            row.append("")
+            row.append(item.itemType.name)
+            row.append(item.name)
+            responseData.append(row)
+            response = {"aaData":responseData}
+        return HttpResponse(simplejson.dumps(response), content_type="application/json")
+
 @ensure_csrf_cookie
 def getVehicleItemList(request, itemTypeName=None, itemSubTypeName=None, vehicleName=None):
+    print "getVehicleItemLis"
     # JSON callable function to retrive a list of
     # items in Backgrid table format based on the specified
     # Parameters
@@ -1268,7 +1427,7 @@ def getVehicleItemList(request, itemTypeName=None, itemSubTypeName=None, vehicle
         else:
             print "Looking for all items"
             try:
-                items = VehicleItem.objects.all(disabled=False)
+                items = VehicleItem.objects.all()
             except:
                 print "Unable to find items"
                 response_data = [{}]
@@ -1286,27 +1445,90 @@ def getVehicleItemList(request, itemTypeName=None, itemSubTypeName=None, vehicle
                 return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
 
         response_data = []
+        print "Scanning items"
         for item in items:
             if vehicleData:
                 valid = False
                 for port in vehicleData.itemport_set.all():
                     if isItemCompatibleWithPort(item, port):
-                        print item
                         valid = True
                         break
                 if not valid:
                     continue
             # print item
-            row = {}
-            row['type'] = item.itemType.name
-            row['size'] = item.itemSize
+            row = []
             if item.displayName:
-                row['displayName'] = item.displayName
+                row.append(item.displayName)
             else:
-                row['displayName'] = item.name
-            row['name'] = item.name
+                row.append(item.name)
+            row.append(item.itemSize)
+            row.append(item.mass)
+            row.append(item.itemType.name)
+            row.append(item.name)
             response_data.append(row)
-        return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
+            response = {"aaData":response_data}
+        return HttpResponse(simplejson.dumps(response), content_type="application/json")
+    else:
+        if itemTypeName and itemSubTypeName:
+            try:
+                print "Looking for items of type %s, and subtype %s" % (itemTypeName, itemSubTypeName)
+                items = VehicleItem.objects.all().filter(itemType__exact=itemTypeName, itemSubType__iexact=itemSubTypeName, disabled=False)
+            except:
+                print "Unable to find items"
+                response_data = [{}]
+                return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
+        elif itemTypeName:
+            print "Looking for items of type %s" % (itemTypeName)
+            try:
+                items = VehicleItem.objects.all().filter(itemType__typeName__iexact=itemTypeName, disabled=False)
+                # print items
+            except Exception as e:
+                print "Unable to find items"
+                print e
+                response_data = [{}]
+                return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
+        else:
+            print "Looking for all items"
+            try:
+                items = VehicleItem.objects.all()
+            except ObjectDoesNotExist:
+                print "Unable to find items"
+                response_data = [{}]
+                return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
+
+        vehicleData = None
+        if vehicleName:
+            print "Looking for items compatible with %s" % vehicleName
+            # Get the vehicle data
+            try:
+                vehicleData = Vehicle.objects.get(name__iexact=vehicleName)
+            except:
+                print "Unable to find Vehicle"
+                response_data = [{}]
+                return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
+        response_data = []
+        print "Scanning items"
+        for item in items:
+            if vehicleData:
+                valid = False
+                for port in vehicleData.itemport_set.all():
+                    if isItemCompatibleWithPort(item, port):
+                        valid = True
+                        break
+                if not valid:
+                    continue
+            # print item
+            row = []
+            if item.displayName:
+                row.append(item.displayName)
+            else:
+                row.append(item.name)
+            row.append(item.itemSize)
+            row.append(item.mass)
+            row.append(item.itemType.name)
+            row.append(item.name)
+            response_data.append(row)
+            response = {"aaData":response_data}
 
     assert False        
 
@@ -1522,25 +1744,25 @@ def getItemDetails(request):
         response_data['description'] = item.description
 
         # VehicleItemStats
-        allStats = item.vehicleitemparams_set.all()
+        allStats = item.itemStats.all()
         response_data['itemstats'] = []
         for stat in allStats:
             response_data['itemstats'].append( {'name' : stat.name, 'value' : stat.value} )
 
         # Supported states
         response_data['power'] = []
-        for state in VehicleItemPower.objects.filter(parentItem__exact=item):
+        for state in item.pipePower.all():
             response_data['power'].append(state.state)
         response_data['heat'] = []
-        for state in VehicleItemHeat.objects.filter(parentItem__exact=item):
+        for state in item.pipeHeat.all():
             response_data['heat'].append(state.state)
         response_data['avionics'] = []
-        for state in VehicleItemAvionics.objects.filter(parentItem__exact=item):
+        for state in item.pipeAvionics.all():
             response_data['avionics'].append(state.state)
 
         # ItemPorts
         response_data["ports"] = []
-        allPorts = ItemPort.objects.filter(parentItem__exact=item)
+        allPorts = item.ports.all()
         for port in allPorts:
             portData = dict()
             portData["portname"] = port.name
@@ -1729,6 +1951,7 @@ def getGraph(request, graphType):
             # print "Computing graph data for available-power"
             powerConsumed = 0.0
             powerGenerated = 0.0
+            peakPowerConsumed = 0.0
             for entry in requestData["items"]:
                 itemName = entry["name"]
                 itemState = entry["state"]
@@ -1739,29 +1962,51 @@ def getGraph(request, graphType):
                     continue
                 if item.itemType.typeName == "powerplant":
                     try:
-                        powerData = VehicleItemPower.objects.get(parentItem__exact = item, state="Default")
+                        powerData = item.pipePower.get(state="Default")
                         powerGenerated = powerGenerated + float(powerData.value)
                     except ObjectDoesNotExist:
                         pass
                         # print "Failed to get Default state for PowerPlant %s" % (itemName)
                 else:
                     try:
-                        powerData = VehicleItemPower.objects.get(parentItem__exact = item, state=itemState)
-                        # powerData = item.power.get(state=itemState)
+                        powerData = item.pipePower.get(state=itemState)
                         powerConsumed = powerConsumed + float(powerData.value)
+                        peak = 0.0
+                        for state in item.pipePower.all():
+                            if float(state.value) < peak:
+                                peak = float(state.value)
+                        peakPowerConsumed = peakPowerConsumed + peak
                     except ObjectDoesNotExist:
                         pass
                         # print "Failed to get %s state for item %s" % (itemState, itemName)
             response_data = {
             'success' : True,
             'response' : 'Power usage.',
-            'data' : {"powerConsumed" : powerConsumed,"maxPower" : powerGenerated}
+            'data' : {"powerConsumed" : powerConsumed,"maxPower" : powerGenerated, "peakPower": peakPowerConsumed}
             }
             return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
     else:
         # This should never be anything but an AJAX call, so
         # someone is doing somethign fishy!
         assert False
+
+# @ensure_csrf_cookie
+# def shipLayout(request, shipName):
+#     shipData = Vehicle.objects.get(name__iexact=shipName)
+#     shipData.views = shipData.views + 1
+#     shipData.save()
+#     loginForm = AuthenticationForm()
+#     createUserForm = UserCreationForm()
+#     submitBuildForm = SubmitBuildForm()
+
+#     renderContext = {
+#         'shipData'      : shipData,
+#         'loginForm'     : loginForm,
+#         'createUserForm': createUserForm,
+#         'variantForm'   : submitBuildForm
+#     }
+
+#     return render_to_response('bootstrap/light-blue/shipMain.html', renderContext, context_instance=RequestContext(request))
 
 @ensure_csrf_cookie
 def shipLayout(request, shipName):
@@ -1772,14 +2017,37 @@ def shipLayout(request, shipName):
     createUserForm = UserCreationForm()
     submitBuildForm = SubmitBuildForm()
 
+    # Get all types and subtypes for filtering on the item browser
+    # to do this we need to build a list of all subtypes for a given main type and skip empty ones
+    itemTypes = {}
+    allItemTypes = VehicleItemType.objects.all()
+    for itemType in allItemTypes:
+        if itemType.typeName and itemType.subTypeName:
+            if itemType.typeName in itemTypes:
+                itemTypes[itemType.typeName].append(itemType.subTypeName)
+            else:
+                itemTypes[itemType.typeName] = [itemType.subTypeName]
+
+    # Try to fill in missing Hardpoint display names with better looking ones that wrap
+    for image in shipData.vehicleimage_set.all():
+        for tag in image.hardpointtag_set.all():
+            if not tag.hardpoint.displayName or tag.hardpoint.displayName == "":
+                tag.hardpoint.displayName = tag.hardpoint.name.replace("hardpoint_", "").replace("_", " ").title()
+                tag.hardpoint.save()
+    for port in shipData.ports.all():
+        if not port.displayName or port.displayName == "":
+            port.displayName = port.name.replace("hardpoint_", "").replace("_", " ").title()
+            port.save()
     renderContext = {
         'shipData'      : shipData,
         'loginForm'     : loginForm,
         'createUserForm': createUserForm,
-        'variantForm'   : submitBuildForm
+        'variantForm'   : submitBuildForm,
+        'itemTypes'     : itemTypes
     }
-
-    return render_to_response('bootstrap/light-blue/shipMain.html', renderContext, context_instance=RequestContext(request))
+    logger = logging.getLogger("shipBuilder")
+    logger.debug("Test")
+    return render_to_response('metronic/admin/shipMain.html', renderContext, context_instance=RequestContext(request))
 
 def phase2(request):
     renderContext = {
@@ -1800,7 +2068,7 @@ def phase2ShipList(request):
     # The bit here about context_instance=RequestContext(request) is ABSOLUTELY VITAL 
     # as it is what enables the resulting rendered view to contain the CSRF token!
     # !!!!!!!!!!!!!
-    return render_to_response('bootstrap/light-blue/shipList.html', renderContext, context_instance=RequestContext(request))
+    return render_to_response('metronic/admin/shipList.html', renderContext, context_instance=RequestContext(request))
 
 def phase2VariantList(request):
     variants = Variant.objects.all().order_by("-creation_date")
@@ -1812,7 +2080,7 @@ def phase2VariantList(request):
     # The bit here about context_instance=RequestContext(request) is ABSOLUTELY VITAL 
     # as it is what enables the resulting rendered view to contain the CSRF token!
     # !!!!!!!!!!!!!
-    return render_to_response('bootstrap/light-blue/variantsList.html', renderContext, context_instance=RequestContext(request))
+    return render_to_response('metronic/admin/variantList.html', renderContext, context_instance=RequestContext(request))
 
 def gameUpdateList(request):
     updates = GameUpdate.objects.all().order_by("-creation_date")
@@ -1828,7 +2096,7 @@ def gameUpdateList(request):
     # The bit here about context_instance=RequestContext(request) is ABSOLUTELY VITAL 
     # as it is what enables the resulting rendered view to contain the CSRF token!
     # !!!!!!!!!!!!!
-    return render_to_response('bootstrap/light-blue/gameUpdateList.html', renderContext, context_instance=RequestContext(request))
+    return render_to_response('metronic/admin/gameUpdateList.html', renderContext, context_instance=RequestContext(request))
 
 def gameUpdate(request, pk):
     update = GameUpdate.objects.get(pk=pk)
@@ -1846,7 +2114,7 @@ def gameUpdate(request, pk):
     # The bit here about context_instance=RequestContext(request) is ABSOLUTELY VITAL 
     # as it is what enables the resulting rendered view to contain the CSRF token!
     # !!!!!!!!!!!!!
-    return render_to_response('bootstrap/light-blue/gameUpdate.html', renderContext, context_instance=RequestContext(request))
+    return render_to_response('metronic/admin/gameUpdate.html', renderContext, context_instance=RequestContext(request))
 
 def gameUpdatesByEntity(request, entityName):
     changes = GameUpdateChange.objects.filter(entityName=entityName).order_by("-creation_date")
@@ -1863,7 +2131,7 @@ def gameUpdatesByEntity(request, entityName):
     # The bit here about context_instance=RequestContext(request) is ABSOLUTELY VITAL 
     # as it is what enables the resulting rendered view to contain the CSRF token!
     # !!!!!!!!!!!!!
-    return render_to_response('bootstrap/light-blue/gameUpdateByEntity.html', renderContext, context_instance=RequestContext(request))
+    return render_to_response('metronic/admin/gameUpdateByEntity.html', renderContext, context_instance=RequestContext(request))
 
 def testView(request):
     # shipName = '300i'  
@@ -1896,7 +2164,7 @@ def testView(request):
     # The bit here about context_instance=RequestContext(request) is ABSOLUTELY VITAL 
     # as it is what enables the resulting rendered view to contain the CSRF token!
     # !!!!!!!!!!!!!
-    return render_to_response('metronic/admin/layout_blank_page.html', renderContext, context_instance=RequestContext(request))
+    return render_to_response('metronic/admin/databanks_items.html', renderContext, context_instance=RequestContext(request))
 
 @ensure_csrf_cookie
 def createOrUpdateVariant(request):
@@ -1995,11 +2263,14 @@ def createOrUpdateVariant(request):
             try:
                 if parentItem and parentPort:
                     parentItemData = VehicleItem.objects.get(name__iexact=parentItem);
-                    portData = ItemPort.objects.get(name__iexact=portName, parentItem__exact=parentItemData)
-                    parentPortData = ItemPort.objects.get(name__iexact=parentPort, parentVehicle__exact=vehicleData)
+                    portData = parentItem.ports.get(name__iexact=portName)
+                    parentPortData = vehicleData.ports.get(name__iexact=parentPort)
+                    # portData = ItemPort.objects.get(name__iexact=portName, parentItem__exact=parentItemData)
+                    # parentPortData = ItemPort.objects.get(name__iexact=parentPort, parentVehicle__exact=vehicleData)
                 else:
-                    portData = ItemPort.objects.get(name__iexact=portName, parentVehicle__exact=vehicleData)
+                    # portData = ItemPort.objects.get(name__iexact=portName, parentVehicle__exact=vehicleData)
                     itemData = VehicleItem.objects.get(name__iexact=itemName)
+                    portData = vehicleData.ports.get(name__iexact=portName)
                 item = {
                     "port" : portData,
                     "item" : itemData
@@ -2093,4 +2364,172 @@ def displayVariant(request, variantID):
         'variantForm'       : submitBuildForm,
         'variant'           : variant
     }
-    return render_to_response('bootstrap/light-blue/variant.html', renderContext, context_instance=RequestContext(request))
+    return render_to_response('metronic/admin/variant.html', renderContext, context_instance=RequestContext(request))
+    # wifi pw 240805799
+def computeStats(request):
+    # JSON callable function to retrive graph data
+    if request.is_ajax():
+        try:
+            requestData = simplejson.loads(request.body)
+            # print "JSON Data:"
+            # print requestData
+        except:
+            # print "json parse failed"
+            response_data = {
+            'success' : False,
+            'response' : 'Unable to parse JSON object.',
+            'data' : [{"values":[]}]
+            }
+            return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
+        response_data = {}
+        try:
+            vehicle = Vehicle.objects.get(name__iexact=requestData["ship"])
+        except:
+            response_data = {
+            'success' : False,
+            'response' : 'Unable to retrieve Vehicle data',
+            'data' : [{"values":[]}]
+            }
+            return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
+
+        totalMass = vehicle.empty_mass
+        totalThrust = 0.0
+        totalPower = 0
+        for entry in requestData["items"]:
+            itemName = entry["name"]
+            try:
+                item = VehicleItem.objects.get(name__iexact=itemName)
+            except:
+                print "Failed to find item %s" % (itemName)
+                continue
+            # print "%s, Mass: %f" % (itemName, item.mass)
+            totalMass = totalMass + item.mass
+            if item.thrusterData:
+                totalThrust = totalThrust + item.thrusterData.maxthrust
+            try:
+                totalPower = totalPower + float(item.pipePower.get(state__iexact="Default").value)
+            except:
+                pass
+        thrustToEarthWeightRatio = totalThrust / (totalMass * 9.807)
+        thrustToWeightRatio = totalThrust / totalMass
+        response_data["twr"] = thrustToWeightRatio
+        response_data['mass'] = totalMass
+        response_data['power'] = totalPower
+        response_data["thrust"] = totalThrust
+        response_data['success'] = True
+        return HttpResponse(simplejson.dumps(response_data), content_type="application/json")
+    else:
+        # This should never be anything but an AJAX call, so
+        # someone is doing somethign fishy!
+        assert False    
+def getItemTooltipPagePipes(request, itemName):
+    if not itemName or itemName == "":
+        raise Http404()
+
+    try:
+        itemData = VehicleItem.objects.get(name__iexact=itemName)
+    except ObjectDoesNotExist:
+        raise Http404()
+
+
+    allHeat = itemData.pipeHeat.all()
+    heatData = []
+    tickDict = {}
+    for state in allHeat:
+        stateData = { "label": state.state }
+        graphPoints = extrapolateStateValues(state, duration=30, metric=0, stacking=True)
+        for point in graphPoints:
+            tickDict[point] = point
+        stateData["data"] = []
+        for i in range(0,31):
+            stateData["data"].append([i, graphPoints[i]])
+        heatData.append(stateData)
+    heatTicks = []
+    for tick in tickDict:
+        heatTicks.append(tick)
+
+
+    allPower = itemData.pipePower.all()
+    powerData = []
+    tickDict = {}
+    for state in allPower:
+        stateData = { "label": state.state }
+        graphPoints = extrapolateStateValues(state, duration=30, metric=0, stacking=False)
+        for point in graphPoints:
+            tickDict[point] = point
+        stateData["data"] = []
+        for i in range(0,31):
+            stateData["data"].append([i, graphPoints[i]])
+        powerData.append(stateData)
+    powerTicks = []
+    for tick in tickDict:
+        powerTicks.append(tick)
+
+    allAvionics = itemData.pipeAvionics.all()
+    avionicsData = []
+    tickDict = {}
+    for state in allAvionics:
+        stateData = { "label": state.state }
+        graphPoints = extrapolateStateValues(state, duration=30, metric=0, stacking=False)
+        for point in graphPoints:
+            tickDict[point] = point
+        stateData["data"] = []
+        for i in range(0,31):
+            stateData["data"].append([i, graphPoints[i]])
+        avionicsData.append(stateData)
+    avionicsTicks = []
+    for tick in tickDict:
+        avionicsTicks.append(tick)
+
+    renderContext = {
+        'itemData': itemData,
+        'heatData': simplejson.dumps(heatData),
+        'heatTicks': simplejson.dumps(heatTicks),
+        'powerData': simplejson.dumps(powerData),
+        'powerTicks': simplejson.dumps(powerTicks),
+        'avionicsData': simplejson.dumps(avionicsData),
+        'avionicsTicks': simplejson.dumps(avionicsTicks)
+    }
+    return render_to_response('tooltips/VehicleItemPipes.html', renderContext, context_instance=RequestContext(request))
+
+def getItemTooltipPageBasic(request, itemName):
+    if not itemName or itemName == "":
+        raise Http404()
+
+    try:
+        itemData = VehicleItem.objects.get(name__iexact=itemName)
+    except ObjectDoesNotExist:
+        raise Http404()
+    renderContext = {
+        'itemData': itemData
+    }
+    return render_to_response('tooltips/VehicleItemBasic.html', renderContext, context_instance=RequestContext(request))
+
+def getItemTooltipPageDetails(request, itemName):
+    if not itemName or itemName == "":
+        raise Http404()
+
+    try:
+        itemData = VehicleItem.objects.get(name__iexact=itemName)
+    except ObjectDoesNotExist:
+        raise Http404()
+
+    weaponData = itemData.weaponData
+    ammoData = itemData.ammoData
+    armorData = itemData.armorData
+    batteryData = itemData.batteryData
+    radarData = itemData.radarData
+    shieldData = itemData.shieldData
+    gimbalData = itemData.gimbalData
+    thrusterData = itemData.thrusterData
+    turretData = itemData.turretData
+
+    renderContext = {
+        'itemData': itemData,
+    }
+    return render_to_response('tooltips/VehicleItemDetails.html', renderContext, context_instance=RequestContext(request))
+
+def bullshit(request, param=None):
+    renderContext = {
+    }
+    return render_to_response('bullshit.html', renderContext, context_instance=RequestContext(request))

@@ -1,0 +1,116 @@
+{% load static %}
+<link rel="stylesheet" href="http://cdn.oesmith.co.uk/morris-0.4.3.min.css">
+
+<script src='{% static "metronic/assets/global/plugins/jquery-1.11.0.min.js" %}' type="text/javascript"></script>
+<script src='{% static "metronic/assets/global/plugins/jquery-migrate-1.2.1.min.js" %}' type="text/javascript"></script>
+
+<h4>{{itemData.displayName}}</h4>
+<h4>{{itemData.manufacturer.name}}</h4>
+<p>{{itemData.description|wordwrap:100}}</p>
+<hr/>
+{% if itemData.itemType.subTypeName %}
+	<p>{{itemData.itemType.typeName|title}} -> {{itemData.itemType.subTypeName|title}}</p>
+{% else %}
+	<p>{{itemData.itemType.typeName|title}}</p>
+{% endif %}
+<p><b>Size</b> {{itemData.itemSize}}, <b>Mass</b> {{itemData.mass}}kg</p>
+
+{% if itemData.itemStats.all|length > 0 %}
+	<hr/>
+	{% for stat in itemData.itemStats.all %}
+		{% if forloop.first %}<p>{% endif %}<b>{{stat.name}}</b> {{stat.value}}{% if not forloop.last %} -- {% else %}</p>{% endif %}
+	{% endfor %}
+{% endif %}
+
+{% if itemData.pipePower.all|length > 0 %}
+	<hr/>
+	<h4>Power</h4>
+	<p>Positive values indicate <b>generation</b>, and negative values indicate <b>consumption</b></p>
+	<div id="power-graph" style="width:400px;height:200px;"></div>
+	<script>
+    jQuery(document).ready(function() {
+
+    	$.plot($("#power-graph"), 
+    		{% autoescape off %}
+    		{{powerData}},
+    		{% endautoescape %}
+			{ 
+				series:
+				{
+					stack: 0,
+					lines: 
+					{
+						show: true
+					}
+				},
+				xaxis:
+				{
+					max: null
+				}
+			}
+		);
+    });
+	</script>
+{% endif %}
+
+{% if itemData.pipeHeat.all|length > 0 %}
+	<hr/>
+	<h4>Heat</h4>
+	<p>Positive values indicate <b>generation</b>, and negative values indicate <b>consumption</b></p>
+	<div id="heat-graph" style="width:400px;height:200px;"></div>
+	<script>
+    jQuery(document).ready(function() {
+
+    	$.plot($("#heat-graph"), 
+    		{% autoescape off %}
+    		{{heatData}},
+    		{% endautoescape %}
+			{ 
+				series:
+				{
+					stack: 0,
+					lines: 
+					{
+						show: true
+					}
+				},
+				xaxis:
+				{
+					max: null
+				}
+			}
+		);
+    });
+	</script>
+{% endif %}
+
+{% if itemData.pipeAvionics.all|length > 0 %}
+	<hr/>
+	<h4>Avionics</h4>
+	<p>Positive values indicate <b>generation</b>, and negative values indicate <b>consumption</b></p>
+	<div id="avionics-graph" style="width:400px;height:200px;"></div>
+	<script>
+    jQuery(document).ready(function() {
+
+    	$.plot($("#avionics-graph"), 
+    		{% autoescape off %}
+    		{{avionicsData}},
+    		{% endautoescape %}
+			{ 
+				series:
+				{
+					stack: 0,
+					lines: 
+					{
+						show: true
+					}
+				},
+				xaxis:
+				{
+					max: null
+				}
+			}
+		);
+    });
+	</script>
+{% endif %}

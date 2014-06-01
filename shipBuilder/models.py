@@ -4,13 +4,6 @@ from django.utils.safestring import mark_safe
 from django.contrib.auth.models import User
 
 # Create your models here.
-class Manufacturer(models.Model):
-    name = models.CharField(max_length=30, default='')
-    description = models.CharField(max_length=255, blank=True)
-    
-    def __unicode__(self):
-        return self.name
-
 class ItemCategory(models.Model):
     description = models.CharField(max_length=30, default='')
     
@@ -32,7 +25,7 @@ class Item(models.Model):
     rating = models.PositiveIntegerField(default=1)
     size = models.IntegerField(default=0)
     description = models.CharField(max_length=255, blank=True)
-    manufacturer = models.ForeignKey(Manufacturer)
+    manufacturer = models.ForeignKey("Manufacturer")
     item_category = models.ForeignKey(ItemCategory)
     hardpoint_class = models.PositiveIntegerField(default=0,blank=True,null=True)
     supported_hardpoints = models.ManyToManyField('Hardpoint', blank=True, null=True)
@@ -246,7 +239,7 @@ class Ship(models.Model):
     # about the BASE unmodified ships available in the game
     # The Build model is what stores the ship plus all the mods
     name = models.CharField(max_length = 30, default='')
-    manufacturer = models.ForeignKey(Manufacturer)
+    manufacturer = models.ForeignKey("Manufacturer")
     description = models.TextField(max_length=255, blank=True)
     maximum_crew = models.PositiveIntegerField(default=1)
     empty_mass = models.BigIntegerField(default=0)
@@ -336,6 +329,12 @@ class Build(models.Model):
 ## New models based on actual game data rather than
 ## best guesses!
 ######################################################
+class Manufacturer(models.Model):
+    name = models.CharField(max_length=30, default='')
+    description = models.CharField(max_length=255, blank=True, null = True)
+    
+    def __unicode__(self):
+        return self.name
 
 ### Descriptions need to be localized for different languages
 class LocalizedDescriptionManufacturer(models.Model):
@@ -358,7 +357,7 @@ class LocalizedDescriptionVehicleItem(models.Model):
 class VehicleItemType(models.Model):
     name = models.CharField(max_length = 255, default = "")
     typeName = models.CharField(max_length = 255, default = "")
-    subTypeName  = models.CharField(max_length = 255, default = "")
+    subTypeName  = models.CharField(max_length = 255, default = "", blank = True, null = True)
 
     def __unicode__(self):
         return self.name
@@ -392,45 +391,214 @@ class VehicleItemPower(models.Model):
     state = models.CharField(max_length = 128)
     # Value couldbe a packed value curve
     value = models.CharField(max_length = 255)
-    parentItem = models.ForeignKey('VehicleItem', blank = True, null = True)
 
     def __unicode__(self):
-        return u"(%s)%s - %s" % (self.parentItem.name, self.state, self.value)
+        return u"%s - %s" % (self.state, self.value)
 
 class VehicleItemHeat(models.Model):
     state = models.CharField(max_length = 128)
     # Value couldbe a packed value curve
     value = models.CharField(max_length = 255)
-    parentItem = models.ForeignKey('VehicleItem', blank = True, null = True)
 
     def __unicode__(self):
-        return u"(%s)%s - %s" % (self.parentItem.name, self.state, self.value)
+        return u"%s - %s" % (self.state, self.value)
 
 class VehicleItemAvionics(models.Model):
     state = models.CharField(max_length = 128)
     # Value couldbe a packed value curve
     value = models.CharField(max_length = 255)
-    parentItem = models.ForeignKey('VehicleItem', blank = True, null = True)
 
     def __unicode__(self):
-        return u"(%s)%s - %s" % (self.parentItem.name, self.state, self.value)
+        return u"%s - %s" % (self.state, self.value)
 
 class VehicleItem(models.Model):
-    itemClass = models.PositiveIntegerField(default = 1)
+    itemClass = models.PositiveIntegerField(default = 0)
     description = models.TextField(blank = True, null = True)
     name = models.CharField(max_length = 255)
-    displayName = models.CharField(max_length = 255, blank = True)
+    displayName = models.CharField(max_length = 255, blank = True, null = True)
     itemType = models.ForeignKey('VehicleItemType', blank = True, null = True)
     manufacturer = models.ForeignKey('Manufacturer', blank = True, null = True)
     itemSize = models.PositiveIntegerField(default = 0)
     mass = models.FloatField(default = 0)
     hitpoints = models.BigIntegerField(default = 0)
+    itemStats = models.ManyToManyField('ItemStat', blank = True, null = True)
+    ports = models.ManyToManyField('ItemPort', blank = True, null = True)
+    pipePower = models.ManyToManyField('VehicleItemPower', blank = True, null = True)
+    pipeHeat = models.ManyToManyField('VehicleItemHeat', blank = True, null = True)
+    pipeAvionics = models.ManyToManyField('VehicleItemAvionics', blank = True, null = True)
+    weaponData = models.ForeignKey('Weapon', blank = True, null = True)
+    ammoData = models.ForeignKey('Ammo', blank = True, null = True)
+    armorData = models.ForeignKey('Armor', blank = True, null = True)
+    batteryData = models.ForeignKey('Battery', blank = True, null = True)
+    radarData = models.ForeignKey('Radar', blank = True, null = True)
+    shieldData = models.ForeignKey('Shield', blank = True, null = True)
+    gimbalData = models.ForeignKey('Gimbal', blank = True, null = True)
+    thrusterData = models.ForeignKey('Thruster', blank = True, null = True)
+    turretData = models.ForeignKey('Turret', blank = True, null = True)
     # Additional fields required for The Barn
     views = models.PositiveIntegerField(default = 0)
     disabled = models.BooleanField(default = False)
 
     def __unicode__(self):
         return u"%s" % (self.name)
+
+class ItemStat(models.Model):
+    name = models.CharField(max_length = 255)
+    value = models.FloatField(default = 0.0)
+
+    def __unicode__(self):
+        return u"%s:%.2f" % (self.name, self.value)
+
+class Weapon(models.Model):
+    supportedAmmo = models.ManyToManyField('Ammo', blank = True, null = True)
+    fireModes = models.ManyToManyField('Firemode', blank = True, null = True)
+
+    def __unicode__(self):
+        return u"%d" % (self.id)
+
+class VehicleDamageParam(models.Model):
+    damage = models.FloatField(default = 0)
+    damage_drop_min_distance = models.FloatField(default = 0)
+    damage_drop_per_meter = models.FloatField(default = 0)
+    damage_drop_min_damage = models.FloatField(default = 0)
+
+    def __unicode__(self):
+        return u"Damage: %.2f, Min Range: %.2f Meters" % (self.damage, self.damage_drop_min_distance)
+class Signature(models.Model):
+    name = models.CharField(max_length = 255)
+    # Threshold is used for things with a detection threshold
+    threshold = models.FloatField(default = 0)
+    # Value is used for things that offset the ship's signature in a positive or negtive manner
+    value = models.FloatField(default = 0)
+
+class VehicleMissileGuidanceParam(models.Model):
+    min_tracking_angle = models.FloatField(default = 0)
+    max_tracking_angle = models.FloatField(default = 0)
+    min_tracking_distance = models.FloatField(default = 0)
+    max_tracking_distance = models.FloatField(default = 0)
+    guidance_type = models.CharField(max_length = 255, blank = True, null = True)
+    signal_range_modifier = models.FloatField(default = 0)
+    signal_antenna_gain = models.FloatField(default = 0)
+    signal_transmit_power = models.FloatField(default = 0)
+    signatures = models.ManyToManyField('Signature', blank = True, null = True)
+
+    def __unicode__(self):
+        return u"%s" % (self.guidance_type)
+
+class VehicleMissileParam(models.Model):
+    turn_speed = models.FloatField(default = 0)
+    turn_lazyness = models.FloatField(default = 0)
+    max_speed = models.FloatField(default = 0)
+    accel = models.FloatField(default = 0)
+    maneuver_accel = models.FloatField(default = 0)
+    initial_delay = models.FloatField(default = 0)
+    ammolive = models.BooleanField(default = False)
+    category = models.CharField(max_length = 255, blank = True, null = True)
+    detonation_radius = models.FloatField(default = 0)
+    damage = models.FloatField(default = 0)
+
+class Ammo(models.Model):
+    name = models.CharField(max_length = 255)
+    displayName = models.CharField(max_length = 255, blank = True, null = True)
+    pierceability = models.FloatField(default = 15)
+    vehicleDamageParam = models.ForeignKey('VehicleDamageParam', blank = True, null = True)
+    vehicleMissileParam = models.ForeignKey('VehicleMissileParam', blank = True, null = True)
+    vehicleMissileGuidanceParam = models.ForeignKey('VehicleMissileGuidanceParam', blank = True, null = True)
+
+    def __unicode__(self):
+        return u"%s" % (self.name)
+
+class Firemode(models.Model):
+    name = models.CharField(max_length = 255)
+    ammo_type = models.CharField(max_length = 255, blank = True, null = True)
+    ammo = models.ForeignKey('Ammo', blank = True, null = True)
+    rate = models.FloatField(default = 0)
+    damage = models.FloatField(default = 0)
+
+class Armor(models.Model):
+    armorParams = models.ManyToManyField('ArmorParam', blank = True, null = True)
+    damageMultipliers = models.ManyToManyField('DamageMultiplier', blank = True, null = True)
+    signatures = models.ManyToManyField('Signature', blank = True, null = True)
+
+class ArmorParam(models.Model):
+    name = models.CharField(max_length = 255)
+    value = models.FloatField(default = 0)
+
+class DamageMultiplier(models.Model):
+    damagetype = models.CharField(max_length = 255, default = "default")
+    multiplier = models.FloatField(default = 0)
+
+    def asPercent(self):
+        output = "%s %.2f" % (self.damagetype, self.multiplier * 100.0)
+        return mark_safe(output)
+
+class Battery(models.Model):
+    dynamicPipe = models.FloatField(default = 0)
+    chargeRate = models.FloatField(default = 0)
+    capacity = models.FloatField(default = 0)
+    output = models.FloatField(default = 0)
+
+class Radar(models.Model):
+    radar_type = models.CharField(max_length = 255, blank = True, null = True)
+    search_radius = models.FloatField(default = 0)
+    grid_size = models.FloatField(default = 0)
+    signal_range_modifier = models.FloatField(default = 0)
+    signal_antenna_gain = models.FloatField(default = 0)
+    signal_transmit_power = models.FloatField(default = 0)
+    signatures = models.ManyToManyField('Signature', blank = True, null = True)
+
+class Shield(models.Model):
+    shieldtype = models.CharField(max_length = 255, blank = True, null = True)
+    shieldfacetype = models.CharField(max_length = 255, blank = True, null = True)
+    regenratepersecond = models.FloatField(default = 0)
+    regenpowerperpoint = models.FloatField(default = 0)
+    maxshieldlevel = models.FloatField(default = 0)
+    regenshielddelay = models.FloatField(default = 0)
+    maxlevelmodifier = models.FloatField(default = 0)
+
+class SignatureModifier(models.Model):
+    signatures = models.ManyToManyField('Signature', blank = True, null = True)
+
+class Gimbal(models.Model):
+    yaw_min = models.FloatField(default = 0)
+    yaw_max = models.FloatField(default = 0)
+    yaw_speed = models.FloatField(default = 0)
+    yaw_acceleration = models.FloatField(default = 0)
+    pitch_min = models.FloatField(default = 0)
+    pitch_max = models.FloatField(default = 0)
+    pitch_speed = models.FloatField(default = 0)
+    pitch_acceleration = models.FloatField(default = 0)
+    roll_min = models.FloatField(default = 0)
+    roll_max = models.FloatField(default = 0)
+    roll_speed = models.FloatField(default = 0)
+    roll_acceleration = models.FloatField(default = 0)
+
+class Thruster(models.Model):
+    maxthrust = models.FloatField(default = 0)
+    yaw_min = models.FloatField(default = 0)
+    yaw_max = models.FloatField(default = 0)
+    yaw_speed = models.FloatField(default = 0)
+    yaw_acceleration = models.FloatField(default = 0)
+    pitch_min = models.FloatField(default = 0)
+    pitch_max = models.FloatField(default = 0)
+    pitch_speed = models.FloatField(default = 0)
+    pitch_acceleration = models.FloatField(default = 0)
+    roll_min = models.FloatField(default = 0)
+    roll_max = models.FloatField(default = 0)
+    roll_speed = models.FloatField(default = 0)
+    roll_acceleration = models.FloatField(default = 0)
+    gimbal = models.ForeignKey('Gimbal', blank = True, null = True)
+
+class Turret(models.Model):
+    yaw_min = models.FloatField(default = 0)
+    yaw_max = models.FloatField(default = 0)
+    yaw_speed = models.FloatField(default = 0)
+    pitch_min = models.FloatField(default = 0)
+    pitch_max = models.FloatField(default = 0)
+    pitch_speed = models.FloatField(default = 0)
+    roll_min = models.FloatField(default = 0)
+    roll_max = models.FloatField(default = 0)
+    roll_speed = models.FloatField(default = 0)
 
 ### Vehicles
 class VehicleImage(models.Model):
@@ -443,14 +611,13 @@ class VehicleImage(models.Model):
 
 class ItemPort(models.Model):
     # Basic fields as required by game model
-    displayName = models.CharField(max_length = 255, blank = True)
+    displayName = models.CharField(max_length = 255, blank = True, null = True)
     name = models.CharField(max_length = 255)
-    flags = models.CharField(max_length = 512, blank = True)
+    flags = models.CharField(max_length = 512, blank = True, null = True)
     maxSize = models.PositiveIntegerField(default = 1)
     minSize = models.PositiveIntegerField(default = 0)
     supportedTypes = models.ManyToManyField('VehicleItemType', blank = True, null = True) 
     parentVehicle = models.ForeignKey('Vehicle', blank = True, null = True)
-    parentItem = models.ForeignKey('VehicleItem', blank = True, null = True)
     # Added just in case the game starts using it
     portClass = models.PositiveIntegerField(default = 0)
     # Additional fields required for The Barn
@@ -466,7 +633,7 @@ class ItemPort(models.Model):
             name = self.displayName
         else:
             name = self.name
-        return u"%s: %s (%d-%d) %s" % (self.parentVehicle, name, self.minSize, self.maxSize, self.supportedTypes.all())
+        return self.name
 
 class VehicleCategory(models.Model):
     name = models.CharField(max_length = 255)
@@ -478,8 +645,9 @@ class Vehicle(models.Model):
     # Basic fields as required by game model
     vehicleClass = models.PositiveIntegerField(default = 1)
     category = models.CharField(max_length=255, default = "Default Vehicle")
-    displayName = models.CharField(max_length = 255, blank = True)
+    displayName = models.CharField(max_length = 255, blank = True, null = True)
     name = models.CharField(max_length = 255)
+    ports = models.ManyToManyField('ItemPort', blank = True, null = True)
     # Additional fields required for The Barn
     views = models.PositiveIntegerField(default = 0)
     upgradeSlots = models.PositiveIntegerField(default = 0)
@@ -488,7 +656,7 @@ class Vehicle(models.Model):
     length = models.FloatField(default = 0)
     width = models.FloatField(default = 0)
     height = models.FloatField(default = 0)
-    thumbnail = models.URLField(default='', blank = True)
+    thumbnail = models.URLField(default='', blank = True, null = True)
     available = models.BooleanField(default = False)
     manufacturer = models.ForeignKey('Manufacturer', blank = True, null = True)
     defaultVariant = models.ForeignKey('Variant', blank = True, null = True)
@@ -502,8 +670,10 @@ class Vehicle(models.Model):
             
 class HardpointTag(models.Model):
     hardpoint = models.ForeignKey('ItemPort', blank = True, null = True);
-    locationX = models.FloatField(default = 0)
-    locationY = models.FloatField(default = 0)
+    tagX = models.FloatField(default = 0)
+    tagY = models.FloatField(default = 0)
+    datablockX = models.FloatField(default = 0)
+    datablockY = models.FloatField(default = 0)
     disabled = models.BooleanField(default = False)
     parentImage = models.ForeignKey('VehicleImage', blank = True, null = True)
 
@@ -521,8 +691,8 @@ class Variant(models.Model):
     baseVehicle = models.ForeignKey('Vehicle', blank=True, null=True)
     created_by = models.ForeignKey(User, blank=True, null=True, default=None)
     creation_date = models.DateTimeField(auto_now_add=True)
-    name = models.CharField(max_length=30, default='', blank=True)
-    role = models.CharField(max_length=30, blank=True)
+    name = models.CharField(max_length=30, default='', blank=True, null = True)
+    role = models.CharField(max_length=30, blank=True, null = True)
     up_votes = models.PositiveIntegerField(default=0)
     down_votes = models.PositiveIntegerField(default=0)
     views = models.PositiveIntegerField(default = 0)

@@ -27,6 +27,7 @@ urlpatterns = patterns('shipBuilder.views',
     url(r'^itemports/$', views.itemPortList, name='itemport-list'),
     url(r'^itemports/(?P<pk>[0-9]+)$', views.itemPortDetail, name='itemport-detail'),
     url(r'^itemports/byvehicle/(?P<pk>[0-9]+)$', views.itemPortListByVehicle, name='itemport-listbyvehicle'),
+    url(r'^itemtypes/$', views.itemTypeList, name='itemtype-list'),
 	url(r'^$', 'api_root'),
 )
 

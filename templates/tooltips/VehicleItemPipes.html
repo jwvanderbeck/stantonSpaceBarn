@@ -1,0 +1,98 @@
+<h4>Resource Pipes</h4>
+<p>Positive values indicate <b>generation</b>, and negative values indicate <b>consumption</b></p>
+{% if itemData.pipePower.all|length > 0 %}
+	<h4>Power</h4>
+	<div id="power-graph" style="width:325px;height:125px;"></div>
+	<script>
+    jQuery(document).ready(function() {
+
+    	$.plot($("#power-graph"), 
+    		{% autoescape off %}
+    		{{powerData}},
+    		{% endautoescape %}
+			{ 
+				series:
+				{
+					stack: 0,
+					lines: 
+					{
+						show: true
+					}
+				},
+				legend:
+				{
+					margin: [-70,0]
+				},
+				yaxis:
+				{
+					ticks: {{powerTicks}}
+				}
+			}
+		);
+    });
+	</script>
+{% endif %}
+{% if itemData.pipeHeat.all|length > 0 %}
+	<h4>Heat</h4>
+	<div id="heat-graph" style="width:325px;height:125px;"></div>
+	<script>
+    jQuery(document).ready(function() {
+
+    	$.plot($("#heat-graph"), 
+    		{% autoescape off %}
+    		{{heatData}},
+    		{% endautoescape %}
+			{ 
+				series:
+				{
+					stack: 0,
+					lines: 
+					{
+						show: true
+					}
+				},
+				legend:
+				{
+					margin: [-70,0]
+				},
+				yaxis:
+				{
+					ticks: {{heatTicks}}
+				}
+			}
+		);
+    });
+	</script>
+{% endif %}
+{% if itemData.pipeAvionics.all|length > 0 %}
+	<h4>Avionics</h4>
+	<div id="avionics-graph" style="width:325px;height:125px;"></div>
+	<script>
+    jQuery(document).ready(function() {
+
+    	$.plot($("#avionics-graph"), 
+    		{% autoescape off %}
+    		{{avionicsData}},
+    		{% endautoescape %}
+			{ 
+				series:
+				{
+					stack: 0,
+					lines: 
+					{
+						show: true
+					}
+				},
+				legend:
+				{
+					margin: [-100,0]
+				},
+				yaxis:
+				{
+					ticks: {{avionicsTicks}}
+				}
+			}
+		);
+    });
+	</script>
+{% endif %}

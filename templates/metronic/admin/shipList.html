@@ -1,0 +1,33 @@
+{% extends "metronic/admin/workshop_base.html" %}
+{% load static %}
+{% block head %}
+{{block.super}}
+{% endblock head %}
+
+{% block sidebar %}
+{{block.super}}
+{% endblock sidebar %}
+
+{% block page-header %}Available Ships{% endblock page-header %}
+
+{% block main-content %}
+{{block.super}}
+{% for vehicle in vehicle_list %}
+{% if vehicle.available %}
+<div class="col-lg-3">
+	<div class="panel panel-info">
+        <div class="panel-heading">
+            <h4><a href="/ship/{{vehicle.name}}">{{vehicle.displayName}}</a></h4>
+        </div>
+        <div class="panel-body">
+            <a href="/ship/{{vehicle.name}}"><image src="{{vehicle.thumbnail}}" class="img-responsive" /></a>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endfor %}
+{% endblock main-content %}
+
+{% block ready-script %}
+{{block.super}}
+{% endblock ready-script %}

@@ -1,0 +1,45 @@
+{% extends "metronic/admin/workshop_base.html" %}
+{% load static %}
+
+{% block head %}
+{{block.super}}
+{% endblock head %}
+
+{% block sidebar %}
+{{block.super}}
+{% endblock sidebar %}
+
+{% block pre-content %}
+{{block.super}}
+{% endblock pre-content %}
+
+{% block page-header %}Game Updates{% endblock page-header %}
+        {% block main-content %}
+        <div class="row-fluid">
+            <div class="col-md-8">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h1 class="page-title">Select a GameUpdate</h1>
+                    </div>
+                    <div class="panel-body">
+                    {% for update in updates_list %}
+                    <p><a href="/gameupdate/{{update.id}}">{{update.name}}</a></p>
+                    {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endblock main-content %}
+
+
+{% block ready-script %}
+
+{{ block.super }}
+
+{% if user.is_authenticated %}
+setUserState(true);
+{% else %}
+setUserState(false);
+{% endif %}
+enableUpdateVariant(false);
+{% endblock ready-script %}

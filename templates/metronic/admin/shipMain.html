@@ -1,0 +1,493 @@
+{% extends "metronic/admin/workshop_base.html" %}
+{% load static %}
+{% load humanize %}
+
+{% block head %}
+{{block.super}}
+{% endblock head %}
+
+{% block sidebar %}
+{{block.super}}
+{% endblock sidebar %}
+
+{% block pre-content %}
+{{block.super}}
+<div class="modal fade" id="item_browser_dialog" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                <h4 class="modal-title">Item Browser</h4>
+            </div>
+            <div class="modal-body">
+                <table id="item_browser_dialog_table" class="table datatable" cellspacing="0" cellpadding="0" data-current-port="" data-current-parent-port="">
+                    <thead>
+                        <th>Display Name</th>
+                        <th>Size</th>
+                        <th>Mass</th>
+                        <th>Pipes</th>
+                        <th>Detail</th>
+                        <th>Name</th>
+                        <th>Type</th>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="unequip-item-button" class="btn btn-danger" onclick="unequipHardpoint()">Un-Equip Hardpoint</button>
+                <button type="button" id="equip-item-button" class="btn green disabled" onclick="equipItem()">Equip Selected</button>
+                <button type="button" class="btn default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+<div class="modal fade" id="quick-variant">
+    <div class="modal-dialog">
+        <div class="modal-content" tabindex="-1" role="dialog">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">X</button>
+                <h3>QuickVariant</h3>
+            </div>
+            <div class="modal-body">
+                <h5>Here is Your Quick Variant URL</h5>
+                <p>This URL is a snapshot of this current ship configuration.  It is static and will always display exactly what you see now.  If you make changes to this configuration you will need to request a new link.</p>
+                <div id="quickvariant-url"></div>        
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" aria-hidden="true" onclick="gotoQuickVariant()">Go To QuickVariant</button>
+                <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="new-variant">
+    <div class="modal-dialog">
+        <div class="modal-content" tabindex="-1" role="dialog">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">X</button>
+                <h3>Create New Variant</h3>
+            </div>
+            <div class="modal-body">
+                <h4>Please choose a Name and Role for your new variant</h4>
+                <h5>NOTE: We reserve the right to delete any variant named in a vulgar or offensive manner</h5>
+                <form name='newvariant-form' id='newvariant-form' method='POST' action='/create-variant/'>
+                {{ variantForm.as_p }}
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" aria-hidden="true" onclick='saveNewVariant("{{shipData.name}}")'>Submit</button>
+                <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="update-variant">
+    <div class="modal-dialog">
+        <div class="modal-content" tabindex="-1" role="dialog">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">X</button>
+                <h3>Update Variant</h3>
+            </div>
+            <div class="modal-body">
+                <h4>If you desire, you may change the name of the Variant or its Role</h4>
+                <h5>NOTE: We reserve the right to delete any variant named in a vulgar or offensive manner</h5>
+                <form name='updatevariant-form' id='updatevariant-form' method='POST' action='/create-variant/'>
+                <p><label for="id_updaterole">Role:</label> <select id="id_updaterole" name="role">
+                <option value="Interdiction">Interdiction</option>
+                <option value="Exploration">Exploration</option>
+                <option value="Piracy">Piracy</option>
+                <option value="Transport">Transport</option>
+                <option value="Racing">Racing</option>
+                <option value="Escort">Escort</option>
+                <option value="Bounty Hunting">Bounty Hunting</option>
+                </select></p>
+                <p><label for="id_updatename">Name:</label> <input id="id_updatename" maxlength="30" name="name" type="text" /></p>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" aria-hidden="true" onclick='updateVariant("{{shipData.name}}", {{variant.id}})'>Submit</button>
+                <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="item-details-modal">
+    <div class="modal-dialog">
+        <div class="modal-content" tabindex="-1" role="dialog">
+            <div class="modal-header">
+                <h3 id="item-details-itemname">Item Name</h3>
+            </div>
+            <div class="modal-body">
+                <div id="item-details-body">
+                    <table class="table" id="item-details-basics">
+                        <tbody>
+                        <tr class="label-inverse">
+                            <td>Class</td>
+                            <td id="item-details-itemclass"></td>
+                            <td>Size</td>
+                            <td id="item-details-itemsize"></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                    <div>
+                    <span id="item-details-itemtype"></span>
+                    </div>
+                    <div id="item-details-description">
+                    </div>
+                    <div id="item-details-weaponbars">
+                    </div>
+                    <div id="item-details-misc">
+                    </div>
+                    <header>
+                        <h4 id="power-chart-header">Power</h4>
+                    </header>
+                    <div id="power-chart-line" class="chart">
+                        <svg></svg>
+                    </div>
+                    <header>
+                        <h4 id="heat-chart-header">Heat</h4>
+                    </header>
+                    <div id="heat-chart-line" class="chart">
+                        <svg></svg>
+                    </div>
+                    <header>
+                        <h4 id="avionics-chart-header">Avionics</h4>
+                    </header>
+                    <div id="avionics-chart-line" class="chart">
+                        <svg></svg>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" data-dismiss="modal" aria-hidden="true">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="itemport-details-modal">
+    <div class="modal-dialog">
+        <div class="modal-content" tabindex="-1" role="dialog">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" >×</button>
+                <h4 id="itemport-details-name">Itemport Name</h4>
+            </div>
+            <div class="modal-body">
+                <div id="itemport-details-body">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" data-dismiss="modal" aria-hidden="true">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock pre-content %}
+
+{% block page-header %}Workshop{% endblock page-header %}
+        {% block main-content %}
+        {{block.super}}
+        <div id="workshop-ship" class="row-fluid">
+            <div class="col-lg-8" id="ship-images" style="max-width:1070px;">
+                <div class="panel panel-info">
+                    <div class="panel-heading">
+                        <h1 class="panel-title">{% block page-title %}{{shipData.displayName}}{% endblock page-title %}</h1>
+                    </div>
+                    <div class="panel-body">
+                            <ul id="layout-images" class="nav nav-pills">
+                                <li class="dropdown active">
+                                    <a class="dropdown-toggle" data-toggle="dropdown" href="#">Main Hardpoints <b class="caret"></b></a>
+                                    <ul id="main-hardpoint-images" class="dropdown-menu">
+                                        {% for image in shipData.vehicleimage_set.all %}
+                                            <li><a href="#image-{{image.name|slugify}}" data-toggle="pill">{{image.name}}</a></li>
+                                        {% endfor %}
+                                    </ul>
+                                </li>
+                                <li><a href="#hardpoints-overview" data-toggle="pill">All Hardpoints</a></li>
+                            </ul>
+                            <div id="layout-images-content" class="tab-content">
+                                {% for image in shipData.vehicleimage_set.all %}
+                                <div class="tab-pane fade in{%if forloop.first%} active{%endif%} layout-images-tab" id="image-{{image.name|slugify}}" style="position:relative;" height="1000">
+                                    <image src="{{image.url}}" class="img-responsive" style="margin:auto;"/>
+                                    {% for tag in image.hardpointtag_set.all %}
+                                    <div class="item-port hardpoint-tag-{{tag.hardpoint.name}}" 
+                                        id="hardpoint-tag-{{tag.hardpoint.name}}"
+                                        style="left:{{tag.tagX}}%;top:{{tag.tagY}}%;" 
+                                        data-types="{%for type in tag.hardpoint.supportedTypes.all%}{{type.name}}{%if not forloop.last %},{%endif%}{%endfor%}" 
+                                        data-min-size="{{tag.hardpoint.minSize}}"
+                                        data-max-size="{{tag.hardpoint.maxSize}}"
+                                        data-parent="{{tag.hardpoint.parentImage}}"
+                                        data-port-name="{{tag.hardpoint.name}}"
+                                        data-tag-number="{{forloop.counter}}">
+                                    </div>
+                                    <div class="dashboard-stat red-intense datablock hardpoint-datablock-{{tag.hardpoint.name}}" 
+                                        id="hardpoint-datablock-{{tag.hardpoint.name}}"
+                                        style="left:{{tag.datablockX}}%;top:{{tag.datablockY}}%;" 
+                                        data-types="{%for type in tag.hardpoint.supportedTypes.all%}{{type.name}}{%if not forloop.last %},{%endif%}{%endfor%}" 
+                                        data-min-size="{{tag.hardpoint.minSize}}"
+                                        data-max-size="{{tag.hardpoint.maxSize}}"
+                                        data-parent="{{tag.hardpoint.parentImage}}"
+                                        data-port-name="{{tag.hardpoint.name}}"
+                                        data-port-displayname="{% firstof tag.hardpoint.displayName tag.hardpoint.name %}"
+                                        data-tag-number="{{forloop.counter}}">
+                                        <div class="visual">
+                                        <i class="fa fa-edit"></i>
+                                        </div>
+                                                <div class="details">
+                                                    <div class="desc">{% firstof tag.hardpoint.displayName tag.hardpoint.name %}</div>
+                                                </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                {% endfor %}
+                                <div class="tab-pane fade" id="hardpoints-overview">
+                                    <div id="hardpoints-container" class="row">
+                                    {% for itemPort in shipData.ports.all %}
+                                        <div class="col-lg-4">
+                                            <div class="dashboard-stat red-intense item-port-datablock" 
+                                                data-port-name="{{itemPort.name}}"
+                                                data-port-displayname="{{itemPort.displayName}}" 
+                                                data-parent="{{itemPort.parentImage}}"
+                                                data-types="{%for type in itemPort.supportedTypes.all%}{{type.name}}{%if not forloop.last %},{%endif%}{%endfor%}" 
+                                                data-min-size={{itemPort.minSize}} 
+                                                data-max-size={{itemPort.maxSize}} 
+                                                data-parent-vehicle="{{shipData.name}}">
+                                                <div class="visual"><i class="fa fa-edit"></i></div>
+                                                <div class="details">
+                                                    <div class="number"></div>
+                                                    <div class="desc">{% firstof itemPort.displayName itemPort.name %}</div>
+                                                </div>
+                                                <span class="more">{{shipData.displayName}}</span>
+                                            </div>
+                                        </div>
+        <!-- {{itemPort.supportedTypes.all}} -->
+
+                                    {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h1 class="panel-title">Specifications<i id="system-actions-savenewvariant" style="cursor:pointer;" class="fa fa-copy fa-lg pull-right tooltips" data-container="body" data-placement="left" data-html="true" data-original-title="Save As New Variant"></i><i id="system-actions-updatevariant" style="cursor:pointer;" class="fa fa-save fa-lg pull-right tooltips" data-container="body" data-placement="left" data-html="true" data-original-title="Save Variant"></i><i id="system-actions-quickvariant" style="cursor:pointer;" class="fa fa-share fa-lg pull-right tooltips" data-container="body" data-placement="left" data-html="true" data-original-title="Get QuickVariant URL for Sharing"></i></h1>
+                    </div>
+                    <div class="panel-body">
+                        <h4>Base Ship Stats</h4>
+                        <table class="table table-striped" id="ship-stats-base" data-shipname="{{shipData.name}}">
+                            <tbody>
+                                <tr>
+                                    <td width="50%">Name</td>
+                                    <td>{{shipData.displayName}}
+                                </tr>
+                                <tr>
+                                    <td width="50%">Manufacturer</td>
+                                    <td>{{shipData.manufacturer}}
+                                </tr>
+                                    <td width="50%">Length</td>
+                                    <td>{{shipData.length}}
+                                <tr>
+                                    <td width="50%">Width</td>
+                                    <td>{{shipData.width}}
+                                </tr>
+                                <tr>
+                                    <td width="50%">Height</td>
+                                    <td>{{shipData.height}}
+                                </tr>
+                                <tr>
+                                    <td width="50%">Mass (Empty)</td>
+                                    <td>{{shipData.empty_mass|floatformat:0|intcomma}}
+                                </tr>
+                            </tbody>
+                        </table>
+                        <H4>Live Configured Stats</H4>
+                        <table class="table" id="ship-stats-configured">
+                            <tbody>
+                                <tr>
+                                    <td width="50%">Mass (Configured)</td>
+                                    <td id='mass_configured'></td>
+                                </tr>
+                                <tr>
+                                    <td width="50%">Total Power Output</td>
+                                    <td id='power_output'></td>
+                                </tr>
+                                <tr>
+                                    <td width="50%">Power Usage</td>
+                                    <td id='power_usage'><h5>Base Power Usage: <strong><span id="stats-available-power-label">0</span></strong></h5>
+                                        <div class="progress" id="stats-available-power-container">
+                                            <div class="progress-bar progress-bar-success" style="width:0%;" id="stats-available-power-bar">
+                                            </div>
+                                        </div>
+                                        <h5>Peak Power Usage: <strong><span id="stats-peak-power-label">0</span></strong></h5>
+                                        <div class="progress" id="stats-available-power-container">
+                                            <div class="progress-bar progress-bar-success" style="width:0%;" id="stats-peak-power-bar">
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td width="50%">Thrust</td>
+                                    <td id='thrust_max'></td>
+                                </tr>
+                                <tr>
+                                    <td width="50%">Thrust to Weight Ratio</td>
+                                    <td id='twr'></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div id="systems-notLoggedIn" class="col-md-4">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <h1 class="panel-title">Systems Access Limited</h1>
+                        </div>
+                        <div class="panel-body">
+                            <p><a href="" id="user-action-login">Log in now</a> for full access.</p>
+                            <p>You are not currently logged in.  While the creation (and use) of an account is entirely optional, there are some limitations to using the site as a guest user</p>
+                            <p>Due to technical and security limitations, guest users are not able to save created variants to the database.  However you can share what is called a QuickVariant, which is essentially a snapshot of the state of the variant as it exists right now, encode into an URL that you can share with others.</p>
+                        </div>
+                    </div>
+                </div>
+                <div id="systems-loggedIn" class="col-md-4">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <h1 class="panel-title">Full Systems Access</h1>
+                        </div>
+                        <div class="panel-body">
+                            <p><a href="" id="user-action-logout">Log Out</a></p>
+                            <p>You are currently logged in, and enjoying full systems access.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        {% endblock main-content %}
+
+
+{% block ready-script %}
+
+{{ block.super }}
+
+    $("#item_browser_table").dataTable( {
+        "aoColumnDefs": [
+            { "bVisible": false, "aTargets": [3] }
+        ],
+        "bProcessing" : true,
+        "sAjaxSource" : "/items/get/",
+        "sScrollY": "500px",
+        "sDom" : "rtiS",
+        "bDeferRender" : true,
+        "fnInitComplete": function(oSettings, json) {
+            console.log("DataTable init")
+        }    
+    });
+
+/******************************************************************************
+// Set up Modal Dialogs 
+******************************************************************************/
+
+$('#item-details-modal').modal({
+    backdrop: true,
+    show: false
+})
+
+$('#itemport-details-modal').modal({
+    backdrop: true,
+    show: false
+})
+
+$('#user-login').modal({
+    backdrop: true,
+    show: false
+})
+
+$('#user-newuser').modal({
+    backdrop: true,
+    show: false
+})
+
+$('#quick-variant').modal({
+    backdrop: true,
+    show: false
+})
+
+$('#item_browser_dialog').modal({
+    backdrop: true,
+    show: false
+})
+/******************************************************************************
+// Bind Events  
+******************************************************************************/
+
+$(function() {
+    $("#load-livestats").click(function(e) {
+        e.preventDefault();
+        $('#systems-monitor a[href="#systems-livestats"]').tab('show')
+    });
+});
+
+$("#hardpoints-overview").on("click", ".item-port-datablock", function(event){
+    openHardpoint($(this), "{{shipData.name}}")
+});
+
+$(".datablock").on("click", function(event){
+    openHardpoint($(this), "{{shipData.name}}")
+});
+
+$("#user-action-login").on("click", function(event) {
+    event.preventDefault();
+    $("#workshop-ship").hide()
+    $("#workshop-login").show()
+});
+
+$("#user-action-logout").on("click", function(event) {
+    event.preventDefault();
+    submitUserLogout();
+});
+
+$("button.noop").click(function(event){
+    $(this).parent().parent().find("input").val($(this).val());
+    event.stopPropagation();
+    computeStats();
+});
+
+// Handle ENTER on forms
+$('input,select').keypress(function(event) { return event.keyCode != 13; });
+computeStats();
+
+$("#system-actions-quickvariant").on("click", function(event){
+    event.preventDefault();
+    getQuickVariant("{{shipData.name}}");
+});
+
+$("#system-actions-savenewvariant").on("click", function(event){
+    event.preventDefault();
+    $("#new-variant").modal("show");
+});
+
+// Generate lines from tags to datablocks
+{% for image in shipData.vehicleimage_set.all %}
+    {% for tag in image.hardpointtag_set.all %}
+    createLine($("#image-{{image.name|slugify}}"),{{tag.tagX}}, {{tag.tagY}}, {{tag.datablockX}}, {{tag.datablockY}}, "{{tag.hardpoint.name}}", $(".layout-images-tab.active"))
+    {% endfor %}
+{% endfor %}
+
+{% if user.is_authenticated %}
+setUserState(true);
+{% else %}
+setUserState(false);
+{% endif %}
+enableUpdateVariant(false);
+{% endblock ready-script %}
