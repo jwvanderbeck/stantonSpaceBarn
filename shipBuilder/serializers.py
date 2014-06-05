@@ -13,6 +13,10 @@ class VehicleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Vehicle
         
+class VariantSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Variant
+
 class ItemPortSerializer(serializers.ModelSerializer):
     class Meta:
         model = ItemPort

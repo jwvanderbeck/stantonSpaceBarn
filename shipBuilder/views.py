@@ -15,13 +15,17 @@ class ManufacturerDetail(generics.RetrieveAPIView):
 	queryset = Manufacturer.objects.all()
 	serializer_class = ManufacturerSerializer
 	
-# class VehicleList(generics.ListAPIView):
-#     queryset = Vehicle.objects.all()
-#     serializer_class = VehicleSerializer
-# 
-# class VehicleDetail(generics.RetrieveAPIView):
-#     queryset = Vehicle.objects.all()
-#     serializer_class = VehicleSerializer
+class VehicleList(generics.ListAPIView):
+    queryset = Vehicle.objects.all()
+    serializer_class = VehicleSerializer
+
+class VariantList(generics.ListAPIView):
+    queryset = Variant.objects.all()
+    serializer_class = VariantSerializer
+
+class VehicleDetail(generics.RetrieveAPIView):
+    queryset = Vehicle.objects.all()
+    serializer_class = VehicleSerializer
 
 class VehicleItemList(generics.ListAPIView):
     queryset = VehicleItem.objects.all()
@@ -134,31 +138,31 @@ def vehicleItemDetail(request, pk, format=None):
         return Response(vehicleItemData)
 
 
-@api_view(('GET',))
-def vehicleList(request, format=None):
-    if request.method == 'GET':
-        vehicles = Vehicle.objects.all()
-        data = []
-        for vehicle in vehicles:
-            vehicleData = {
-                "id" : vehicle.id,
-                # "vehicleClass" : vehicle.vehicleClass,
-                "name" : vehicle.name,
-                "displayName" : vehicle.displayName,
-                # "upgradeSlots" : vehicle.upgradeSlots,
-                # "maximumCrew" : vehicle.maximum_crew,
-                # "emptyMass" : vehicle.empty_mass,
-                # "length" : vehicle.length,
-                # "width" : vehicle.width,
-                # "height" : vehicle.height
-            }
-            # if vehicle.category:
-            #     vehicleData['category'] = vehicle.category
-            # if vehicle.manufacturer:
-            #     vehicleData['manufacturer'] = vehicle.manufacturer.name
+# @api_view(('GET',))
+# def vehicleList(request, format=None):
+#     if request.method == 'GET':
+#         vehicles = Vehicle.objects.all()
+#         data = []
+#         for vehicle in vehicles:
+#             vehicleData = {
+#                 "id" : vehicle.id,
+#                 "vehicleClass" : vehicle.vehicleClass,
+#                 "name" : vehicle.name,
+#                 "displayName" : vehicle.displayName,
+#                 "maximumCrew" : vehicle.maximum_crew,
+#                 "emptyMass" : vehicle.empty_mass,
+#                 "length" : vehicle.length,
+#                 "width" : vehicle.width,
+#                 "height" : vehicle.height,
+#                 "thumbnail" : vehicle.thumbnail
+#             }
+#             # if vehicle.category:
+#             #     vehicleData['category'] = vehicle.category
+#             # if vehicle.manufacturer:
+#             #     vehicleData['manufacturer'] = vehicle.manufacturer.name
             
-            data.append(vehicleData)
-        return Response(data)
+#             data.append(vehicleData)
+#         return Response(data)
 @api_view(('GET',))
 def vehicleDetail(request, pk, format=None):
     if request.method == 'GET':
