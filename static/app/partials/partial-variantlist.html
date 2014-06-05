@@ -1,0 +1,29 @@
+<!-- BEGIN PAGE HEADER-->
+<div class="row">
+	<div class="col-md-12">
+		<!-- BEGIN PAGE TITLE & BREADCRUMB-->
+		<h3 class="page-title">Workshop - Variants</h3>
+	</div>
+</div>
+<!-- END PAGE HEADER-->
+<!-- BEGIN PAGE CONTENT-->
+<div class="row">
+	<div class="col-md-12">
+        <div>
+			<div class="col-lg-3" ng-repeat="variant in variantsCtrl.variants | orderBy:-name">
+				<div class="panel panel-info">
+			        <div class="panel-heading">
+			            <h4><a href="#">{{variant.name}}</a> {{variant.role}}</h4>
+			        </div>
+			        <div class="panel-body">
+			            <a href="#"><image ng-src="{{variant.baseVehicleThumbnail}}"></image></a>
+			        </div>
+			       	<div class="panel-footer">
+			       		{{variant.baseVehicleDisplayName}}
+			       	</div>
+			    </div>
+			</div>
+		</div>
+	</div>
+</div>
+<!-- END PAGE CONTENT-->
