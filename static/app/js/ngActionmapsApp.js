@@ -45,14 +45,18 @@
 		}
 
 		function getAction(){
+			deviceName = $scope.selectedActionMapDevice.name
 			if ($scope.selectedActionMapDevice.name == "joystick") {
 				inputName = "js" + $scope.joystickNumber + "_" + $scope.selectedActionMapInput.name
+				if ($scope.joystickAsKeyboard) {
+					deviceName = "keyboard"
+				}
 			}
 			else {
 				inputName = $scope.selectedActionMapInput.name
 			}
 			newAction = {
-				'device': $scope.selectedActionMapDevice.name,
+				'device': deviceName,
 				'name': $scope.selectedActionMapAction.name,
 				'inputName': inputName
 			}
