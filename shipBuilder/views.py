@@ -35,6 +35,25 @@ class VehicleItemDetail(generics.RetrieveAPIView):
     queryset = VehicleItem.objects.all()
     serializer_class = VehicleItemSerializer
 
+
+
+class ActionMapList(generics.ListAPIView):
+    queryset = ActionMap.objects.all()
+    serializer_class = ActionMapSerializer
+
+class ActionMapActionList(generics.ListAPIView):
+    queryset = ActionMapAction.objects.all()
+    serializer_class = ActionMapActionSerializer
+
+class ActionMapDeviceList(generics.ListAPIView):
+    queryset = ActionMapDevice.objects.all()
+    serializer_class = ActionMapDeviceSerializer
+
+class ActionMapInputList(generics.ListAPIView):
+    queryset = ActionMapInput.objects.all()
+    serializer_class = ActionMapInputSerializer
+
+
 # class ItemPortList(generics.ListAPIView):
 #     queryset = ItemPort.objects.all()
 #     serializer_class = ItemPortSerializer
@@ -289,3 +308,32 @@ def itemTypeList(request, format=None):
 # 	if request.method == 'GET':
 # 		serializer = ManufacturerSerializer(manufacturer)
 # 		return Response(serializer.data)
+
+
+@api_view(('GET',))
+def actionMapActionByMap(request, pk, format=None):
+    if request.method == 'GET':
+        actionMap = ActionMap.objects.get(id=pk)
+        actions = actionMap.actionmapaction_set.all()
+        data = []
+        for action in actions:
+            actionData = {
+                "id": action.id,
+                "name": action.name
+            }
+            data.append(actionData)
+        return Response(data)        
+
+@api_view(('GET',))
+def actionMapInputByDevice(request, pk, format=None):
+    if request.method == 'GET':
+        actionMapDevice = ActionMapDevice.objects.get(id=pk)
+        inputs = actionMapDevice.actionmapinput_set.all()
+        data = []
+        for i in inputs:
+            inputData = {
+                "id": i.id,
+                "name": i.name
+            }
+            data.append(inputData)
+        return Response(data)        

@@ -726,3 +726,47 @@ class Hangar(models.Model):
     hangarFriends = models.ManyToManyField(User, blank = True, null = True)
 
 
+######################################################
+## Arena Commander Actionmap Editor
+######################################################
+
+class ActionMap(models.Model):
+    name = models.CharField(max_length = 255, default = "", blank = True, null = True)
+
+    def __unicode__(self):
+        return self.name
+
+
+class ActionMapAction(models.Model):
+    name = models.CharField(max_length = 255, default = "", blank = True, null = True)
+    actionmap = models.ManyToManyField('ActionMap', blank = True, null = True)
+
+    def __unicode__(self):
+        return self.name
+
+class ActionMapDevice(models.Model):
+    name = models.CharField(max_length = 255, default = "", blank = True, null = True)
+
+    def __unicode__(self):
+        return self.name
+
+class ActionMapInput(models.Model):
+    name = models.CharField(max_length = 255, default = "", blank = True, null = True)
+    device = models.ManyToManyField('ActionMapDevice', blank = True, null = True)
+
+    def __unicode__(self):
+        return self.name
+
+class Controller(models.Model):
+    name = models.CharField(max_length = 255, default = "", blank = True, null = True)
+    device = models.ManyToManyField('ActionMapDevice', blank = True, null = True)
+
+    def __unicode__(self):
+        return self.name
+
+class ControllerInput(models.Model):
+    name = models.CharField(max_length = 255, default = "", blank = True, null = True)
+    input = models.ManyToManyField('ActionMapInput', blank = True, null = True)
+
+    def __unicode__(self):
+        return self.name

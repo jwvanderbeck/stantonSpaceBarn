@@ -29,6 +29,12 @@ urlpatterns = patterns('shipBuilder.views',
     url(r'^itemports/(?P<pk>[0-9]+)$', views.itemPortDetail, name='itemport-detail'),
     url(r'^itemports/byvehicle/(?P<pk>[0-9]+)$', views.itemPortListByVehicle, name='itemport-listbyvehicle'),
     url(r'^itemtypes/$', views.itemTypeList, name='itemtype-list'),
+    url(r'^actionmaps/$', views.ActionMapList.as_view(), name='actionmap-list'),
+    url(r'^actionmaps/actions/$', views.ActionMapActionList.as_view(), name='actionmapaction-list'),
+    url(r'^actionmaps/actions/for-map/(?P<pk>[0-9]+)/$', views.actionMapActionByMap, name='actionmapaction-bymap'),
+    url(r'^actionmaps/devices/$', views.ActionMapDeviceList.as_view(), name='actionmapdevice-list'),
+    url(r'^actionmaps/inputs/$', views.ActionMapInputList.as_view(), name='actionmapinput-list'),
+    url(r'^actionmaps/inputs/for-device/(?P<pk>[0-9]+)/$', views.actionMapInputByDevice, name='actionmapinput-bydevice'),
 	url(r'^$', 'api_root'),
 )
 

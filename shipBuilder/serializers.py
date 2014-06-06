@@ -24,3 +24,19 @@ class ItemPortSerializer(serializers.ModelSerializer):
 class VehicleItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = VehicleItem
+
+class ActionMapSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ActionMap
+
+class ActionMapDeviceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ActionMapDevice
+
+class ActionMapActionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ActionMapAction
+
+class ActionMapInputSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ActionMapInput

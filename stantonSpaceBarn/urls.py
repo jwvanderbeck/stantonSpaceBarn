@@ -7,7 +7,8 @@ from django.contrib import admin
 admin.autodiscover()
 
 urlpatterns = patterns('stantonSpaceBarn.views',
-	# url(r'^$', 'phase2ShipList'),
+	url(r'^$', 'phase2ShipList'),
+	url(r'^tools/actionmaps/$', 'actionmapEditor'),
 	# url(r'^barn/$', 'bullshit'),
 	url(r'^users/login/$', 'userLogin'),
 	url(r'^users/logout/$', 'userLogout'),
@@ -89,17 +90,14 @@ urlpatterns = patterns('stantonSpaceBarn.views',
 	url(r'^items/get/compatible-with-vehicle/(?P<vehicleName>[a-zA-Z0-9_&-]+)/$', 'getVehicleItemList'),
 	url(r'^items/get/compatible-with-vehicleport/(?P<vehicleName>[a-zA-Z0-9_&-]+)/(?P<hardpointName>[a-zA-Z0-9_&-]+)/$', 'getItemListForHardpoint'),
 	url(r'^items/get/compatible-with-itemport/(?P<itemName>[a-zA-Z0-9_&-]+)/(?P<hardpointName>[a-zA-Z0-9_&-]+)/$', 'getItemListForItemHardpoint'),
-
-
-
-	# TESTING TESTING
-	# Angular.JS hook
-	url(r'^angular-test/workshop', 'angularWorkshop'),
-
 )
 
-if settings.DEBUG:
-    urlpatterns += patterns('django.contrib.staticfiles.views',
-        url(r'^$', 'serve', {'path': '/app/pages/base.html'}),
-    )
+# urlpatterns += patterns('django.contrib.staticfiles.views',
+#     url(r'^actionmaps/$', 'serve', {'path': '/app/pages/actionmaps.html'}),
+# )
+
+# if settings.DEBUG:
+#     urlpatterns += patterns('django.contrib.staticfiles.views',
+#         url(r'^$', 'serve', {'path': '/app/pages/base.html'}),
+#     )
 
