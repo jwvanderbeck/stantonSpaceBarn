@@ -1,0 +1,147 @@
+<!-- BEGIN PAGE HEADER-->
+<div class="row">
+	<div class="col-md-12">
+		<!-- BEGIN PAGE TITLE & BREADCRUMB-->
+		<h3 class="page-title">Databanks - Actionmap Editor</h3>
+	</div>
+</div>
+<!-- END PAGE HEADER-->
+<!-- BEGIN PAGE CONTENT-->
+<div class="row">
+	<div class="col-md-12" ng-controller="ActionmapsController as mapsCtrl">
+        <div>
+			<div class="col-lg-4">
+				<div class="panel panel-default">
+			        <div class="panel-heading">
+			            <h4>Actionmap Editor</h4>
+			        </div>
+			        <div class="panel-body">
+			        	<h5>This tool lets you create actionamp configurations for Star Citizen's Arena Commander</h5>
+			        	<p>To use:
+			        		<ol>
+			        			<li>Select the Actionmap to edit.  These are groups of actions like spaceship_movement, or spaceship_targetting</li>
+			        			<li>Select the specific action you want to bind</li>
+			        			<li>Select the device type to add a binding for, such as joystick or keyboard</li>
+			        			<li>Select the device input to bind the action to</li>
+			        			<li>Click the Add Action Binding button to add the binding to the output</li>
+			        			<li>When you are finished, select the output to the right and save as an .xml file in:<pre>.\StarCitizen\CitizenClient\Data\Libs\Config\</pre>
+			        		</ol>
+			        	<hr/>
+	                    <form id="actionmap" class="form-horizontal form-bordered">
+	                        <h3 class="form-title">Current Actionmap</h3>
+	                        <div class="form-group">
+				        		<div class="col-sm-12">
+									<div class="input-group">
+										<span class="input-group-addon">Actionmap
+										</span>
+										<select class="form-control" ng-change="mapsCtrl.mapChanged(selectedActionMap)" ng-model="selectedActionMap" ng-options="map.name for map in actionMaps">
+				        				</select>
+									</div>
+									<p class="help-block">
+										<span class="label label-info label-sm">
+										Actionmaps define groups of related actions
+										</span>
+									</p>
+				        		</div>
+				        	</div>
+				        </form>
+                        <hr/>
+	                    <form id="action" class="form-horizontal form-bordered">
+	                        <h3 class="form-title">Action Binding</h3>
+	                        <div class="form-group">
+				        		<div class="col-sm-12">
+									<div class="input-group">
+										<span class="input-group-addon">Action
+										</span>
+										<select class="form-control" ng-model="selectedActionMapAction" ng-options="action.name for action in actionMapActions">
+				        				</select>
+									</div>
+									<p class="help-block">
+										<span class="label label-info label-sm">
+										Select the action you want to set a binding for
+										</span>
+									</p>
+				        		</div>
+				        		<div class="col-sm-6">
+									<div class="input-group">
+										<span class="input-group-addon">Device
+										</span>
+										<select class="form-control" ng-change="mapsCtrl.deviceChanged(selectedActionMapDevice)" ng-model="selectedActionMapDevice" ng-options="device.name for device in devices">
+				        				</select>
+									</div>
+									<p class="help-block">
+										<span class="label label-info label-sm">
+										Device you want to use for this action
+										</span>
+									</p>
+				        		</div>
+				        		<div class="col-sm-6">
+									<div class="input-group">
+										<span class="input-group-addon">Input
+										</span>
+						        		<select class="form-control" ng-model="selectedActionMapInput" ng-options="input.name for input in deviceInputs">
+						        		</select>
+									</div>
+									<p class="help-block">
+										<span class="label label-info label-sm">
+										Input axis or button on the device
+										</span>
+									</p>
+				        		</div>
+				        		
+	                        </div>
+	                        <h3 class="form-title">Options</h3>
+	                        <div class="form-group">
+								<label class="control-label col-md-3">Joystick #</label>
+								<div class="col-md-9">
+									<div id="spinner-joystick">
+										<div class="input-group input-small">
+											<input ng-model="joystickNumber" type="text" class="spinner-input form-control" maxlength="1" readonly>
+											<div class="spinner-buttons input-group-btn btn-group-vertical">
+												<button ng-click="joystickNumberIncrease()" type="button" class="btn spinner-up btn-xs blue">
+												<i class="fa fa-angle-up"></i>
+												</button>
+												<button ng-click="joystickNumberDecrease()" type="button" class="btn spinner-down btn-xs blue">
+												<i class="fa fa-angle-down"></i>
+												</button>
+											</div>
+										</div>
+									</div>
+									<p class="help-block"><span class="label label-info label-sm">
+									If binding a joystick control, specify which joystick to use</span> </p>
+								</div>
+	                        </div>
+	                        <div class="form-actions">
+	                            <button class="btn green pull-right" ng-click="mapsCtrl.addBinding()">
+	                            Add Action Binding <i class="m-icon-swapright m-icon-white"></i>
+	                            </button>
+	                        </div>
+                        </form>
+			        </div>
+			    </div>
+			</div>
+			<div class="col-lg-8">
+				<div class="panel panel-default">
+			        <div class="panel-heading">
+			            <h4>XML Output</h4>
+			        </div>
+			        <div class="panel-body">
+			        	<pre>
+			        		&lt;ActionMaps ignoreVersion="1" &gt;
+			        		<span ng-repeat="map in userMaps">
+			        			&lt;actionmap name="{{map.name}}"&gt;
+			        			<span ng-repeat="action in map.actions">
+			        				&lt;action name="{{action.name}}"&gt;
+			        					&lt;rebind device="{{action.device}}" input="{{action.inputName}}" /&gt;
+			        				&lt;/action&gt;
+			        			</span>
+			        			&lt;/actionmap&gt;
+			        		</span>
+			        		&lt;/ActionMaps&gt;
+			        	</pre>
+			        </div>
+			</div>
+		</div>
+	</div>
+</div>
+<!-- END PAGE CONTENT-->

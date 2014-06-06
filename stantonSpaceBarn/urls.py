@@ -1,13 +1,14 @@
 from django.conf.urls import patterns, include, url
 from django.contrib import auth
 from django.contrib.auth.views import login, password_reset
-
+from django.conf import settings
 from django.contrib import admin
 
 admin.autodiscover()
 
 urlpatterns = patterns('stantonSpaceBarn.views',
 	url(r'^$', 'phase2ShipList'),
+	url(r'^tools/actionmaps/$', 'actionmapEditor'),
 	# url(r'^barn/$', 'bullshit'),
 	url(r'^users/login/$', 'userLogin'),
 	url(r'^users/logout/$', 'userLogout'),
@@ -91,4 +92,12 @@ urlpatterns = patterns('stantonSpaceBarn.views',
 	url(r'^items/get/compatible-with-itemport/(?P<itemName>[a-zA-Z0-9_&-]+)/(?P<hardpointName>[a-zA-Z0-9_&-]+)/$', 'getItemListForItemHardpoint'),
 )
 
+# urlpatterns += patterns('django.contrib.staticfiles.views',
+#     url(r'^actionmaps/$', 'serve', {'path': '/app/pages/actionmaps.html'}),
+# )
+
+# if settings.DEBUG:
+#     urlpatterns += patterns('django.contrib.staticfiles.views',
+#         url(r'^$', 'serve', {'path': '/app/pages/base.html'}),
+#     )
 

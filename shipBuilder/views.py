@@ -15,13 +15,17 @@ class ManufacturerDetail(generics.RetrieveAPIView):
 	queryset = Manufacturer.objects.all()
 	serializer_class = ManufacturerSerializer
 	
-# class VehicleList(generics.ListAPIView):
-#     queryset = Vehicle.objects.all()
-#     serializer_class = VehicleSerializer
-# 
-# class VehicleDetail(generics.RetrieveAPIView):
-#     queryset = Vehicle.objects.all()
-#     serializer_class = VehicleSerializer
+class VehicleList(generics.ListAPIView):
+    queryset = Vehicle.objects.all()
+    serializer_class = VehicleSerializer
+
+class VariantList(generics.ListAPIView):
+    queryset = Variant.objects.all()
+    serializer_class = VariantSerializer
+
+class VehicleDetail(generics.RetrieveAPIView):
+    queryset = Vehicle.objects.all()
+    serializer_class = VehicleSerializer
 
 class VehicleItemList(generics.ListAPIView):
     queryset = VehicleItem.objects.all()
@@ -30,6 +34,25 @@ class VehicleItemList(generics.ListAPIView):
 class VehicleItemDetail(generics.RetrieveAPIView):
     queryset = VehicleItem.objects.all()
     serializer_class = VehicleItemSerializer
+
+
+
+class ActionMapList(generics.ListAPIView):
+    queryset = ActionMap.objects.all()
+    serializer_class = ActionMapSerializer
+
+class ActionMapActionList(generics.ListAPIView):
+    queryset = ActionMapAction.objects.all()
+    serializer_class = ActionMapActionSerializer
+
+class ActionMapDeviceList(generics.ListAPIView):
+    queryset = ActionMapDevice.objects.all()
+    serializer_class = ActionMapDeviceSerializer
+
+class ActionMapInputList(generics.ListAPIView):
+    queryset = ActionMapInput.objects.all()
+    serializer_class = ActionMapInputSerializer
+
 
 # class ItemPortList(generics.ListAPIView):
 #     queryset = ItemPort.objects.all()
@@ -134,31 +157,31 @@ def vehicleItemDetail(request, pk, format=None):
         return Response(vehicleItemData)
 
 
-@api_view(('GET',))
-def vehicleList(request, format=None):
-    if request.method == 'GET':
-        vehicles = Vehicle.objects.all()
-        data = []
-        for vehicle in vehicles:
-            vehicleData = {
-                "id" : vehicle.id,
-                # "vehicleClass" : vehicle.vehicleClass,
-                "name" : vehicle.name,
-                "displayName" : vehicle.displayName,
-                # "upgradeSlots" : vehicle.upgradeSlots,
-                # "maximumCrew" : vehicle.maximum_crew,
-                # "emptyMass" : vehicle.empty_mass,
-                # "length" : vehicle.length,
-                # "width" : vehicle.width,
-                # "height" : vehicle.height
-            }
-            # if vehicle.category:
-            #     vehicleData['category'] = vehicle.category
-            # if vehicle.manufacturer:
-            #     vehicleData['manufacturer'] = vehicle.manufacturer.name
+# @api_view(('GET',))
+# def vehicleList(request, format=None):
+#     if request.method == 'GET':
+#         vehicles = Vehicle.objects.all()
+#         data = []
+#         for vehicle in vehicles:
+#             vehicleData = {
+#                 "id" : vehicle.id,
+#                 "vehicleClass" : vehicle.vehicleClass,
+#                 "name" : vehicle.name,
+#                 "displayName" : vehicle.displayName,
+#                 "maximumCrew" : vehicle.maximum_crew,
+#                 "emptyMass" : vehicle.empty_mass,
+#                 "length" : vehicle.length,
+#                 "width" : vehicle.width,
+#                 "height" : vehicle.height,
+#                 "thumbnail" : vehicle.thumbnail
+#             }
+#             # if vehicle.category:
+#             #     vehicleData['category'] = vehicle.category
+#             # if vehicle.manufacturer:
+#             #     vehicleData['manufacturer'] = vehicle.manufacturer.name
             
-            data.append(vehicleData)
-        return Response(data)
+#             data.append(vehicleData)
+#         return Response(data)
 @api_view(('GET',))
 def vehicleDetail(request, pk, format=None):
     if request.method == 'GET':
@@ -285,3 +308,32 @@ def itemTypeList(request, format=None):
 # 	if request.method == 'GET':
 # 		serializer = ManufacturerSerializer(manufacturer)
 # 		return Response(serializer.data)
+
+
+@api_view(('GET',))
+def actionMapActionByMap(request, pk, format=None):
+    if request.method == 'GET':
+        actionMap = ActionMap.objects.get(id=pk)
+        actions = actionMap.actionmapaction_set.all()
+        data = []
+        for action in actions:
+            actionData = {
+                "id": action.id,
+                "name": action.name
+            }
+            data.append(actionData)
+        return Response(data)        
+
+@api_view(('GET',))
+def actionMapInputByDevice(request, pk, format=None):
+    if request.method == 'GET':
+        actionMapDevice = ActionMapDevice.objects.get(id=pk)
+        inputs = actionMapDevice.actionmapinput_set.all()
+        data = []
+        for i in inputs:
+            inputData = {
+                "id": i.id,
+                "name": i.name
+            }
+            data.append(inputData)
+        return Response(data)        

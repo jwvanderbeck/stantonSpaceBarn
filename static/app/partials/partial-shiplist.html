@@ -1,0 +1,26 @@
+<!-- BEGIN PAGE HEADER-->
+<div class="row">
+	<div class="col-md-12">
+		<!-- BEGIN PAGE TITLE & BREADCRUMB-->
+		<h3 class="page-title">Workshop - Ship List</h3>
+	</div>
+</div>
+<!-- END PAGE HEADER-->
+<!-- BEGIN PAGE CONTENT-->
+<div class="row">
+	<div class="col-md-12">
+        <div>
+			<div class="col-lg-3" ng-repeat="vehicle in vehicles.vehiclesCtrl | orderBy:-name" ng-show="vehicle.available">
+				<div class="panel panel-info">
+			        <div class="panel-heading">
+			            <h4><a ui-sref="{{vehicle.name}}">{{vehicle.displayName}}</a></h4>
+			        </div>
+			        <div class="panel-body">
+			            <a ui-sref="/angular-test/workshop/ship/{{vehicle.name}}"><image ng-src="{{vehicle.thumbnail}}" class="img-responsive"></image></a>
+			        </div>
+			    </div>
+			</div>
+		</div>
+	</div>
+</div>
+<!-- END PAGE CONTENT-->

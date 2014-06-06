@@ -2529,7 +2529,17 @@ def getItemTooltipPageDetails(request, itemName):
     }
     return render_to_response('tooltips/VehicleItemDetails.html', renderContext, context_instance=RequestContext(request))
 
+def actionmapEditor(request):
+    renderContext = {
+    }
+    return render_to_response('metronic/admin/actionmaps.html', renderContext, context_instance=RequestContext(request))
+
 def bullshit(request, param=None):
     renderContext = {
     }
     return render_to_response('bullshit.html', renderContext, context_instance=RequestContext(request))
+
+def angularWorkshop(request):
+    renderContext = {
+    }
+    return render_to_response('angular/workshop.html', renderContext, context_instance=RequestContext(request))

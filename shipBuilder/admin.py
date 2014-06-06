@@ -39,3 +39,7 @@ admin.site.register(GameUpdateChange)
 admin.site.register(Variant)
 admin.site.register(VariantItem)
 
+admin.site.register(ActionMap)
+admin.site.register(ActionMapAction)
+admin.site.register(ActionMapDevice)
+admin.site.register(ActionMapInput)
