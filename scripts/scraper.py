@@ -68,7 +68,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("source")
     parser.add_argument("destination")
-    args = parser.parse_args(["/Users/john/Documents/SSB/Star Citizen Data/Scripts_Patch_11.2", "/Users/john/Documents/SSB/Parsed Data/Patch_11.2"])
+    args = parser.parse_args(["/Users/john/Documents/SSB/Star Citizen Data/Scripts_Patch_12", "/Users/john/Documents/SSB/Parsed Data/Patch_12"])
 
     print "Working on %s" % args.source
     entitiesPath = os.path.join(args.source, ENTITIES_PATH)
@@ -159,6 +159,11 @@ if __name__ == "__main__":
                     # Flags
                     portData['flags'] = getAttribute(itemPort, 'flags')
                     # Types and subtypes
+                    parentTypes = itemPort.find("Types")
+                    if not parentTypes:
+                        print "Unable to find Types for item port!"
+                        print portData
+                        continue
                     types = itemPort.find("Types").findall("Type")
                     if len(types) == 0:
                         print "\t\t\t[WARNING] This port has no types associated with it"
