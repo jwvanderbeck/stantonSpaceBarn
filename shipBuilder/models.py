@@ -377,11 +377,6 @@ class VehicleItemParams(models.Model):
     def __unicode__(self):
         return u"%s - %s:%.2f" % (self.parentItem.name, self.name, self.value)
 
-class PipeState(models.Model):
-    name = models.CharField(max_length=255)
-    value = models.CharField(max_length=255)
-    parent = models.ForeignKey("VehicleItemPipe", blank = True, null = True)
-
 class VehicleItemPipe(models.Model):
     name = models.CharField(max_length = 255)
     stacking = models.BooleanField(default = False)
@@ -411,6 +406,73 @@ class VehicleItemAvionics(models.Model):
     def __unicode__(self):
         return u"%s - %s" % (self.state, self.value)
 
+## Star Citizen Patch 12 - Arena Commander - Made major changes to how pipes
+## are stored and how they work.  This added a lot more complexity to the already
+## complex system, and the old model simply doesn't work.  We need a new model
+
+class Pipe(models.Model):
+    pipeClass = models.CharField(max_length=255, blank = True, null = True)
+    levelWarning = models.FloatField(default=0.0)
+    levelCritical = models.FloatField(default=0.0)
+    levelFail = models.FloatField(default=0.0)
+    states = models.ManyToManyField('PipeState', blank = True, null = True)
+    pipeSignatures = models.ManyToManyField('PipeSignature', blank = True, null = True)
+    pool = models.ForeignKey('PipePool', blank = True, null = True)
+
+    def __unicode__(self):
+        return self.pipeClass
+
+class PipeState(models.Model):
+    name = models.CharField(max_length=255, blank = True, null = True)
+    dynamicValues = models.ManyToManyField('PipeStateDynamic', blank = True, null = True)
+    variableValues = models.ManyToManyField('PipeStateVariable', blank = True, null = True)
+    transition = models.FloatField(default = 0.0)
+    values = models.ManyToManyField('PipeStateValue', blank = True, null = True)
+
+    def __unicode__(self):
+        return self.name
+
+class PipeStateValue(models.Model):
+    value = models.FloatField(default = 0.0)
+    delay = models.FloatField(default = 0.0)
+    ignorePool = models.BooleanField(default = False)
+
+    def __unicode__(self):
+        return u"%.2f" % self.value
+    
+
+class PipeStateDynamic(models.Model):
+    dymVar = models.CharField(max_length = 255, blank = True, null = True)
+    value = models.FloatField(default = 0.0)
+
+    def __unicode__(self):
+        return self.dymVar
+    
+class PipeStateVariable(models.Model):
+    name = models.CharField(max_length = 255, blank = True, null = True)
+    value = models.FloatField(default = 0.0)
+    critical = models.BooleanField(default = False)
+
+    def __unicode__(self):
+        pass
+
+class PipeSignature(models.Model):
+    name = models.CharField(max_length = 255, blank = True, null = True)
+    multiplier = models.FloatField(default = 0.0)
+
+    def __unicode__(self):
+        pass
+    
+class PipePool(models.Model):
+    poolType = models.CharField(max_length = 255, blank = True, null = True)
+    capacity = models.FloatField(default = 0.0)
+    rate = models.FloatField(default = 0.0)
+    critical = models.BooleanField(default = False)
+    allInPipe = models.BooleanField(default = False)
+
+    def __unicode__(self):
+        pass
+
 class VehicleItem(models.Model):
     itemClass = models.PositiveIntegerField(default = 0)
     description = models.TextField(blank = True, null = True)
@@ -423,6 +485,7 @@ class VehicleItem(models.Model):
     hitpoints = models.BigIntegerField(default = 0)
     itemStats = models.ManyToManyField('ItemStat', blank = True, null = True)
     ports = models.ManyToManyField('ItemPort', blank = True, null = True)
+    pipes = models.ManyToManyField('Pipe', blank = True, null = True)
     pipePower = models.ManyToManyField('VehicleItemPower', blank = True, null = True)
     pipeHeat = models.ManyToManyField('VehicleItemHeat', blank = True, null = True)
     pipeAvionics = models.ManyToManyField('VehicleItemAvionics', blank = True, null = True)

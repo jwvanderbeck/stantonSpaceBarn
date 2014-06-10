@@ -38,7 +38,14 @@ CLASS_LOOKUP = {
     "vehicleMissileGuidanceParam": "VehicleMissileGuidanceParam",
     "ammo": "Ammo",
     "signatures": "Signature",
-    "damageMultipliers": "DamageMultiplier"
+    "damageMultipliers": "DamageMultiplier",
+    "pipes": "Pipe",
+    "states": "PipeState",
+    "values": "PipeStateValue",
+    "pipeSignatures": "PipeSignature",
+    "dynamicValues": "PipeStateDynamic",
+    "variableValues": "PipeStateVariable",
+    "pool": "PipePool"
 }
 
 
@@ -150,13 +157,14 @@ def updateModelInstance(dataset, attributeName, rootModel, path, name, gameUpdat
     elif modelType == "m2m":
         # print "CASE 2"
         # print "[DEBUG]Looking for M2M model instance"
-        allObjects = rootModel.__getattribute__(attributeName).all()
-        searchField = dataset["_searchfield"]
-        if allObjects:
-            for obj in allObjects:
-                if obj.__getattribute__(searchField) == dataset[searchField]:
-                    # print "[DEBUG]Returning M2M Instance:", obj
-                    return obj
+        if "_reuse" in dataset and dataset["_reuse"]:
+            allObjects = rootModel.__getattribute__(attributeName).all()
+            searchField = dataset["_searchfield"]
+            if allObjects:
+                for obj in allObjects:
+                    if obj.__getattribute__(searchField) == dataset[searchField]:
+                        # print "[DEBUG]Returning M2M Instance:", obj
+                        return obj
     # CASE 3: Underlying data in Databse, but not in JSON - Delete Database entries
     if noData:
         # print "CASE 3"
@@ -180,7 +188,7 @@ def updateModelInstance(dataset, attributeName, rootModel, path, name, gameUpdat
     if "_reuse" in dataset and dataset["_reuse"]:
         # print "CASE 4"
         searchField = dataset["_searchfield"]
-        print "[DEBUG]Attempting to reuse model with key %s of %s" % (searchField, dataset[searchField])
+        # print "[DEBUG]Attempting to reuse model with key %s of %s" % (searchField, dataset[searchField])
         if allObjects:
             for obj in allObjects:
                 # print "%s=%s" % (obj.__getattribute__(searchField), dataset[searchField])
@@ -295,6 +303,8 @@ def run(*script_args):
                         model.save()
                     # print "Processing VehicleItem %s" % rawData["name"]
                     processModel(rawData, model, rawData["name"], ["VehicleItem"], gameUpdate)
+                    model.disabled = False
+                    model.save()
 
                 else:
                     try:

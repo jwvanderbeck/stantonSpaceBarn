@@ -35,6 +35,22 @@ def getFloatAttribute(element, attributeName):
     except:
         return 0.0
 
+def getBooleanAttribute(element, attributeName):
+    try:
+        val = element.get(attributeName, None)
+        if val.lower() == "true":
+            return True
+        elif val.lower() == "false":
+            return False
+        elif val == "1":
+            return True
+        elif val == "0":
+            return False
+        else:
+            return False
+    except:
+        return False
+
 def getParam(root, paramName):
     try:
         return root.find("param[@name='" + paramName + "']").get('value')
@@ -59,6 +75,10 @@ def getBooleanParam(root, paramName, default):
             return True
         elif val.lower() == "false":
             return False
+        elif val == "1":
+            return True
+        elif val == "0":
+            return False
         else:
             return default
     except:
@@ -68,7 +88,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("source")
     parser.add_argument("destination")
-    args = parser.parse_args(["/Users/john/Documents/SSB/Star Citizen Data/Scripts_Patch_12", "/Users/john/Documents/SSB/Parsed Data/Patch_12"])
+    args = parser.parse_args(["/Users/john/Documents/SSB/Star Citizen Data/Scripts_Patch_12_1", "/Users/john/Documents/SSB/Parsed Data/Patch_12_1"])
 
     print "Working on %s" % args.source
     entitiesPath = os.path.join(args.source, ENTITIES_PATH)
@@ -881,76 +901,217 @@ if __name__ == "__main__":
                                 }
                                 portData['supportedTypes'].append(itemTypeData)
                         itemData['ports'].append(portData)
-                # Pipes - These are basically resources
+
+                # New pipe model based on Arena Commander data (SC Patch 12)
                 pipes = root.find('Pipes')
                 if pipes is not None:
+                    itemData["pipes"] = []
                     for pipe in pipes:
-                        itemData["pipe"+ pipe.attrib['class']] = []
-                        # itemData['pipes'][pipe.attrib['class']] = {}
-                        basePipe = itemData["pipe" + pipe.attrib['class']]
-                        states = pipe.find("States")
-                        if states:
+                        # <Pipe class="Power">
+                        pipeClass = pipe.attrib['class']
+                        if not pipeClass or pipeClass == "":
+                            continue
+                        pipeData = {
+                            "_m2m": True,
+                            "_modelname": "pipes",
+                            "_reuse": True,
+                            "_searchfield": "pipeClass",
+                            "pipeClass": pipeClass
+                        }
+                        # <StateLevels>
+                        stateLevels = pipe.find('StateLevels')
+                        if stateLevels:
+                            warning = stateLevels.find('Warning')
+                            if warning is not None:
+                                pipeData['levelWarning'] = getFloatAttribute(warning, "value")
+                            critical = stateLevels.find('Critical')
+                            if critical is not None:
+                                pipeData['levelCritical'] = getFloatAttribute(critical, 'value')
+                            fail = stateLevels.find('Fail')
+                            if fail is not None:
+                                pipeData['levelFail'] = getFloatAttribute(fail, 'value')
+                        # </StateLevels>
+                        # <Signature name="Infrared" multiplier="1">
+                        sigs = pipe.findall('Signature')
+                        if sigs and len(sigs) > 0:
+                            pipeData['pipeSignatures'] = []
+                            for sig in sigs:
+                                sigData = {
+                                    "_m2m": True,
+                                    "_modelname": "pipeSignatures",
+                                    "_reuse": True,
+                                    "_searchfield": "name",
+                                    "name": sig.attrib['name'],
+                                    "multiplier": float(sig.attrib['multiplier'])
+                                }
+                                pipeData['pipeSignatures'].append(sigData)
+                        # </Signature>
+                        # <Pool type="Residual" capacity="800" rate="80" critical="1" allInPipe="1">
+                        pool = pipe.find('Pool')
+                        if pool is not None:
+                            pipeData['pool'] = {
+                                "_reuse": False
+                            }
+                            poolType = getAttribute(pool, "type")
+                            if poolType:
+                                pipeData['pool']['poolType'] = poolType
+                            capacity = getFloatAttribute(pool, "capacity")
+                            if capacity:
+                                pipeData['pool']['capacity'] = capacity
+                            rate = getFloatAttribute(pool, "rate")
+                            if rate:
+                                pipeData['pool']['rate'] = rate
+                            critical = getBooleanAttribute(pool, "critical")
+                            if critical:
+                                pipeData['pool']['critical'] = critical
+                            allInPipe = getBooleanAttribute(pool, "allInPipe")
+                            if allInPipe:
+                                pipeData['pool']['allInPipe'] = allInPipe
+                        # </Pool>
+                        # <States>
+                        states = pipe.find('States')
+                        if states is not None:
+                            pipeData['states'] = []
                             for state in states:
-                                stateDescriptor = state.attrib['state']
-                                print "Found state", stateDescriptor
-                                if "," in stateDescriptor:
-                                    # Multiple states use these values
-                                    stateNames = stateDescriptor.split(",")
-                                    for stateName in stateNames:
-                                        stateData = {
-                                            "_reuse": True,
-                                            "_searchfield": "state",
-                                            "_m2m": True,
-                                            "_modelname": "pipe" + pipe.attrib['class']
-                                        }
-                                        values = state.findall("Value")
-                                        if len(values) == 1:
-                                            # Only a single value per second
-                                            # basePipe[stateName] = values[0].attrib['value']
-                                            stateData["state"] = stateName
-                                            stateData["value"] = values[0].attrib['value']
-                                            print "State %s=%s" % (stateName, values[0].attrib['value'])
-                                        elif len(values) > 1:
-                                            # Multiple values, which means a curve over time
-                                            valueStrings = []
-                                            for value in values:
-                                                valueStrings.append("%d:%d" % (int(value.attrib['delay']), int(value.attrib['value'])))
-                                            data = ",".join(valueStrings)
-                                            stateData["state"] = stateName
-                                            stateData["value"] = data
-                                            print "State %s=%s" % (stateName, data)
+                                # <State state="Default">
+                                stateName = getAttribute(state, "state")
+                                if not stateName:
+                                    continue
+                                stateData = {
+                                    "_m2m": True,
+                                    "_modelname": "states",
+                                    "_reuse": True,
+                                    "_searchfield": "name"
+                                }
+                                transition = getFloatAttribute(state, "transition")
+                                stateData["transition"] = transition
+                                # State state data will contain one or more Value tags
+                                values = state.findall('Value')
+                                if values and len(values) > 0:
+                                    for pipeStateValue in values:
+                                        dymVar = getAttribute(pipeStateValue, "dymVar")
+                                        value = getFloatAttribute(pipeStateValue, "value")
+                                        if not dymVar:
+                                            if not "values" in stateData:
+                                                stateData["values"] = []
+                                            stateValueData = {
+                                                "_m2m": True,
+                                                "_modelname": "values",
+                                                "_reuse": True,
+                                                "_searchfield": "value",
+                                                "value": value,
+                                                "delay": getFloatAttribute(pipeStateValue, "delay")
+                                            }
+                                            stateData["values"].append(stateValueData)
                                         else:
-                                            # No values, skip it
-                                            continue
-                                        basePipe.append(stateData)
+                                            if not "dynamicValues" in stateData:
+                                                stateData["dynamicValues"] = []
+                                            stateData["dynamicValues"].append({
+                                                    "_m2m": True,
+                                                    "_modelname": "dynamicValues",
+                                                    "_reuse": True,
+                                                    "_searchfield": "dymVar",
+                                                    "dymVar" : dymVar,
+                                                    "value" : value
+                                                })
+                                # The state data may also contain one or more "Variable" tags
+                                variables = state.findall('Variable')
+                                if variables and len(variables) > 0:
+                                    for variable in variables:
+                                        if not "variableValues" in stateData:
+                                            stateData["variableValues"] = []
+                                        name = getAttribute(variable, "name")
+                                        value = getFloatAttribute(variable, "value")
+                                        stateData["variableValues"].append({
+                                                "_m2m": True,
+                                                "_modelname": "variableValues",
+                                                "_reuse": True,
+                                                "_searchfield": "name",
+                                                "name": name,
+                                                "value": value
+                                            })
+                                if "," in stateName:
+                                    for y in stateName.split(","):
+                                        stateData["name"] = y
+                                        pipeData['states'].append(stateData)
                                 else:
-                                    # Single state uses these values
-                                    values = state.findall("Value")
-                                    stateData = {
-                                        "_reuse": True,
-                                        "_searchfield": "state",
-                                        "_m2m": True,
-                                        "_modelname": "pipe" + pipe.attrib['class']
-                                    }
-                                    if len(values) == 1:
-                                        # Only a single value per second
-                                        # basePipe[stateDescriptor] = values[0].attrib['value']
-                                        stateData["state"] = stateDescriptor
-                                        stateData["value"] = values[0].attrib['value']
-                                        print "State %s=%s" % (stateDescriptor, values[0].attrib['value'])
-                                    elif len(values) > 1:
-                                        # Multiple values, which means a curve over time
-                                        valueStrings = []
-                                        for value in values:
-                                            valueStrings.append("%d:%d" % (int(value.attrib['delay']), int(value.attrib['value'])))
-                                        data = ",".join(valueStrings)
-                                        stateData["state"] = stateDescriptor
-                                        stateData["value"] = data
-                                        print "State %s=%s" % (stateDescriptor, data)
-                                    else:
-                                        # No values, skip it
-                                        continue
-                                    basePipe.append(stateData)
+                                    stateData["name"] = stateName
+                                    pipeData['states'].append(stateData)
+                                # </State>
+                        # </States>
+                        itemData["pipes"].append(pipeData)
+                        # </Pipe>
+
+                # Pipes - These are basically resources
+                # pipes = root.find('Pipes')
+                # if pipes is not None:
+                #     for pipe in pipes:
+                #         itemData["pipe"+ pipe.attrib['class']] = []
+                #         # itemData['pipes'][pipe.attrib['class']] = {}
+                #         basePipe = itemData["pipe" + pipe.attrib['class']]
+                #         states = pipe.find("States")
+                #         if states:
+                #             for state in states:
+                #                 stateDescriptor = state.attrib['state']
+                #                 print "Found state", stateDescriptor
+                #                 if "," in stateDescriptor:
+                #                     # Multiple states use these values
+                #                     stateNames = stateDescriptor.split(",")
+                #                     for stateName in stateNames:
+                #                         stateData = {
+                #                             "_reuse": True,
+                #                             "_searchfield": "state",
+                #                             "_m2m": True,
+                #                             "_modelname": "pipe" + pipe.attrib['class']
+                #                         }
+                #                         values = state.findall("Value")
+                #                         if len(values) == 1:
+                #                             # Only a single value per second
+                #                             # basePipe[stateName] = values[0].attrib['value']
+                #                             stateData["state"] = stateName
+                #                             stateData["value"] = values[0].attrib['value']
+                #                             print "State %s=%s" % (stateName, values[0].attrib['value'])
+                #                         elif len(values) > 1:
+                #                             # Multiple values, which means a curve over time
+                #                             valueStrings = []
+                #                             for value in values:
+                #                                 valueStrings.append("%d:%d" % (int(value.attrib['delay']), int(value.attrib['value'])))
+                #                             data = ",".join(valueStrings)
+                #                             stateData["state"] = stateName
+                #                             stateData["value"] = data
+                #                             print "State %s=%s" % (stateName, data)
+                #                         else:
+                #                             # No values, skip it
+                #                             continue
+                #                         basePipe.append(stateData)
+                #                 else:
+                #                     # Single state uses these values
+                #                     values = state.findall("Value")
+                #                     stateData = {
+                #                         "_reuse": True,
+                #                         "_searchfield": "state",
+                #                         "_m2m": True,
+                #                         "_modelname": "pipe" + pipe.attrib['class']
+                #                     }
+                #                     if len(values) == 1:
+                #                         # Only a single value per second
+                #                         # basePipe[stateDescriptor] = values[0].attrib['value']
+                #                         stateData["state"] = stateDescriptor
+                #                         stateData["value"] = values[0].attrib['value']
+                #                         print "State %s=%s" % (stateDescriptor, values[0].attrib['value'])
+                #                     elif len(values) > 1:
+                #                         # Multiple values, which means a curve over time
+                #                         valueStrings = []
+                #                         for value in values:
+                #                             valueStrings.append("%d:%d" % (int(value.attrib['delay']), int(value.attrib['value'])))
+                #                         data = ",".join(valueStrings)
+                #                         stateData["state"] = stateDescriptor
+                #                         stateData["value"] = data
+                #                         print "State %s=%s" % (stateDescriptor, data)
+                #                     else:
+                #                         # No values, skip it
+                #                         continue
+                #                     basePipe.append(stateData)
                 # print itemData
                 outputFile = os.path.join(args.destination, itemData['name'] + ".json")
                 jsonData = json.dumps(itemData, sort_keys=True, indent=4, separators=(',',':'))
