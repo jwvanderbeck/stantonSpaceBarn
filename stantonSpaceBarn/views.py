@@ -1156,40 +1156,14 @@ def extrapolateStateValues(state, duration=30, metric=0, stacking=False):
     # This method takes in a VehicleItem* state object with one or more values
     # and extrapolates those values to the specified duration in seconds
 
-    # If values are negative we make them positive due to a bug in NVD3 charting
-
     if not state:
         return []
 
-    stateValue = state.value
-    # print stateValue
     values = []
-    if "," in stateValue:
-        # The value is packed to store varying values at different times
-        # So we ened to build it out over the duration
-        chunks = stateValue.split(",")
-        stateValues = {}
-        for chunk in chunks:
-            stateValues[float(chunk.split(":")[0])] = float(chunk.split(":")[1])
-        # print stateValues
-        if not stacking:
-            currentVPS = 0
-            for i in range(0, duration + 1, 1):
-                if i in stateValues:
-                    currentVPS = stateValues[i]
-                values.append(currentVPS)
-        else:
-            currentVPS = 0
-            for i in range(0, duration + 1, 1):
-                if i in stateValues:
-                    currentVPS = currentVPS + stateValues[i]
-                values.append(currentVPS)
-
-    else:
+    pipeStateValues = state.values.all().order_by("delay")
+    if len(pipeStateValues) == 1:
         # Simple case, a single value
-        stateValue = float(stateValue)
-        if stateValue < 0:
-            stateValue = stateValue# * -1
+        stateValue = pipeStateValues[0].value
         if metric == 0:
             # Simplest of all cases, we just hold the value from 0-duration
             for i in range(0, duration + 1, 1):
@@ -1204,6 +1178,67 @@ def extrapolateStateValues(state, duration=30, metric=0, stacking=False):
                 # Simplest of all cases, we just hold the value from 0-duration
                 for i in range(0, duration + 1, 1):
                     values.append(stateValue)
+    else:
+        # Value changes over time
+        stateValues = {}
+        for stateValue in pipeStateValues:
+            stateValues[stateValue.delay] = stateValue.value
+        if not stacking:
+            currentValuePerSecond = 0
+            for i in range(0, duration + 1, 1):
+                if i in stateValues:
+                    currentValuePerSecond = stateValues[i]
+                values.append(currentValuePerSecond)
+        else:
+            currentValuePerSecond = 0
+            for i in range(0, duration + 1, 1):
+                if i in stateValues:
+                    currentValuePerSecond = currentValuePerSecond + stateValues[i]
+                values.append(currentValuePerSecond)
+
+    # stateValue = state.value
+    # # print stateValue
+    # values = []
+    # if "," in stateValue:
+    #     # The value is packed to store varying values at different times
+    #     # So we ened to build it out over the duration
+    #     chunks = stateValue.split(",")
+    #     stateValues = {}
+    #     for chunk in chunks:
+    #         stateValues[float(chunk.split(":")[0])] = float(chunk.split(":")[1])
+    #     # print stateValues
+    #     if not stacking:
+    #         currentVPS = 0
+    #         for i in range(0, duration + 1, 1):
+    #             if i in stateValues:
+    #                 currentVPS = stateValues[i]
+    #             values.append(currentVPS)
+    #     else:
+    #         currentVPS = 0
+    #         for i in range(0, duration + 1, 1):
+    #             if i in stateValues:
+    #                 currentVPS = currentVPS + stateValues[i]
+    #             values.append(currentVPS)
+
+    # else:
+    #     # Simple case, a single value
+    #     stateValue = float(stateValue)
+    #     if stateValue < 0:
+    #         stateValue = stateValue# * -1
+    #     if metric == 0:
+    #         # Simplest of all cases, we just hold the value from 0-duration
+    #         for i in range(0, duration + 1, 1):
+    #             values.append(stateValue)
+    #     else:
+    #         if stacking:
+    #             # This is a single value, but since it stacks we need to 
+    #             # increase at a steady rate over time
+    #             for i in range(0, duration + 1, 1):
+    #                 values.append(stateValue * i)
+    #         else:
+    #             # Simplest of all cases, we just hold the value from 0-duration
+    #             for i in range(0, duration + 1, 1):
+    #                 values.append(stateValue)
 
     return values
 
@@ -1299,7 +1334,7 @@ def getItemListForHardpoint(request, hardpointName = None, vehicleName = None):
         maxSize = hardpointData.maxSize
         supportedTypes = hardpointData.supportedTypes.all()
         try:
-            allItemsOfSize = VehicleItem.objects.filter(itemSize__range=(minSize, maxSize))
+            allItemsOfSize = VehicleItem.objects.filter(itemSize__range=(minSize, maxSize)).filter(disabled=False)
         except ObjectDoesNotExist:
             responseData = [{}]
             return HttpResponse(simplejson.dumps(responseData), content_type="application/json")
@@ -1331,7 +1366,7 @@ def getItemListForHardpoint(request, hardpointName = None, vehicleName = None):
             row.append(item.itemType.name)
             row.append(item.name)
             responseData.append(row)
-            response = {"aaData":responseData}
+        response = {"aaData":responseData}
         return HttpResponse(simplejson.dumps(response), content_type="application/json")
 
 def getItemListForItemHardpoint(request, hardpointName = None, itemName = None):
@@ -1362,7 +1397,7 @@ def getItemListForItemHardpoint(request, hardpointName = None, itemName = None):
         maxSize = hardpointData.maxSize
         supportedTypes = hardpointData.supportedTypes.all()
         try:
-            allItemsOfSize = VehicleItem.objects.filter(itemSize__range=(minSize, maxSize))
+            allItemsOfSize = VehicleItem.objects.filter(itemSize__range=(minSize, maxSize)).filter(disabled=False)
         except ObjectDoesNotExist:
             responseData = [{}]
             print "[ERROR] No properly sized items found"
@@ -1395,7 +1430,7 @@ def getItemListForItemHardpoint(request, hardpointName = None, itemName = None):
             row.append(item.itemType.name)
             row.append(item.name)
             responseData.append(row)
-            response = {"aaData":responseData}
+        response = {"aaData":responseData}
         return HttpResponse(simplejson.dumps(response), content_type="application/json")
 
 @ensure_csrf_cookie
@@ -1962,19 +1997,22 @@ def getGraph(request, graphType):
                     continue
                 if item.itemType.typeName == "powerplant":
                     try:
-                        powerData = item.pipePower.get(state="Default")
+                        # powerData = item.pipePower.get(state="Default")
+                        powerData = item.pipes.get(pipeClass__iexact="power").states.get(name__iexact="default").values.all()[0]
                         powerGenerated = powerGenerated + float(powerData.value)
                     except ObjectDoesNotExist:
                         pass
                         # print "Failed to get Default state for PowerPlant %s" % (itemName)
                 else:
                     try:
-                        powerData = item.pipePower.get(state=itemState)
+                        # powerData = item.pipePower.get(state=itemState)
+                        powerData = item.pipes.get(pipeClass__iexact="power").states.get(name__iexact=itemState).values.all()[0]
                         powerConsumed = powerConsumed + float(powerData.value)
                         peak = 0.0
-                        for state in item.pipePower.all():
-                            if float(state.value) < peak:
-                                peak = float(state.value)
+                        # for state in item.pipePower.all():
+                        for state in item.pipes.get(pipeClass__iexact="power").states.all():
+                            if float(state.values.all()[0].value) < peak:
+                                peak = float(state.values.all()[0].value)
                         peakPowerConsumed = peakPowerConsumed + peak
                     except ObjectDoesNotExist:
                         pass
@@ -2402,12 +2440,11 @@ def computeStats(request):
             except:
                 print "Failed to find item %s" % (itemName)
                 continue
-            # print "%s, Mass: %f" % (itemName, item.mass)
             totalMass = totalMass + item.mass
             if item.thrusterData:
                 totalThrust = totalThrust + item.thrusterData.maxthrust
             try:
-                totalPower = totalPower + float(item.pipePower.get(state__iexact="Default").value)
+                totalPower = totalPower + float(item.pipes.get(pipeClass__iexact="power").states.get(name__iexact="Default").values.all()[0].value)
             except:
                 pass
         thrustToEarthWeightRatio = totalThrust / (totalMass * 9.807)
@@ -2432,64 +2469,100 @@ def getItemTooltipPagePipes(request, itemName):
         raise Http404()
 
 
-    allHeat = itemData.pipeHeat.all()
-    heatData = []
-    tickDict = {}
-    for state in allHeat:
-        stateData = { "label": state.state }
-        graphPoints = extrapolateStateValues(state, duration=30, metric=0, stacking=True)
-        for point in graphPoints:
-            tickDict[point] = point
-        stateData["data"] = []
-        for i in range(0,31):
-            stateData["data"].append([i, graphPoints[i]])
-        heatData.append(stateData)
-    heatTicks = []
-    for tick in tickDict:
-        heatTicks.append(tick)
+    # allHeat = itemData.pipeHeat.all()
+    try:
+        allHeat = itemData.pipes.get(pipeClass__iexact="heat")
+        heatData = []
+        tickDict = {}
+        for state in allHeat.states.all():
+            stateData = { "label": state.name }
+            graphPoints = extrapolateStateValues(state, duration=30, metric=0, stacking=True)
+            for point in graphPoints:
+                tickDict[point] = point
+            stateData["data"] = []
+            for i in range(0,31):
+                stateData["data"].append([i, graphPoints[i]])
+            heatData.append(stateData)
+        heatTicks = []
+        for tick in tickDict:
+            heatTicks.append(tick)
+    except:
+        heatData = None
+    
+    try:
+        allPower = itemData.pipes.get(pipeClass__iexact="power")
+        powerData = []
+        tickDict = {}
+        for state in allPower.states.all():
+            stateData = { "label": state.name }
+            graphPoints = extrapolateStateValues(state, duration=30, metric=0, stacking=False)
+            for point in graphPoints:
+                tickDict[point] = point
+            stateData["data"] = []
+            for i in range(0,31):
+                stateData["data"].append([i, graphPoints[i]])
+            powerData.append(stateData)
+        powerTicks = []
+        for tick in tickDict:
+            powerTicks.append(tick)
+    except:
+        powerData = None
 
+    try:
+        allAvionics = itemData.pipes.get(pipeClass__iexact="avioncs")
+        avionicsData = []
+        tickDict = {}
+        for state in allAvionics.states.all():
+            stateData = { "label": state.name }
+            graphPoints = extrapolateStateValues(state, duration=30, metric=0, stacking=False)
+            for point in graphPoints:
+                tickDict[point] = point
+            stateData["data"] = []
+            for i in range(0,31):
+                stateData["data"].append([i, graphPoints[i]])
+            avionicsData.append(stateData)
+        avionicsTicks = []
+        for tick in tickDict:
+            avionicsTicks.append(tick)
+    except:
+        avionicsData = None
 
-    allPower = itemData.pipePower.all()
-    powerData = []
-    tickDict = {}
-    for state in allPower:
-        stateData = { "label": state.state }
-        graphPoints = extrapolateStateValues(state, duration=30, metric=0, stacking=False)
-        for point in graphPoints:
-            tickDict[point] = point
-        stateData["data"] = []
-        for i in range(0,31):
-            stateData["data"].append([i, graphPoints[i]])
-        powerData.append(stateData)
-    powerTicks = []
-    for tick in tickDict:
-        powerTicks.append(tick)
-
-    allAvionics = itemData.pipeAvionics.all()
-    avionicsData = []
-    tickDict = {}
-    for state in allAvionics:
-        stateData = { "label": state.state }
-        graphPoints = extrapolateStateValues(state, duration=30, metric=0, stacking=False)
-        for point in graphPoints:
-            tickDict[point] = point
-        stateData["data"] = []
-        for i in range(0,31):
-            stateData["data"].append([i, graphPoints[i]])
-        avionicsData.append(stateData)
-    avionicsTicks = []
-    for tick in tickDict:
-        avionicsTicks.append(tick)
+    try:
+        allFuel = itemData.pipes.get(pipeClass__iexact="fuel")
+        fuelData = []
+        tickDict = {}
+        for state in allFuel.states.all():
+            stateData = { "label": state.name }
+            graphPoints = extrapolateStateValues(state, duration=30, metric=0, stacking=False)
+            for point in graphPoints:
+                tickDict[point] = point
+            stateData["data"] = []
+            for i in range(0,31):
+                stateData["data"].append([i, graphPoints[i]])
+            fuelData.append(stateData)
+        fuelTicks = []
+        for tick in tickDict:
+            fuelTicks.append(tick)
+    except:
+        fuelData = None
 
     renderContext = {
-        'itemData': itemData,
-        'heatData': simplejson.dumps(heatData),
-        'heatTicks': simplejson.dumps(heatTicks),
-        'powerData': simplejson.dumps(powerData),
-        'powerTicks': simplejson.dumps(powerTicks),
-        'avionicsData': simplejson.dumps(avionicsData),
-        'avionicsTicks': simplejson.dumps(avionicsTicks)
+        'itemData': itemData
     }
+    if heatData:
+        renderContext["heatData"] = simplejson.dumps(heatData)
+        renderContext["heatTicks"] = simplejson.dumps(heatTicks)
+    if powerData:
+        renderContext["powerData"] = simplejson.dumps(powerData)
+        renderContext["powerTicks"] = simplejson.dumps(powerTicks)
+    if avionicsData:
+        renderContext["avionicsData"] = simplejson.dumps(avionicsData)
+        renderContext["avionicsTicks"] = simplejson.dumps(avionicsTicks)
+    if fuelData:
+        renderContext["fuelData"] = simplejson.dumps(fuelData)
+        renderContext["fuelTicks"] = simplejson.dumps(fuelTicks)
+
+    print renderContext
     return render_to_response('tooltips/VehicleItemPipes.html', renderContext, context_instance=RequestContext(request))
 
 def getItemTooltipPageBasic(request, itemName):

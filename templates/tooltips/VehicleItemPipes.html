@@ -1,6 +1,6 @@
 <h4>Resource Pipes</h4>
 <p>Positive values indicate <b>generation</b>, and negative values indicate <b>consumption</b></p>
-{% if itemData.pipePower.all|length > 0 %}
+{% if powerData %}
 	<h4>Power</h4>
 	<div id="power-graph" style="width:325px;height:125px;"></div>
 	<script>
@@ -32,7 +32,7 @@
     });
 	</script>
 {% endif %}
-{% if itemData.pipeHeat.all|length > 0 %}
+{% if heatData %}
 	<h4>Heat</h4>
 	<div id="heat-graph" style="width:325px;height:125px;"></div>
 	<script>
@@ -64,7 +64,7 @@
     });
 	</script>
 {% endif %}
-{% if itemData.pipeAvionics.all|length > 0 %}
+{% if avionicsData %}
 	<h4>Avionics</h4>
 	<div id="avionics-graph" style="width:325px;height:125px;"></div>
 	<script>
@@ -90,6 +90,39 @@
 				yaxis:
 				{
 					ticks: {{avionicsTicks}}
+				}
+			}
+		);
+    });
+	</script>
+{% endif %}
+
+{% if fuelData %}
+	<h4>Fuel</h4>
+	<div id="fuel-graph" style="width:325px;height:125px;"></div>
+	<script>
+    jQuery(document).ready(function() {
+
+    	$.plot($("#fuel-graph"), 
+    		{% autoescape off %}
+    		{{fuelData}},
+    		{% endautoescape %}
+			{ 
+				series:
+				{
+					stack: 0,
+					lines: 
+					{
+						show: true
+					}
+				},
+				legend:
+				{
+					margin: [-100,0]
+				},
+				yaxis:
+				{
+					ticks: {{fuelTicks}}
 				}
 			}
 		);
