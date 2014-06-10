@@ -58,7 +58,8 @@
 			newAction = {
 				'device': deviceName,
 				'name': $scope.selectedActionMapAction.name,
-				'inputName': inputName
+				'inputName': inputName,
+				'optionOnPress': $scope.optionOnPress
 			}
 			return newAction
 		}

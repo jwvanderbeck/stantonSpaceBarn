@@ -114,6 +114,10 @@
 									<label>
 									<input ng-model="joystickAsKeyboard" type="checkbox"> Map joystick as keyboard </label>
 								</div>
+								<div class="input-group">
+									<label>
+									<input ng-model="optionOnPress" type="checkbox" ng-true-value="1" ng-false-value="0"> onPress </label>
+								</div>
 	                        </div>
 	                        <div class="form-actions">
 	                            <button class="btn green pull-right" ng-click="mapsCtrl.addBinding()">
@@ -136,7 +140,7 @@
 			        			&lt;actionmap name="{{map.name}}"&gt;
 			        			<span ng-repeat="action in map.actions">
 			        				&lt;action name="{{action.name}}"&gt;
-			        					&lt;rebind device="{{action.device}}" input="{{action.inputName}}" /&gt;
+			        					&lt;rebind device="{{action.device}}" input="{{action.inputName}}" onPress="{{action.optionOnPress}}" /&gt;
 			        				&lt;/action&gt;
 			        			</span>
 			        			&lt;/actionmap&gt;
